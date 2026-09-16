@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { createAxeBuilder } from "../helpers/axe";
+
+const instagramFixtures = fileURLToPath(new URL("../fixtures/instagram", import.meta.url));
 
 const routes = [
   { path: "/", heading: /Understand relationship changes/ },
@@ -25,7 +29,7 @@ test("foundation pages have no automatically detectable accessibility violations
   expect(results.violations).toEqual([]);
 });
 
-test("Story shell performs no provider request", async ({ page }) => {
+test("Story utility discloses its boundary and remains safely disabled without approval", async ({ page }) => {
   const externalRequests: string[] = [];
   page.on("request", (request) => {
     const url = new URL(request.url());
@@ -35,8 +39,44 @@ test("Story shell performs no provider request", async ({ page }) => {
   });
 
   await page.goto("/story-downloader");
-  await expect(page.getByText("Story lookup is not enabled yet", { exact: false })).toBeVisible();
+  await expect(page.getByText("Before you continue", { exact: false })).toBeVisible();
+  await page.getByLabel("Public Instagram handle").fill("public.test");
+  await expect(page.getByLabel("Public Instagram handle")).toHaveValue("public.test");
+  await page.getByRole("button", { name: "View public Stories" }).click();
+  await expect(page.getByText("not enabled", { exact: false })).toBeVisible();
   expect(externalRequests).toEqual([]);
+});
+
+test("Story and Highlight UI uses only same-origin routes and does not persist lookup state", async ({ page }) => {
+  const traffic: string[] = [];
+  page.on("request", (request) => traffic.push(request.url()));
+  await page.route("**/api/story/lookup", async (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ ok: true, data: {
+      handle: "public.test", fetchedAt: "2026-09-16T00:00:00.000Z",
+      stories: [{ id: "story-1", mediaType: "image", previewRef: "opaque-story-preview", downloadRef: "opaque-story-download" }],
+      highlights: [{ id: "opaque-highlight", title: "Summer", itemCount: 1 }],
+    } }),
+  }));
+  await page.route("**/api/story/highlight-items", async (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ ok: true, data: [{ id: "highlight-item-1", mediaType: "image", previewRef: "opaque-highlight-preview", downloadRef: "opaque-highlight-download" }] }),
+  }));
+  await page.route("**/api/story/media/**", async (route) => route.fulfill({ contentType: "image/gif", body: Buffer.from("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", "base64") }));
+
+  await page.goto("/story-downloader");
+  await page.getByLabel("Public Instagram handle").fill("@Public.Test");
+  await page.getByRole("button", { name: "View public Stories" }).click();
+  await expect(page.getByRole("heading", { name: "@public.test" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Download media" })).toHaveCount(1);
+  await page.getByRole("tab", { name: "Highlights" }).click();
+  await page.getByRole("button", { name: /Summer/ }).click();
+  await expect(page.getByRole("link", { name: "Download media" })).toHaveCount(1);
+  expect(traffic.every((url) => new URL(url).hostname === "127.0.0.1")).toBe(true);
+
+  await page.reload();
+  await expect(page.getByLabel("Public Instagram handle")).toHaveValue("");
+  await expect(page.getByRole("heading", { name: "@public.test" })).toHaveCount(0);
 });
 
 test("IndexedDB history survives a page reload", async ({ page }) => {
@@ -160,5 +200,81 @@ test("shell routes have no serious or critical accessibility violations", async 
         violation.impact === "serious" || violation.impact === "critical",
       ),
     ).toEqual([]);
+  }
+});
+
+test("analyzer completes two local imports, persists history, isolates accounts, and exports CSV", async ({ page }) => {
+  test.slow();
+  await page.goto("/app");
+  await page.getByLabel("Account label").fill("Personal archive");
+  await page.getByLabel("Instagram username (optional)").fill("private.local");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page.getByRole("heading", { name: "Import an Instagram relationship export" })).toBeVisible();
+
+  const manualInput = page.locator('input[accept^=".json"]');
+  await manualInput.setInputFiles([
+    path.join(instagramFixtures, "fixture-a", "followers_1.json"),
+    path.join(instagramFixtures, "fixture-a", "following.json"),
+  ]);
+  await expect(page.getByRole("heading", { name: "Review import" })).toBeVisible();
+  await page.getByLabel("Snapshot date").fill("2026-01-01T10:00");
+  await page.getByRole("button", { name: "Save snapshot" }).click();
+  await expect(page.getByRole("heading", { name: "Relationship results" })).toBeVisible();
+  await expect(page.getByText("This is the first snapshot", { exact: false })).toBeVisible();
+
+  await manualInput.setInputFiles([
+    path.join(instagramFixtures, "fixture-b", "followers_1.json"),
+    path.join(instagramFixtures, "fixture-b", "following.json"),
+  ]);
+  await expect(page.getByRole("heading", { name: "Review import" })).toBeVisible();
+  await page.getByLabel("Snapshot date").fill("2026-02-01T10:00");
+  await page.getByRole("button", { name: "Save snapshot" }).click();
+
+  const lostFollowersTab = page.getByRole("tab", { name: "Lost followers" });
+  await lostFollowersTab.click();
+  await expect(lostFollowersTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("@bravo_test")).toBeVisible();
+  await lostFollowersTab.press("ArrowRight");
+  await expect(page.getByRole("tab", { name: "New followers" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("@echo.test")).toBeVisible();
+
+  const resultDimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(resultDimensions.scrollWidth).toBeLessThanOrEqual(resultDimensions.clientWidth);
+
+  await page.getByRole("tab", { name: "Overview" }).click();
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export CSV" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^relationship-insights-\d{4}-\d{2}-\d{2}\.csv$/);
+  expect(download.suggestedFilename()).not.toContain("private.local");
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Relationship results" })).toBeVisible();
+  await page.getByRole("tab", { name: "History" }).click();
+  await expect(page.locator(".snapshot-list li")).toHaveCount(2);
+  await page.getByRole("button", { name: "Compare snapshots" }).click();
+  await expect(page.getByText("Comparison range", { exact: false })).toBeVisible();
+
+  await page.getByRole("button", { name: "Create another local account" }).click();
+  await page.getByLabel("Account label").fill("Work archive");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page.getByRole("heading", { name: "Relationship results" })).toHaveCount(0);
+  await page.getByLabel("Select account").selectOption({ label: "Personal archive (@private.local)" });
+  await expect(page.getByRole("heading", { name: "Relationship results" })).toBeVisible();
+});
+
+test("analyzer first-use layout has no horizontal overflow at supported widths", async ({ page }) => {
+  for (const width of [360, 390, 430, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/app");
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+    await expect(page.getByLabel("Account label")).toBeVisible();
   }
 });

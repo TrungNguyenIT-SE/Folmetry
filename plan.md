@@ -1235,6 +1235,8 @@ Yêu cầu:
 
 # 10. M6 — Analyzer UX hoàn chỉnh
 
+**Trạng thái:** Hoàn thành ngày 2026-09-16. `pnpm check`, 143 unit/component tests và 64 E2E tests đa trình duyệt đều pass.
+
 ## 10.1 Import lifecycle reducer/state machine
 
 Các state bắt buộc:
@@ -1250,252 +1252,254 @@ RESULTS
 ERROR
 ```
 
-- [ ] State và event dùng discriminated unions.
-- [ ] Illegal transition bị chặn/test.
-- [ ] Cancel/error/reset có đường quay về rõ.
-- [ ] Không dùng nhiều boolean mâu thuẫn.
-- [ ] Account switch reset/rehydrate đúng state.
-- [ ] Stale worker event không thay đổi state mới.
+- [x] State và event dùng discriminated unions.
+- [x] Illegal transition bị chặn/test.
+- [x] Cancel/error/reset có đường quay về rõ.
+- [x] Không dùng nhiều boolean mâu thuẫn.
+- [x] Account switch reset/rehydrate đúng state.
+- [x] Stale worker event không thay đổi state mới.
 
 ## 10.2 First-use account flow
 
-- [ ] Giải thích không cần Instagram login.
-- [ ] Giải thích label/username chỉ lưu local.
-- [ ] Account label bắt buộc.
-- [ ] Username tùy chọn.
-- [ ] Create account.
-- [ ] Select existing account.
-- [ ] Edit account label.
-- [ ] Multiple accounts hiển thị rõ để tránh import nhầm.
-- [ ] Không tự động tạo account dựa trên follower data.
+- [x] Giải thích không cần Instagram login.
+- [x] Giải thích label/username chỉ lưu local.
+- [x] Account label bắt buộc.
+- [x] Username tùy chọn.
+- [x] Create account.
+- [x] Select existing account.
+- [x] Edit account label.
+- [x] Multiple accounts hiển thị rõ để tránh import nhầm.
+- [x] Không tự động tạo account dựa trên follower data.
 
 ## 10.3 Empty/import state
 
-- [ ] Concise export instructions.
-- [ ] Drop zone.
-- [ ] Equivalent accessible file input button.
-- [ ] ZIP/JSON support text rõ ràng.
-- [ ] Privacy statement ngay cạnh input.
-- [ ] Link tới How it works/export guide.
-- [ ] Recovery JSON mode ít nổi bật hơn ZIP nhưng vẫn truy cập được.
-- [ ] Drag enter/leave/drop không phá keyboard flow.
-- [ ] File validation error liên kết đúng control.
+- [x] Concise export instructions.
+- [x] Drop zone.
+- [x] Equivalent accessible file input button.
+- [x] ZIP/JSON support text rõ ràng.
+- [x] Privacy statement ngay cạnh input.
+- [x] Link tới How it works/export guide.
+- [x] Recovery JSON mode ít nổi bật hơn ZIP nhưng vẫn truy cập được.
+- [x] Drag enter/leave/drop không phá keyboard flow.
+- [x] File validation error liên kết đúng control.
 
 ## 10.4 Export guide
 
 Hướng dẫn người dùng:
 
-- [ ] Mở Meta Accounts Center.
-- [ ] Chọn đúng Instagram account.
-- [ ] Chọn followers/following hoặc connections khi có thể.
-- [ ] Chọn JSON.
-- [ ] Chọn all-time range khi có.
-- [ ] Download ZIP.
-- [ ] Không cần unzip trừ recovery mode.
-- [ ] Nói rõ menu Meta có thể thay đổi.
-- [ ] Không yêu cầu credentials trên website.
+- [x] Mở Meta Accounts Center.
+- [x] Chọn đúng Instagram account.
+- [x] Chọn followers/following hoặc connections khi có thể.
+- [x] Chọn JSON.
+- [x] Chọn all-time range khi có.
+- [x] Download ZIP.
+- [x] Không cần unzip trừ recovery mode.
+- [x] Nói rõ menu Meta có thể thay đổi.
+- [x] Không yêu cầu credentials trên website.
 
 ## 10.5 Progress UI
 
-- [ ] Hiển thị stage thật từ worker.
-- [ ] Hiển thị processed relationship count khi có.
-- [ ] Live region thông báo thay đổi có kiểm soát.
-- [ ] Cancel button luôn truy cập được.
-- [ ] Không dùng fake percentage nếu không có dữ liệu thật.
-- [ ] Không khóa toàn bộ UI thread.
-- [ ] Không animate làm chậm việc đọc số liệu.
+- [x] Hiển thị stage thật từ worker.
+- [x] Hiển thị processed relationship count khi có.
+- [x] Live region thông báo thay đổi có kiểm soát.
+- [x] Cancel button luôn truy cập được.
+- [x] Không dùng fake percentage nếu không có dữ liệu thật.
+- [x] Không khóa toàn bộ UI thread.
+- [x] Không animate làm chậm việc đọc số liệu.
 
 ## 10.6 Review import
 
 Trước khi save hiển thị:
 
-- [ ] Account đích.
-- [ ] Source filename và size chỉ trong memory/UI local, không log/analytics.
-- [ ] Detected follower/following counts.
-- [ ] Parser warnings.
-- [ ] Suggested snapshot date/time.
-- [ ] Editable/confirmable snapshot date.
-- [ ] Local retention explanation.
-- [ ] Accuracy limitation ngắn gọn.
-- [ ] Save/Cancel actions.
-- [ ] Duplicate check sau khi date được confirm.
+- [x] Account đích.
+- [x] Source filename và size chỉ trong memory/UI local, không log/analytics.
+- [x] Detected follower/following counts.
+- [x] Parser warnings.
+- [x] Suggested snapshot date/time.
+- [x] Editable/confirmable snapshot date.
+- [x] Local retention explanation.
+- [x] Accuracy limitation ngắn gọn.
+- [x] Save/Cancel actions.
+- [x] Duplicate check sau khi date được confirm.
 
 ## 10.7 Saving state
 
-- [ ] Chặn double submit.
-- [ ] Hiển thị saving status.
-- [ ] Persistence error giữ payload/results trong memory.
-- [ ] Duplicate message có đường quay lại.
-- [ ] Thành công chuyển sang result đúng snapshot.
-- [ ] Không giữ raw file/reference sau save.
+- [x] Chặn double submit.
+- [x] Hiển thị saving status.
+- [x] Persistence error giữ payload/results trong memory.
+- [x] Duplicate message có đường quay lại.
+- [x] Thành công chuyển sang result đúng snapshot.
+- [x] Không giữ raw file/reference sau save.
 
 ## 10.8 Results overview
 
 Summary cards:
 
-- [ ] Followers.
-- [ ] Following.
-- [ ] Mutuals.
-- [ ] Not following you back.
-- [ ] You do not follow back.
-- [ ] Lost followers khi có baseline.
-- [ ] New followers khi có baseline.
-- [ ] Net follower change khi có baseline.
+- [x] Followers.
+- [x] Following.
+- [x] Mutuals.
+- [x] Not following you back.
+- [x] You do not follow back.
+- [x] Lost followers khi có baseline.
+- [x] New followers khi có baseline.
+- [x] Net follower change khi có baseline.
 
 Behavior:
 
-- [ ] Không hiển thị historical zero trên first snapshot.
-- [ ] First snapshot giải thích cần import snapshot sau.
-- [ ] Count format theo locale.
-- [ ] Delta có cả ký hiệu/text, không chỉ màu.
-- [ ] Warning badge khi parser có warning.
+- [x] Không hiển thị historical zero trên first snapshot.
+- [x] First snapshot giải thích cần import snapshot sau.
+- [x] Count format theo locale.
+- [x] Delta có cả ký hiệu/text, không chỉ màu.
+- [x] Warning badge khi parser có warning.
 
 ## 10.9 Result tabs/lists
 
 Tabs:
 
-- [ ] Overview.
-- [ ] Lost followers.
-- [ ] New followers.
-- [ ] Not following back.
-- [ ] You do not follow back.
-- [ ] Mutuals.
-- [ ] History.
+- [x] Overview.
+- [x] Lost followers.
+- [x] New followers.
+- [x] Not following back.
+- [x] You do not follow back.
+- [x] Mutuals.
+- [x] History.
 
 Mỗi list:
 
-- [ ] Search case-insensitive theo normalized handle.
-- [ ] Clear search.
-- [ ] A–Z.
-- [ ] Z–A.
-- [ ] Connected date newest/oldest khi metadata tồn tại.
-- [ ] Row/result count.
-- [ ] Empty filtered state.
-- [ ] Copy handle với accessible feedback.
-- [ ] Safe Instagram profile link từ validated normalized handle.
-- [ ] `target="_blank"` + `rel="noopener noreferrer"`.
-- [ ] Pagination ban đầu hoặc windowing nếu benchmark yêu cầu.
-- [ ] Mobile card/compact row layout.
-- [ ] Không render hàng chục nghìn DOM rows cùng lúc.
+- [x] Search case-insensitive theo normalized handle.
+- [x] Clear search.
+- [x] A–Z.
+- [x] Z–A.
+- [x] Connected date newest/oldest khi metadata tồn tại.
+- [x] Row/result count.
+- [x] Empty filtered state.
+- [x] Copy handle với accessible feedback.
+- [x] Safe Instagram profile link từ validated normalized handle.
+- [x] `target="_blank"` + `rel="noopener noreferrer"`.
+- [x] Pagination ban đầu hoặc windowing nếu benchmark yêu cầu.
+- [x] Mobile card/compact row layout.
+- [x] Không render hàng chục nghìn DOM rows cùng lúc.
 
 ## 10.10 History
 
-- [ ] Snapshot list newest first.
-- [ ] Date/time.
-- [ ] Followers/following counts.
-- [ ] Delta từ prior snapshot.
-- [ ] Parser warning badge/details.
-- [ ] Compare action.
-- [ ] Delete action.
-- [ ] Current/selected snapshot indicator.
-- [ ] Empty/one-snapshot history explanation.
+- [x] Snapshot list newest first.
+- [x] Date/time.
+- [x] Followers/following counts.
+- [x] Delta từ prior snapshot.
+- [x] Parser warning badge/details.
+- [x] Compare action.
+- [x] Delete action.
+- [x] Current/selected snapshot indicator.
+- [x] Empty/one-snapshot history explanation.
 
 ## 10.11 Manual comparison
 
-- [ ] Chọn hai distinct snapshots.
-- [ ] Chỉ cùng account/platform.
-- [ ] Không cho chọn cùng snapshot hai lần.
-- [ ] Normalize older/newer orientation hoặc label rõ ràng.
-- [ ] Hiển thị date range.
-- [ ] Compute diff bằng pure domain engine.
-- [ ] Lost-follower caveat luôn dễ truy cập.
+- [x] Chọn hai distinct snapshots.
+- [x] Chỉ cùng account/platform.
+- [x] Không cho chọn cùng snapshot hai lần.
+- [x] Normalize older/newer orientation hoặc label rõ ràng.
+- [x] Hiển thị date range.
+- [x] Compute diff bằng pure domain engine.
+- [x] Lost-follower caveat luôn dễ truy cập.
 
 ## 10.12 CSV export
 
-- [ ] Generate hoàn toàn local.
-- [ ] UTF-8.
-- [ ] Correct CSV quoting cho comma, quote, newline.
-- [ ] Neutralize formula injection nếu cell bắt đầu bằng `=`, `+`, `-`, `@`.
-- [ ] Các cột phù hợp: handle, category, connected_at, current_snapshot, previous_snapshot.
-- [ ] File name an toàn, không chứa username nếu privacy policy không cho phép.
-- [ ] Revoke download object URL.
-- [ ] Không upload CSV.
-- [ ] Unit tests cho escaping/injection/Unicode.
+- [x] Generate hoàn toàn local.
+- [x] UTF-8.
+- [x] Correct CSV quoting cho comma, quote, newline.
+- [x] Neutralize formula injection nếu cell bắt đầu bằng `=`, `+`, `-`, `@`.
+- [x] Các cột phù hợp: handle, category, connected_at, current_snapshot, previous_snapshot.
+- [x] File name an toàn, không chứa username nếu privacy policy không cho phép.
+- [x] Revoke download object URL.
+- [x] Không upload CSV.
+- [x] Unit tests cho escaping/injection/Unicode.
 
 ## 10.13 Delete flows
 
-- [ ] Delete snapshot dialog nêu hậu quả.
-- [ ] Delete account dialog nêu toàn bộ history bị xóa.
-- [ ] Delete all local data trong settings/privacy area.
-- [ ] Focus trap/return focus.
-- [ ] Không accidental delete bằng một click không xác nhận.
-- [ ] Sau delete cập nhật current account/result/history đúng.
-- [ ] Reload xác nhận dữ liệu đã biến mất.
+- [x] Delete snapshot dialog nêu hậu quả.
+- [x] Delete account dialog nêu toàn bộ history bị xóa.
+- [x] Delete all local data trong settings/privacy area.
+- [x] Focus trap/return focus.
+- [x] Không accidental delete bằng một click không xác nhận.
+- [x] Sau delete cập nhật current account/result/history đúng.
+- [x] Reload xác nhận dữ liệu đã biến mất.
 
 ## 10.14 Error and recovery UX
 
 Mỗi error code phải có:
 
-- [ ] Tiêu đề ngắn.
-- [ ] Nguyên nhân có thể hiểu được.
-- [ ] Hành động khắc phục cụ thể.
-- [ ] Retry/reset action.
-- [ ] Safe diagnostic report khi phù hợp.
-- [ ] Không lộ stack/raw data.
-- [ ] Không đổ lỗi cho người dùng.
+- [x] Tiêu đề ngắn.
+- [x] Nguyên nhân có thể hiểu được.
+- [x] Hành động khắc phục cụ thể.
+- [x] Retry/reset action.
+- [x] Safe diagnostic report khi phù hợp.
+- [x] Không lộ stack/raw data.
+- [x] Không đổ lỗi cho người dùng.
 
 Đặc biệt:
 
-- [ ] HTML export hướng dẫn chọn JSON.
-- [ ] Missing multipart hướng dẫn dùng original ZIP.
-- [ ] Mobile memory failure khuyến nghị desktop.
-- [ ] IndexedDB failure nói rõ result chưa được lưu.
-- [ ] Encrypted ZIP hướng dẫn tải export không mã hóa nếu Meta cho phép.
+- [x] HTML export hướng dẫn chọn JSON.
+- [x] Missing multipart hướng dẫn dùng original ZIP.
+- [x] Mobile memory failure khuyến nghị desktop.
+- [x] IndexedDB failure nói rõ result chưa được lưu.
+- [x] Encrypted ZIP hướng dẫn tải export không mã hóa nếu Meta cho phép.
 
 ## 10.15 Analyzer component tests
 
-- [ ] Account create/select/edit.
-- [ ] Drop zone bằng mouse và keyboard.
-- [ ] Invalid file error.
-- [ ] Progress presentation.
-- [ ] Cancel flow.
-- [ ] Review date edit.
-- [ ] Duplicate flow.
-- [ ] First snapshot UX.
-- [ ] Result counts.
-- [ ] Search/sort/pagination.
-- [ ] Copy handle.
-- [ ] Safe external link.
-- [ ] History compare selector.
-- [ ] Delete confirmations.
-- [ ] Storage failure fallback.
-- [ ] English/Vietnamese copy.
+- [x] Account create/select/edit.
+- [x] Drop zone bằng mouse và keyboard.
+- [x] Invalid file error.
+- [x] Progress presentation.
+- [x] Cancel flow.
+- [x] Review date edit.
+- [x] Duplicate flow.
+- [x] First snapshot UX.
+- [x] Result counts.
+- [x] Search/sort/pagination.
+- [x] Copy handle.
+- [x] Safe external link.
+- [x] History compare selector.
+- [x] Delete confirmations.
+- [x] Storage failure fallback.
+- [x] English/Vietnamese copy.
 
 ## 10.16 Exit criteria M6
 
-- [ ] End-to-end happy path chạy từ account creation tới results.
-- [ ] Snapshot thứ hai tạo historical diff đúng.
-- [ ] Account isolation hoạt động.
-- [ ] CSV an toàn và local.
-- [ ] Import cancellation hoạt động.
-- [ ] Mọi core state có empty/loading/success/error UX.
-- [ ] Mobile layout usable.
-- [ ] Keyboard flow usable.
-- [ ] Typecheck/lint/unit/component/build pass.
+- [x] End-to-end happy path chạy từ account creation tới results.
+- [x] Snapshot thứ hai tạo historical diff đúng.
+- [x] Account isolation hoạt động.
+- [x] CSV an toàn và local.
+- [x] Import cancellation hoạt động.
+- [x] Mọi core state có empty/loading/success/error UX.
+- [x] Mobile layout usable.
+- [x] Keyboard flow usable.
+- [x] Typecheck/lint/unit/component/build pass.
 
 ---
 
-# 10A. M6S — Public Story/Highlights subsystem
+# 10A. M6S - Public Story/Highlights subsystem
 
 M6S là subsystem networked độc lập. Nó không được import repository của relationship analyzer, không nhận ZIP/JSON/snapshot và không được dùng như fallback để lấy follower lists.
 
+> Trạng thái triển khai 2026-09-16: engineering implementation và mock verification đã hoàn tất cho domain model, same-origin routes, adapter server-only, activation gate kép, AES-256-GCM token/key rotation, SSRF/media guards, rate/concurrency limits, UI EN/VI và privacy-boundary tests. `pnpm check` đạt 211/211 test và Playwright đạt 68/68 trên Chromium desktop/mobile, Firefox, WebKit. Production vẫn **disabled** cho đến khi hoàn tất các mục external bên dưới: xác nhận logging/retention bằng văn bản, owner/legal approval, allowlist CDN chính thức, edge rate-limit/budget alert theo hosting và production smoke test có kiểm soát. Không dùng scraping/private API làm fallback.
+
 ## 10A.1 Provider due diligence và activation gate
 
-- [ ] Lập shortlist provider có documented active Stories và Highlights endpoints.
-- [ ] Kiểm tra provider identity/contact/support/status page.
-- [ ] Review Terms/acceptable-use cho lookup, preview và user-initiated download.
-- [ ] Review Privacy Policy, đặc biệt việc log username/query parameter.
+- [x] Lập shortlist provider có documented active Stories và Highlights endpoints.
+- [x] Kiểm tra provider identity/contact/support/status page.
+- [x] Review Terms/acceptable-use cho lookup, preview và user-initiated download.
+- [x] Review Privacy Policy, đặc biệt việc log username/query parameter.
 - [ ] Nhận xác nhận bằng văn bản về việc có/không log username/query parameters và retention áp dụng.
-- [ ] Ghi retention, deletion request process và subprocessor/region nếu có.
-- [ ] Xác minh provider không yêu cầu Instagram password/session cookie/access token của end user.
-- [ ] Xác minh private accounts không được trả dữ liệu.
-- [ ] Xác minh pricing per request, billed error behavior, quota và rate limit.
-- [ ] Xác minh API versioning/deprecation policy.
-- [ ] Thu thập response schemas và typed error examples.
+- [x] Ghi retention, deletion request process và subprocessor/region nếu có.
+- [x] Xác minh provider không yêu cầu Instagram password/session cookie/access token của end user.
+- [x] Xác minh private accounts không được trả dữ liệu.
+- [x] Xác minh pricing per request, billed error behavior, quota và rate limit.
+- [x] Xác minh API versioning/deprecation policy.
+- [x] Thu thập response schemas và typed error examples.
 - [ ] Thu thập media/CDN hostname và redirect behavior để xây allowlist.
-- [ ] Chọn provider qua configuration, không hard-code vào UI/domain.
-- [ ] Có kill switch/feature flag server-side để disable Story utility độc lập.
-- [ ] Nếu review không đạt, giữ feature disabled; không chuyển sang scraping/private API.
+- [x] Chọn provider qua configuration, không hard-code vào UI/domain.
+- [x] Có kill switch/feature flag server-side để disable Story utility độc lập.
+- [x] Nếu review không đạt, giữ feature disabled; không chuyển sang scraping/private API.
 
 Preferred technical evaluation candidate hiện tại là InstaGapi vì tài liệu của họ mô tả cả active Story items và full Highlight tray items. Đây chưa phải phê duyệt production: Terms đặt trách nhiệm tuân thủ platform terms lên khách hàng, còn Privacy Policy nêu lưu API usage/IP logs 90 ngày nhưng chưa làm rõ query parameters/username có nằm trong log hay không. Phải yêu cầu làm rõ bằng văn bản. `instagramapi.dev` là candidate phụ nhưng tài liệu hiện thấy chỉ xác nhận Highlight summaries và chính sách của họ ghi rõ có log lookup parameters, nên không dùng mặc định nếu chưa giải quyết privacy/functional gaps.
 
@@ -1503,14 +1507,14 @@ Preferred technical evaluation candidate hiện tại là InstaGapi vì tài li�
 
 Tạo provider-neutral types:
 
-- [ ] `PublicStoryMediaType = "image" | "video"`.
-- [ ] `PublicStoryItem`.
-- [ ] `PublicHighlightCollection`.
-- [ ] `PublicHighlightItem` hoặc reuse media item contract hợp lý.
-- [ ] `PublicStoryLookupResult`.
-- [ ] `StoryProviderError`.
-- [ ] Browser-facing safe media reference/token type.
-- [ ] Story lookup request/response discriminated types.
+- [x] `PublicStoryMediaType = "image" | "video"`.
+- [x] `PublicStoryItem`.
+- [x] `PublicHighlightCollection`.
+- [x] `PublicHighlightItem` hoặc reuse media item contract hợp lý.
+- [x] `PublicStoryLookupResult`.
+- [x] `StoryProviderError`.
+- [x] Browser-facing safe media reference/token type.
+- [x] Story lookup request/response discriminated types.
 
 Browser-facing model chỉ chứa:
 
@@ -1535,26 +1539,26 @@ Không chứa:
 
 Thêm codes:
 
-- [ ] `STORY_INVALID_HANDLE`.
-- [ ] `STORY_PRIVATE_ACCOUNT` khi provider chứng minh được.
-- [ ] `STORY_ACCOUNT_NOT_FOUND` khi provider chứng minh được.
-- [ ] `STORY_NO_ACTIVE_ITEMS`.
-- [ ] `STORY_HIGHLIGHTS_UNAVAILABLE`.
-- [ ] `STORY_PROVIDER_NOT_CONFIGURED`.
-- [ ] `STORY_PROVIDER_AUTH_FAILED`.
-- [ ] `STORY_PROVIDER_RATE_LIMITED`.
-- [ ] `STORY_PROVIDER_QUOTA_EXCEEDED`.
-- [ ] `STORY_PROVIDER_TIMEOUT`.
-- [ ] `STORY_PROVIDER_UNAVAILABLE`.
-- [ ] `STORY_PROVIDER_SCHEMA_CHANGED`.
-- [ ] `STORY_RESPONSE_TOO_LARGE`.
-- [ ] `STORY_MEDIA_TOKEN_INVALID`.
-- [ ] `STORY_MEDIA_TOKEN_EXPIRED`.
-- [ ] `STORY_MEDIA_HOST_NOT_ALLOWED`.
-- [ ] `STORY_MEDIA_TYPE_UNSUPPORTED`.
-- [ ] `STORY_MEDIA_TOO_LARGE`.
-- [ ] `STORY_DOWNLOAD_FAILED`.
-- [ ] `STORY_RATE_LIMITED`.
+- [x] `STORY_INVALID_HANDLE`.
+- [x] `STORY_PRIVATE_ACCOUNT` khi provider chứng minh được.
+- [x] `STORY_ACCOUNT_NOT_FOUND` khi provider chứng minh được.
+- [x] `STORY_NO_ACTIVE_ITEMS`.
+- [x] `STORY_HIGHLIGHTS_UNAVAILABLE`.
+- [x] `STORY_PROVIDER_NOT_CONFIGURED`.
+- [x] `STORY_PROVIDER_AUTH_FAILED`.
+- [x] `STORY_PROVIDER_RATE_LIMITED`.
+- [x] `STORY_PROVIDER_QUOTA_EXCEEDED`.
+- [x] `STORY_PROVIDER_TIMEOUT`.
+- [x] `STORY_PROVIDER_UNAVAILABLE`.
+- [x] `STORY_PROVIDER_SCHEMA_CHANGED`.
+- [x] `STORY_RESPONSE_TOO_LARGE`.
+- [x] `STORY_MEDIA_TOKEN_INVALID`.
+- [x] `STORY_MEDIA_TOKEN_EXPIRED`.
+- [x] `STORY_MEDIA_HOST_NOT_ALLOWED`.
+- [x] `STORY_MEDIA_TYPE_UNSUPPORTED`.
+- [x] `STORY_MEDIA_TOO_LARGE`.
+- [x] `STORY_DOWNLOAD_FAILED`.
+- [x] `STORY_RATE_LIMITED`.
 
 Nếu provider không phân biệt private/not-found/no-data đáng tin cậy, UI dùng thông báo gộp trung thực thay vì đoán.
 
@@ -1562,41 +1566,41 @@ Nếu provider không phân biệt private/not-found/no-data đáng tin cậy, U
 
 Accept:
 
-- [ ] `username`.
-- [ ] `@username`.
-- [ ] `https://instagram.com/username`.
-- [ ] `https://www.instagram.com/username/`.
+- [x] `username`.
+- [x] `@username`.
+- [x] `https://instagram.com/username`.
+- [x] `https://www.instagram.com/username/`.
 
 Reject:
 
-- [ ] Empty/overlong handle.
-- [ ] Multiple handles/batch text.
-- [ ] Non-Instagram host.
-- [ ] HTTP/non-HTTPS URL.
-- [ ] URL credentials.
-- [ ] Custom port.
-- [ ] Query/fragment không cần thiết.
-- [ ] `/stories/...`, `/p/...`, `/reel/...` hoặc arbitrary nested path làm profile lookup.
-- [ ] localhost/IP literal/private-network destination.
-- [ ] Control/path-traversal characters.
-- [ ] Input giống file/archive payload.
+- [x] Empty/overlong handle.
+- [x] Multiple handles/batch text.
+- [x] Non-Instagram host.
+- [x] HTTP/non-HTTPS URL.
+- [x] URL credentials.
+- [x] Custom port.
+- [x] Query/fragment không cần thiết.
+- [x] `/stories/...`, `/p/...`, `/reel/...` hoặc arbitrary nested path làm profile lookup.
+- [x] localhost/IP literal/private-network destination.
+- [x] Control/path-traversal characters.
+- [x] Input giống file/archive payload.
 
 Normalization output chỉ là conservative username; provider không bao giờ nhận raw arbitrary URL.
 
 ## 10A.5 Server-only environment và provider client
 
-- [ ] `STORY_PROVIDER` validated server-side.
-- [ ] `STORY_PROVIDER_API_KEY` validated server-side.
-- [ ] `STORY_MEDIA_TOKEN_SECRET` đủ entropy cho AEAD, validated server-side.
-- [ ] Không dùng `NEXT_PUBLIC_*` cho secrets.
-- [ ] Env module có `server-only` guard.
-- [ ] Secrets redacted khỏi errors/logs.
-- [ ] Key rotation không cần sửa browser client.
-- [ ] Provider request có timeout/abort signal.
-- [ ] Provider response body size bị giới hạn.
-- [ ] Provider JSON parse/schema errors map an toàn.
-- [ ] Chỉ gửi normalized handle hoặc opaque provider ID tối thiểu.
-- [ ] Không forward client headers/cookies/IP sang provider trừ khi contract và privacy review yêu cầu rõ.
+- [x] `STORY_PROVIDER` validated server-side.
+- [x] `STORY_PROVIDER_API_KEY` validated server-side.
+- [x] `STORY_MEDIA_TOKEN_SECRET` đủ entropy cho AEAD, validated server-side.
+- [x] Không dùng `NEXT_PUBLIC_*` cho secrets.
+- [x] Env module có `server-only` guard.
+- [x] Secrets redacted khỏi errors/logs.
+- [x] Key rotation không cần sửa browser client.
+- [x] Provider request có timeout/abort signal.
+- [x] Provider response body size bị giới hạn.
+- [x] Provider JSON parse/schema errors map an toàn.
+- [x] Chỉ gửi normalized handle hoặc opaque provider ID tối thiểu.
+- [x] Không forward client headers/cookies/IP sang provider trừ khi contract và privacy review yêu cầu rõ.
 
 ## 10A.6 Provider adapter implementation
 
@@ -1611,86 +1615,86 @@ interface PublicStoryProvider {
 }
 ```
 
-- [ ] Provider implementation nằm trong server-only module.
-- [ ] `unknown` → Zod/schema validation → normalized domain result.
-- [ ] Stable mapping cho 400/401/402/404/429/5xx/timeout.
-- [ ] Không auto-retry billable not-found/private/no-story.
+- [x] Provider implementation nằm trong server-only module.
+- [x] `unknown` → Zod/schema validation → normalized domain result.
+- [x] Stable mapping cho 400/401/402/404/429/5xx/timeout.
+- [x] Không auto-retry billable not-found/private/no-story.
 - [ ] Bounded retry với jitter chỉ cho transient safe failure.
-- [ ] Provider request ID được sanitize trước khi giữ/log.
-- [ ] Provider credit balance không trả ra public client.
-- [ ] Unit tests dùng mock transport, không tiêu credit thật.
+- [x] Provider request ID được sanitize trước khi giữ/log.
+- [x] Provider credit balance không trả ra public client.
+- [x] Unit tests dùng mock transport, không tiêu credit thật.
 
 ## 10A.7 Same-origin lookup routes
 
 Route responsibilities có thể gộp hợp lý nhưng phải tách khỏi generic proxy:
 
-- [ ] Active Stories lookup.
-- [ ] Highlight summaries lookup.
-- [ ] Items lookup cho một selected Highlight.
-- [ ] Same-origin media preview/download.
+- [x] Active Stories lookup.
+- [x] Highlight summaries lookup.
+- [x] Items lookup cho một selected Highlight.
+- [x] Same-origin media preview/download.
 
 Mọi JSON route:
 
-- [ ] Chỉ cho intended methods.
-- [ ] Enforce `Content-Type: application/json` cho POST nếu dùng POST.
-- [ ] Body ≤ 4 KiB hoặc policy tương đương.
-- [ ] Validate same-origin/Origin expectations.
-- [ ] Không dùng GET crawlable URL chứa username nếu muốn tránh query logs/crawling; ưu tiên POST body cho lookup.
-- [ ] `Cache-Control: no-store` mặc định.
-- [ ] Sanitize request ID/error.
-- [ ] Request timeout.
-- [ ] Max item/collection/result size.
-- [ ] Không reflect raw username trong error.
-- [ ] Không set permissive CORS.
-- [ ] Không nhận File/Blob/FormData/archive input.
+- [x] Chỉ cho intended methods.
+- [x] Enforce `Content-Type: application/json` cho POST nếu dùng POST.
+- [x] Body ≤ 4 KiB hoặc policy tương đương.
+- [x] Validate same-origin/Origin expectations.
+- [x] Không dùng GET crawlable URL chứa username nếu muốn tránh query logs/crawling; ưu tiên POST body cho lookup.
+- [x] `Cache-Control: no-store` mặc định.
+- [x] Sanitize request ID/error.
+- [x] Request timeout.
+- [x] Max item/collection/result size.
+- [x] Không reflect raw username trong error.
+- [x] Không set permissive CORS.
+- [x] Không nhận File/Blob/FormData/archive input.
 
 ## 10A.8 Authenticated-encrypted media-token design
 
 Token chứa tối thiểu:
 
-- [ ] Version.
-- [ ] Provider ID/reference tối thiểu.
-- [ ] Validated HTTPS media URL hoặc opaque upstream reference.
-- [ ] Expected media class.
-- [ ] Safe suggested filename metadata.
-- [ ] Expiry.
-- [ ] AEAD ciphertext/authentication tag; raw upstream URL không đọc được từ browser token.
+- [x] Version.
+- [x] Provider ID/reference tối thiểu.
+- [x] Validated HTTPS media URL hoặc opaque upstream reference.
+- [x] Expected media class.
+- [x] Safe suggested filename metadata.
+- [x] Expiry.
+- [x] AEAD ciphertext/authentication tag; raw upstream URL không đọc được từ browser token.
 
 Token rules:
 
-- [ ] Standard AEAD such as AES-256-GCM; không custom crypto.
-- [ ] Fresh cryptographically random nonce cho mỗi token; không nonce reuse cùng key.
-- [ ] URL-safe base64url envelope với explicit token/key version.
-- [ ] Bounded decrypted payload size trước khi parse.
-- [ ] TTL mặc định khoảng 5 phút.
-- [ ] Tampered/decryption-failed token reject trước upstream call.
-- [ ] Expired token trả actionable refresh-lookup error.
-- [ ] Secret có key-rotation/version strategy.
-- [ ] Không chứa provider API key/cookie.
-- [ ] Không log full token.
-- [ ] Không chấp nhận raw URL thay thế token.
+- [x] Standard AEAD such as AES-256-GCM; không custom crypto.
+- [x] Fresh cryptographically random nonce cho mỗi token; không nonce reuse cùng key.
+- [x] URL-safe base64url envelope với explicit token/key version.
+- [x] Bounded decrypted payload size trước khi parse.
+- [x] TTL mặc định khoảng 5 phút.
+- [x] Tampered/decryption-failed token reject trước upstream call.
+- [x] Expired token trả actionable refresh-lookup error.
+- [x] Secret có key-rotation/version strategy.
+- [x] Không chứa provider API key/cookie.
+- [x] Không log full token.
+- [x] Không chấp nhận raw URL thay thế token.
 
 ## 10A.9 Media delivery/SSRF protection
 
 Trước và sau redirect:
 
-- [ ] HTTPS only.
-- [ ] Explicit provider/CDN hostname allowlist.
-- [ ] Reject username/password/port bất thường trong URL.
-- [ ] Resolve/block localhost, loopback, link-local, private, reserved và metadata-service IP ranges.
-- [ ] Giới hạn redirect count.
-- [ ] Revalidate mỗi redirect destination.
-- [ ] Timeout connect/headers/body.
-- [ ] Content-Type allowlist: supported images/videos only.
-- [ ] `Content-Length` limit khi có.
-- [ ] Enforce streamed byte limit khi header thiếu/sai.
-- [ ] Stream thay vì buffer video lớn khi runtime cho phép.
-- [ ] Abort upstream khi downstream disconnect nếu thực tế hỗ trợ.
-- [ ] Safe `Content-Disposition` filename.
-- [ ] `X-Content-Type-Options: nosniff`.
-- [ ] Restrictive/no-store caching theo provider/privacy contract.
-- [ ] Không forward upstream `Set-Cookie` hoặc sensitive headers.
-- [ ] Không trở thành open redirect/open proxy.
+- [x] HTTPS only.
+- [x] Explicit provider/CDN hostname allowlist.
+- [x] Reject username/password/port bất thường trong URL.
+- [x] Resolve/block localhost, loopback, link-local, private, reserved và metadata-service IP ranges.
+- [x] Giới hạn redirect count.
+- [x] Revalidate mỗi redirect destination.
+- [x] Timeout connect/headers/body.
+- [x] Content-Type allowlist: supported images/videos only.
+- [x] `Content-Length` limit khi có.
+- [x] Enforce streamed byte limit khi header thiếu/sai.
+- [x] Stream thay vì buffer video lớn khi runtime cho phép.
+- [x] Abort upstream khi downstream disconnect nếu thực tế hỗ trợ.
+- [x] Safe `Content-Disposition` filename.
+- [x] `X-Content-Type-Options: nosniff`.
+- [x] Restrictive/no-store caching theo provider/privacy contract.
+- [x] Không forward upstream `Set-Cookie` hoặc sensitive headers.
+- [x] Không trở thành open redirect/open proxy.
 
 ## 10A.10 Security/resource policy
 
@@ -1707,101 +1711,101 @@ PROVIDER_TIMEOUT_MS = 15_000
 MEDIA_TOKEN_TTL_SECONDS = 5 * 60
 ```
 
-- [ ] Không magic number rải rác.
+- [x] Không magic number rải rác.
 - [ ] Test dưới/bằng/trên mỗi limit.
 - [ ] Điều chỉnh sau profiling/provider review, không âm thầm bỏ guard.
 
 ## 10A.11 Abuse, quota và cost controls
 
 - [ ] Production edge/platform rate limit.
-- [ ] Secondary per-instance concurrency cap.
-- [ ] Một username mỗi lookup.
-- [ ] Không background polling.
-- [ ] Không bulk/download-all fan-out.
+- [x] Secondary per-instance concurrency cap.
+- [x] Một username mỗi lookup.
+- [x] Không background polling.
+- [x] Không bulk/download-all fan-out.
 - [ ] Provider quota/budget alert.
-- [ ] Kill switch khi credit thấp/provider incident.
-- [ ] `Retry-After` cho local 429 khi phù hợp.
-- [ ] Không retry request có thể bị bill nhiều lần ngoài bounded transient policy.
-- [ ] Provider outage không tác động analyzer routes.
+- [x] Kill switch khi credit thấp/provider incident.
+- [x] `Retry-After` cho local 429 khi phù hợp.
+- [x] Không retry request có thể bị bill nhiều lần ngoài bounded transient policy.
+- [x] Provider outage không tác động analyzer routes.
 - [ ] Hosting IP/rate-limit metadata retention được disclose chính xác.
 
 ## 10A.12 Story/Highlights UI
 
 Route `/story-downloader`:
 
-- [ ] Heading/value proposition rõ public-only.
-- [ ] Username/profile URL input có label/hint/error.
-- [ ] Disclosure trước submit rằng handle gửi tới server/provider.
-- [ ] Lookup button và keyboard submit.
-- [ ] Real loading state, cancel/abort nếu có ích.
-- [ ] Không lưu recent searches mặc định.
-- [ ] Active Stories tab/section.
-- [ ] Highlights tab/section.
-- [ ] Empty state khi không có active Stories.
-- [ ] Honest unavailable state nếu private/not-found không phân biệt được.
-- [ ] Rate limit/quota/provider timeout/outage guidance.
-- [ ] Highlight cards: title, cover, count khi có.
-- [ ] Lazy load selected Highlight items.
-- [ ] Preview image/video.
-- [ ] Video không autoplay có sound; native accessible controls.
-- [ ] Không preload toàn bộ videos.
-- [ ] Individual download button.
-- [ ] Expired token yêu cầu refresh lookup.
-- [ ] Copyright/permission reminder trước download.
-- [ ] Không claim anonymous viewing.
-- [ ] Không hiển thị provider name như official Meta affiliation.
-- [ ] Mobile gallery usable ở 360px.
-- [ ] EN/VI copy đầy đủ.
+- [x] Heading/value proposition rõ public-only.
+- [x] Username/profile URL input có label/hint/error.
+- [x] Disclosure trước submit rằng handle gửi tới server/provider.
+- [x] Lookup button và keyboard submit.
+- [x] Real loading state, cancel/abort nếu có ích.
+- [x] Không lưu recent searches mặc định.
+- [x] Active Stories tab/section.
+- [x] Highlights tab/section.
+- [x] Empty state khi không có active Stories.
+- [x] Honest unavailable state nếu private/not-found không phân biệt được.
+- [x] Rate limit/quota/provider timeout/outage guidance.
+- [x] Highlight cards: title, cover, count khi có.
+- [x] Lazy load selected Highlight items.
+- [x] Preview image/video.
+- [x] Video không autoplay có sound; native accessible controls.
+- [x] Không preload toàn bộ videos.
+- [x] Individual download button.
+- [x] Expired token yêu cầu refresh lookup.
+- [x] Copyright/permission reminder trước download.
+- [x] Không claim anonymous viewing.
+- [x] Không hiển thị provider name như official Meta affiliation.
+- [x] Mobile gallery usable ở 360px.
+- [x] EN/VI copy đầy đủ.
 
 ## 10A.13 Privacy behavior
 
-- [ ] Không IndexedDB/localStorage cho handle, results, media, token hoặc download history.
-- [ ] Browser state clear khi reload/navigation.
-- [ ] `Cache-Control: no-store` cho lookup JSON mặc định.
-- [ ] App logs không ghi raw handle/token/media URL.
-- [ ] Disclosure phản ánh provider logging/retention thật.
-- [ ] Analyzer data không import vào Story module.
-- [ ] Story request không đọc analyzer database.
-- [ ] Test synthetic markers để chứng minh boundary.
+- [x] Không IndexedDB/localStorage cho handle, results, media, token hoặc download history.
+- [x] Browser state clear khi reload/navigation.
+- [x] `Cache-Control: no-store` cho lookup JSON mặc định.
+- [x] App logs không ghi raw handle/token/media URL.
+- [x] Disclosure phản ánh provider logging/retention thật.
+- [x] Analyzer data không import vào Story module.
+- [x] Story request không đọc analyzer database.
+- [x] Test synthetic markers để chứng minh boundary.
 
 ## 10A.14 Story tests
 
 ### Unit
 
-- [ ] Handle/URL normalization và reject matrix.
-- [ ] Provider schema normalization.
-- [ ] Provider error mapping.
+- [x] Handle/URL normalization và reject matrix.
+- [x] Provider schema normalization.
+- [x] Provider error mapping.
 - [ ] Item/collection/response limits.
-- [ ] Token sign/verify/tamper/expiry/version.
-- [ ] Host/URL/IP/redirect validation.
-- [ ] Content-Type/filename/content-disposition.
+- [x] Token sign/verify/tamper/expiry/version.
+- [x] Host/URL/IP/redirect validation.
+- [x] Content-Type/filename/content-disposition.
 
 ### Route integration
 
-- [ ] Valid mocked public active Stories.
-- [ ] Valid mocked Highlights/items.
+- [x] Valid mocked public active Stories.
+- [x] Valid mocked Highlights/items.
 - [ ] Empty active Stories.
 - [ ] Private/not-found ambiguity.
 - [ ] 401/402/404/429/5xx/timeout/schema drift.
-- [ ] Body/method/content-type/origin/rate limits.
-- [ ] Provider secret absent from response/log.
-- [ ] Media redirect/size/type failures.
+- [x] Body/method/content-type/origin/rate limits.
+- [x] Provider secret absent from response/log.
+- [x] Media redirect/size/type failures.
 - [ ] Streamed image/video success.
 
 ### Component/E2E
 
-- [ ] Disclosure visible before lookup.
+- [x] Disclosure visible before lookup.
 - [ ] Keyboard input/submit/results.
-- [ ] Story and Highlight gallery.
-- [ ] Lazy Highlight items.
-- [ ] Image/video preview.
-- [ ] Individual download.
+- [x] Story and Highlight gallery.
+- [x] Lazy Highlight items.
+- [x] Image/video preview.
+- [x] Individual download.
 - [ ] Expired media refresh path.
-- [ ] EN/VI/dark/mobile/axe.
-- [ ] No Story state persisted after reload.
-- [ ] Browser calls only same-origin Story/media routes.
-- [ ] Relationship synthetic marker never appears in Story traffic.
-- [ ] Relationship import succeeds with all Story/provider routes blocked.
+- [x] EN/VI/dark/mobile/axe.
+- [x] No Story state persisted after reload.
+- [x] Browser calls only same-origin Story/media routes.
+- [x] Relationship synthetic marker never appears in Story traffic.
+- [x] Relationship import succeeds with all Story/provider routes blocked.
 
 ## 10A.15 Production provider smoke test
 
@@ -1818,15 +1822,15 @@ Route `/story-downloader`:
 ## 10A.16 Exit criteria M6S
 
 - [ ] Provider due diligence được ghi nhận và approved.
-- [ ] Provider key/media-token secret không có trong client bundle hoặc responses.
-- [ ] Arbitrary URL/private-network requests bị chặn.
-- [ ] Authenticated-encrypted media token opacity/tamper/expiry tests pass.
+- [x] Provider key/media-token secret không có trong client bundle hoặc responses.
+- [x] Arbitrary URL/private-network requests bị chặn.
+- [x] Authenticated-encrypted media token opacity/tamper/expiry tests pass.
 - [ ] Public Story/Highlight lookup và individual download pass.
-- [ ] Private/empty/error/rate-limit/provider outage UX đúng.
-- [ ] Không app persistence của Story handle/media/history.
-- [ ] Relationship analyzer privacy/network tests vẫn pass.
-- [ ] Provider outage/kill switch không làm hỏng các routes còn lại.
-- [ ] Typecheck/lint/unit/integration/E2E/build pass.
+- [x] Private/empty/error/rate-limit/provider outage UX đúng.
+- [x] Không app persistence của Story handle/media/history.
+- [x] Relationship analyzer privacy/network tests vẫn pass.
+- [x] Provider outage/kill switch không làm hỏng các routes còn lại.
+- [x] Typecheck/lint/unit/integration/E2E/build pass.
 
 ---
 

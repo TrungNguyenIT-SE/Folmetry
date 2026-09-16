@@ -12,6 +12,7 @@ function Probe() {
       <span data-testid="locale">{locale}</span>
       <span data-testid="theme">{resolvedTheme}</span>
       <span data-testid="title">{dictionary.pages.faq.title}</span>
+      <span data-testid="analyzer-loading">{dictionary.analyzer.ux.loading}</span>
       <span data-testid="number">{formatNumber(12345.6)}</span>
       <span data-testid="date">{formatDate(new Date("2026-09-16T10:00:00Z"))}</span>
     </div>
@@ -40,5 +41,12 @@ describe("AppPreferencesProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "dark" }));
     expect(document.documentElement.dataset["theme"]).toBe("dark");
     expect(screen.getByTestId("theme").textContent).toBe("dark");
+  });
+
+  it("keeps the extended Vietnamese analyzer copy valid UTF-8", () => {
+    render(<AppPreferencesProvider><ControlsProbe /></AppPreferencesProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "vi" }));
+    expect(screen.getByTestId("analyzer-loading").textContent).toBe("\u0110ang t\u1ea3i c\u00f4ng c\u1ee5 ph\u00e2n t\u00edch c\u1ee5c b\u1ed9...");
+    expect(document.body.textContent).not.toContain("\uFFFD");
   });
 });
