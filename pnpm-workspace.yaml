@@ -1,0 +1,8 @@
+allowBuilds:
+  # Native resolver used transitively by eslint-config-next. No other package
+  # build scripts are allowed without an explicit review.
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@vitest/mocker@5.0.1'
+  - '@vitest/spy@5.0.1'
+  - vitest@5.0.1

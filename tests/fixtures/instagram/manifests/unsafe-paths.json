@@ -1,0 +1,10 @@
+{
+  "paths": [
+    "../followers_and_following/followers_1.json",
+    "connections/../../following.json",
+    "/absolute/following.json",
+    "C:\\exports\\following.json",
+    "\\\\server\\share\\following.json",
+    "connections/followers_and_following/bad\u0000name.json"
+  ]
+}

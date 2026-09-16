@@ -1,0 +1,5 @@
+[
+  { "string_list_data": [{ "value": "charlie.test", "timestamp": 1700000200 }] },
+  { "string_list_data": [{ "value": "alpha.test", "timestamp": 1700000000 }] },
+  { "string_list_data": [{ "value": "echo.test", "timestamp": 1700000400 }] }
+]

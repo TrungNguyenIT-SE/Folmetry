@@ -1,0 +1,8 @@
+[
+  { "string_list_data": [{ "value": "valid.one", "timestamp": 1700000000 }] },
+  { "string_list_data": [{ "value": "valid_two" }] },
+  { "unexpected": true },
+  { "string_list_data": [] },
+  { "string_list_data": [null] },
+  { "string_list_data": [{ "value": "<script>" }] }
+]

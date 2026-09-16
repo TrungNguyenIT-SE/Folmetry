@@ -1,0 +1,28 @@
+{
+  "description": "Synthetic numeric metadata only; no archive payload",
+  "archiveBytes": {
+    "below": 104857599,
+    "equal": 104857600,
+    "above": 104857601
+  },
+  "relevantEntryBytes": {
+    "below": 157286399,
+    "equal": 157286400,
+    "above": 157286401
+  },
+  "totalRelevantBytes": {
+    "below": 262143999,
+    "equal": 262144000,
+    "above": 262144001
+  },
+  "compressionRatio": {
+    "below": 199,
+    "equal": 200,
+    "above": 201
+  },
+  "entryCount": {
+    "below": 9999,
+    "equal": 10000,
+    "above": 10001
+  }
+}

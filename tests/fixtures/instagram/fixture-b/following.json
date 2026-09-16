@@ -1,0 +1,6 @@
+{
+  "relationships_following": [
+    { "string_list_data": [{ "value": "foxtrot_test", "timestamp": 1700000500 }] },
+    { "string_list_data": [{ "value": "alpha.test", "timestamp": 1700000000 }] }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "relationships_following": [
+    {
+      "string_list_data": [
+        { "value": "alpha.test", "timestamp": 1700000000 }
+      ]
+    },
+    {
+      "string_list_data": [
+        { "value": "delta_test", "timestamp": 1700000300 }
+      ]
+    }
+  ]
+}

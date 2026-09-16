@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Next.js and build output
+.next/
+out/
+dist/
+build/
+
+# Tests and coverage
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.vitest/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Package-manager caches
+.pnpm-store/
+.npm/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editors and operating systems
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Synthetic fixtures under tests/fixtures are intentionally NOT ignored.
