@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { AppPreferencesProvider } from "@/i18n";
 
 import "./globals.css";
 
@@ -16,12 +17,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="system" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
-        <a className="skip-link" href="#main-content">Skip to main content</a>
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <AppPreferencesProvider>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </AppPreferencesProvider>
       </body>
     </html>
   );

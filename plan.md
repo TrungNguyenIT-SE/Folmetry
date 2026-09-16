@@ -1127,77 +1127,79 @@ Behavior:
 
 # 9. M5 — App shell, localization, theme và accessible primitives
 
+**Trạng thái:** Hoàn thành ngày 2026-09-16. `pnpm check`, 128 unit/component tests và 56 E2E tests đa trình duyệt đều pass.
+
 ## 9.1 Typed i18n architecture
 
-- [ ] `src/i18n/en.ts` là dictionary canonical.
-- [ ] `src/i18n/vi.ts` phải cùng exact key shape.
-- [ ] Typed accessor/hook không nhận arbitrary string key.
-- [ ] Không rải literal UI copy trong analyzer components.
-- [ ] Error/warning codes map sang localized copy ở presentation layer.
-- [ ] Không đưa React element tùy ý vào dictionary nếu làm mất type safety.
+- [x] `src/i18n/en.ts` là dictionary canonical.
+- [x] `src/i18n/vi.ts` phải cùng exact key shape.
+- [x] Typed accessor/hook không nhận arbitrary string key.
+- [x] Không rải literal UI copy trong analyzer components.
+- [x] Error/warning codes map sang localized copy ở presentation layer.
+- [x] Không đưa React element tùy ý vào dictionary nếu làm mất type safety.
 
 Nhóm strings:
 
-- [ ] Navigation/footer.
-- [ ] Marketing pages.
-- [ ] Account management.
-- [ ] Import instructions/stages.
-- [ ] Review/save/duplicate flow.
-- [ ] Result categories.
-- [ ] History/compare.
-- [ ] Errors/warnings/diagnostics.
-- [ ] Delete confirmations.
-- [ ] Privacy/accuracy caveats.
-- [ ] CSV labels/file naming nếu cần.
-- [ ] Story public-only/network/provider/copyright disclosures.
-- [ ] Story lookup/loading/empty/private/rate-limit/provider/download states.
+- [x] Navigation/footer.
+- [x] Marketing pages.
+- [x] Account management.
+- [x] Import instructions/stages.
+- [x] Review/save/duplicate flow.
+- [x] Result categories.
+- [x] History/compare.
+- [x] Errors/warnings/diagnostics.
+- [x] Delete confirmations.
+- [x] Privacy/accuracy caveats.
+- [x] CSV labels/file naming nếu cần.
+- [x] Story public-only/network/provider/copyright disclosures.
+- [x] Story lookup/loading/empty/private/rate-limit/provider/download states.
 
 ## 9.2 Copy semantics
 
-- [ ] English không khẳng định intentional unfollow.
-- [ ] Vietnamese dùng “Người theo dõi đã mất” hoặc “Không còn trong danh sách người theo dõi”.
-- [ ] Chi tiết giải thích username change/deactivation/deletion/suspension/export differences.
-- [ ] Không dùng fear-based hoặc accusatory copy.
-- [ ] Không tuyên bố liên kết chính thức với Meta/Instagram.
-- [ ] Không tuyên bố “không thu thập gì” tuyệt đối.
-- [ ] Không mô tả Story lookup là local-only hoặc anonymous.
-- [ ] Nói rõ submitted public handle được gửi tới server/provider và có thể xuất hiện trong operational logs theo provider policy.
+- [x] English không khẳng định intentional unfollow.
+- [x] Vietnamese dùng “Người theo dõi đã mất” hoặc “Không còn trong danh sách người theo dõi”.
+- [x] Chi tiết giải thích username change/deactivation/deletion/suspension/export differences.
+- [x] Không dùng fear-based hoặc accusatory copy.
+- [x] Không tuyên bố liên kết chính thức với Meta/Instagram.
+- [x] Không tuyên bố “không thu thập gì” tuyệt đối.
+- [x] Không mô tả Story lookup là local-only hoặc anonymous.
+- [x] Nói rõ submitted public handle được gửi tới server/provider và có thể xuất hiện trong operational logs theo provider policy.
 
 ## 9.3 Locale behavior
 
-- [ ] Default English theo quyết định sản phẩm.
-- [ ] Language switcher keyboard accessible.
-- [ ] Persist preference locally.
-- [ ] Apply correct document `lang` ở khả năng phù hợp với App Router/static output.
-- [ ] Dùng `Intl` cho number/date.
-- [ ] Không hard-code thousands separator.
-- [ ] Test tiếng Việt có dấu và layout dài.
+- [x] Default English theo quyết định sản phẩm.
+- [x] Language switcher keyboard accessible.
+- [x] Persist preference locally.
+- [x] Apply correct document `lang` ở khả năng phù hợp với App Router/static output.
+- [x] Dùng `Intl` cho number/date.
+- [x] Không hard-code thousands separator.
+- [x] Test tiếng Việt có dấu và layout dài.
 
 ## 9.4 Theme behavior
 
-- [ ] System/light/dark.
-- [ ] Persist preference.
-- [ ] Theo dõi thay đổi OS khi chọn system.
-- [ ] Tránh flash theme gây khó chịu ở mức static architecture cho phép.
-- [ ] Không thêm remote theme service.
-- [ ] Contrast đạt WCAG AA.
-- [ ] Chart/badge không truyền thông tin chỉ bằng màu.
+- [x] System/light/dark.
+- [x] Persist preference.
+- [x] Theo dõi thay đổi OS khi chọn system.
+- [x] Tránh flash theme gây khó chịu ở mức static architecture cho phép.
+- [x] Không thêm remote theme service.
+- [x] Contrast đạt WCAG AA.
+- [x] Chart/badge không truyền thông tin chỉ bằng màu.
 
 ## 9.5 Accessible primitives
 
 Chuẩn bị component nền tảng source-owned:
 
-- [ ] Button/link variants.
-- [ ] Input/search field.
-- [ ] Select/menu.
-- [ ] Tabs.
-- [ ] Dialog/alert dialog.
-- [ ] Toast/status region nếu thực sự cần.
-- [ ] Badge.
-- [ ] Card.
-- [ ] Progress/status display.
-- [ ] Empty state.
-- [ ] Skeleton chỉ khi không gây fake progress.
+- [x] Button/link variants.
+- [x] Input/search field.
+- [x] Select/menu.
+- [x] Tabs.
+- [x] Dialog/alert dialog.
+- [x] Toast/status region nếu thực sự cần.
+- [x] Badge.
+- [x] Card.
+- [x] Progress/status display.
+- [x] Empty state.
+- [x] Skeleton chỉ khi không gây fake progress.
 
 Yêu cầu:
 
@@ -1211,23 +1213,23 @@ Yêu cầu:
 
 ## 9.6 Responsive site shell
 
-- [ ] Header mobile/desktop.
-- [ ] Skip-to-content link.
-- [ ] Main landmark.
-- [ ] Footer.
-- [ ] Story/Highlights utility preview/CTA tách biệt rõ với private analyzer.
-- [ ] Constrained content containers.
-- [ ] Navigation active state không chỉ dựa vào màu.
-- [ ] Test 360, 390/430, 768, 1024, 1440px.
+- [x] Header mobile/desktop.
+- [x] Skip-to-content link.
+- [x] Main landmark.
+- [x] Footer.
+- [x] Story/Highlights utility preview/CTA tách biệt rõ với private analyzer.
+- [x] Constrained content containers.
+- [x] Navigation active state không chỉ dựa vào màu.
+- [x] Test 360, 390/430, 768, 1024, 1440px.
 
 ## 9.7 Exit criteria M5
 
-- [ ] English/Vietnamese switch hoạt động.
-- [ ] Theme system/light/dark hoạt động.
-- [ ] Base navigation dùng keyboard được.
-- [ ] Axe không có serious/critical issue trên shell routes.
-- [ ] Không có remote font/tracker.
-- [ ] Typecheck/lint/component tests/build pass.
+- [x] English/Vietnamese switch hoạt động.
+- [x] Theme system/light/dark hoạt động.
+- [x] Base navigation dùng keyboard được.
+- [x] Axe không có serious/critical issue trên shell routes.
+- [x] Không có remote font/tracker.
+- [x] Typecheck/lint/component tests/build pass.
 
 ---
 

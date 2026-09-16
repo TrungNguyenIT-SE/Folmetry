@@ -34,6 +34,8 @@ M3 adds a dedicated typed module worker, selective ZIP extraction through the CS
 
 M4 adds the versioned Dexie/IndexedDB repository for local accounts, normalized snapshots, deterministic duplicate/baseline lookup, typed settings, confirmed cascade/delete-all operations, and explicit storage-failure fallback. See [`docs/local-persistence.md`](./docs/local-persistence.md).
 
+M5 adds typed English/Vietnamese localization, persisted system/light/dark themes, a responsive accessible shell, and source-owned UI primitives. See [`docs/ui-foundations.md`](./docs/ui-foundations.md).
+
 All committed fixtures are synthetic. Regenerate the mechanical archive fixtures with:
 
 ```bash

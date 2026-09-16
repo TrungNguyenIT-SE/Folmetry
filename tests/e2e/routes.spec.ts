@@ -88,3 +88,77 @@ test("IndexedDB history survives a page reload", async ({ page }) => {
     });
   }, databaseName);
 });
+
+test("locale and theme preferences survive reload", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "VI" }).click();
+  await page.getByRole("combobox", { name: "Giao diện" }).selectOption("dark");
+  await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect.poll(() => page.evaluate(async () => {
+    return new Promise<string[]>((resolve, reject) => {
+      const request = indexedDB.open("social-relationship-analyzer");
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const database = request.result;
+        const transaction = database.transaction("settings", "readonly");
+        const getAll = transaction.objectStore("settings").getAll();
+        getAll.onsuccess = () => resolve(
+          (getAll.result as { key: string; value: unknown }[])
+            .map((setting) => `${setting.key}:${String(setting.value)}`)
+            .sort(),
+        );
+        getAll.onerror = () => reject(getAll.error);
+        transaction.oncomplete = () => database.close();
+      };
+    });
+  })).toEqual(["locale:vi", "theme:dark"]);
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1, name: /Hiểu thay đổi quan hệ/ })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+});
+
+test("shell navigation exposes visible keyboard focus and active state", async ({ page }) => {
+  await page.goto("/app");
+  const skip = page.getByRole("link", { name: "Skip to main content" });
+  await skip.focus();
+  await expect(skip).toBeFocused();
+  await expect(skip).toBeVisible();
+  const home = page.getByRole("link", { name: "Private Social Insights home" });
+  await home.focus();
+  await expect(home).toBeFocused();
+  const analyzer = page.getByRole("link", { name: "Analyzer" });
+  await analyzer.focus();
+  await expect(analyzer).toBeFocused();
+  await expect(analyzer).toHaveAttribute("aria-current", "page");
+  const faq = page.getByRole("link", { name: "FAQ" });
+  await faq.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/faq$/);
+});
+
+test("shell has no horizontal overflow at supported responsive widths", async ({ page }) => {
+  for (const width of [360, 390, 430, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+    await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  }
+});
+
+test("shell routes have no serious or critical accessibility violations", async ({ page }) => {
+  for (const route of routes) {
+    await page.goto(route.path);
+    const results = await createAxeBuilder(page).analyze();
+    expect(
+      results.violations.filter((violation) =>
+        violation.impact === "serious" || violation.impact === "critical",
+      ),
+    ).toEqual([]);
+  }
+});
