@@ -27,7 +27,7 @@ import {
   type ImportWarning,
 } from "@/features/analyzer/model/warnings";
 
-export const INSTAGRAM_PARSER_VERSION = "instagram-json@1";
+export const INSTAGRAM_PARSER_VERSION = "instagram-json@2";
 
 function throwIfCancelled(context: ParseContext): void {
   if (context.signal?.aborted === true) {

@@ -1,7 +1,7 @@
 # Kế hoạch triển khai website Privacy-first Social Relationship Analyzer
 
 > **Nguồn yêu cầu:** `website.md` phiên bản 1.1  
-> **Phạm vi:** V1 — Instagram local relationship analyzer + public Story/Highlights viewer/downloader  
+> **Phạm vi:** V1.2 — local relationship analyzer + public Story/Highlights + Folmetry account/RBAC
 > **Nền tảng tương lai:** Facebook qua adapter, chưa triển khai trong V1  
 > **Mục đích tài liệu:** Kế hoạch thực thi, kiểm thử, nghiệm thu và phát hành từ A–Z  
 > **Trạng thái ban đầu:** Chưa triển khai  
@@ -163,9 +163,9 @@ Không lên kế hoạch triển khai các nội dung sau trong V1:
 
 - Facebook parser hoặc UI tuyên bố Facebook đã được hỗ trợ.
 - Instagram/Facebook OAuth hoặc login.
-- Backend/API route xử lý relationship file hoặc server database.
-- Authentication, account cloud, đồng bộ đa thiết bị.
-- Email, billing, payment, push notification.
+- Backend/API route xử lý relationship file hoặc cloud database chứa snapshot quan hệ.
+- Đồng bộ dữ liệu quan hệ đa thiết bị.
+- Email ngoài xác minh/khôi phục tài khoản, billing, payment, push notification.
 - Scraping, private API, browser extension.
 - Follow/unfollow/friend/unfriend tự động.
 - HTML export, RAR, 7z, TAR hoặc nested archive extraction.
@@ -337,6 +337,7 @@ Quy tắc dependency:
 | M6 | Analyzer UX | M3 + M4 + M5 | Account/import/review/results/history/CSV |
 | M6S | Public Story/Highlights subsystem | M0 + M1 + M5 | Provider adapter, secure routes, gallery, individual download |
 | M7 | Marketing, legal, SEO | M5 | Public routes, copy, metadata, sitemap/robots |
+| M8A | Website accounts, email và RBAC | M7 | Better Auth, PostgreSQL, verify/reset email, user/admin, protected tools |
 | M8 | Security/privacy hardening | M3 + M6 + M6S + M7 | CSP, headers, network-boundary assertions, security review |
 | M9 | Performance/accessibility hardening | M6 + M6S + M7 | Mobile, WCAG, large-data/media behavior, Lighthouse |
 | M10 | CI/CD và release | M8 + M9 | Full gates, deploy, post-deploy verification |
@@ -1840,16 +1841,16 @@ Route `/story-downloader`:
 
 Các section bắt buộc:
 
-- [ ] Header.
-- [ ] Hero.
-- [ ] Trust/privacy proof row.
-- [ ] What you can learn.
-- [ ] How it works — 3 steps.
-- [ ] Privacy architecture.
-- [ ] Accuracy/limitations.
-- [ ] FAQ preview.
-- [ ] Final CTA.
-- [ ] Footer.
+- [x] Header.
+- [x] Hero.
+- [x] Trust/privacy proof row.
+- [x] What you can learn.
+- [x] How it works — 3 steps.
+- [x] Privacy architecture.
+- [x] Accuracy/limitations.
+- [x] FAQ preview.
+- [x] Final CTA.
+- [x] Footer.
 
 Copy direction:
 
@@ -1861,66 +1862,66 @@ Copy direction:
 
 ## 11.2 How it works
 
-- [ ] Giải thích cách lấy official export.
-- [ ] JSON/all-time/followers-following recommendations.
-- [ ] Giải thích parsing trong browser.
-- [ ] Giải thích snapshot comparison.
-- [ ] Giải thích first snapshot limitation.
-- [ ] Nhắc menu Meta có thể thay đổi.
-- [ ] CTA tới analyzer.
+- [x] Giải thích cách lấy official export.
+- [x] JSON/all-time/followers-following recommendations.
+- [x] Giải thích parsing trong browser.
+- [x] Giải thích snapshot comparison.
+- [x] Giải thích first snapshot limitation.
+- [x] Nhắc menu Meta có thể thay đổi.
+- [x] CTA tới analyzer.
 
 ## 11.3 Privacy page
 
 Phải nêu rõ:
 
-- [ ] Phân tích diễn ra trong browser.
-- [ ] Dữ liệu normalized nào được lưu IndexedDB.
-- [ ] ZIP/raw JSON không được lưu.
-- [ ] Cách xóa dữ liệu.
-- [ ] Không cần password/token/cookie/2FA.
-- [ ] Không liên kết với Meta/Instagram.
-- [ ] Hạn chế của lost follower inference.
-- [ ] Người dùng cùng browser profile có thể truy cập local history.
-- [ ] Hosting có thể nhận request metadata thông thường như IP khi tải site.
-- [ ] Không nói “we collect absolutely nothing”.
-- [ ] Story tool gửi public handle tới server/configured provider.
-- [ ] Provider có thể log lookup parameters theo policy đã review.
-- [ ] Story results/media/search history không được app persist mặc định.
-- [ ] Relationship data không đi qua Story subsystem.
+- [x] Phân tích diễn ra trong browser.
+- [x] Dữ liệu normalized nào được lưu IndexedDB.
+- [x] ZIP/raw JSON không được lưu.
+- [x] Cách xóa dữ liệu.
+- [x] Không cần password/token/cookie/2FA.
+- [x] Không liên kết với Meta/Instagram.
+- [x] Hạn chế của lost follower inference.
+- [x] Người dùng cùng browser profile có thể truy cập local history.
+- [x] Hosting có thể nhận request metadata thông thường như IP khi tải site.
+- [x] Không nói “we collect absolutely nothing”.
+- [x] Story tool gửi public handle tới server/configured provider.
+- [x] Provider có thể log lookup parameters theo policy đã review.
+- [x] Story results/media/search history không được app persist mặc định.
+- [x] Relationship data không đi qua Story subsystem.
 
 ## 11.4 Terms/disclaimer
 
-- [ ] Mục đích informational.
-- [ ] User chịu trách nhiệm với file họ cung cấp.
-- [ ] Không bảo đảm username là stable identity.
-- [ ] Không hứa xác định ý định unfollow.
-- [ ] Không affiliation/endorsement/sponsorship với Meta.
-- [ ] Trademark disclaimer đúng đặc tả.
-- [ ] Không đưa điều khoản vượt quá khả năng thực tế của sản phẩm.
-- [ ] Public availability không đồng nghĩa chuyển giao copyright.
-- [ ] User chỉ download content họ sở hữu hoặc có quyền lưu.
-- [ ] Không anonymous-viewing/private-access guarantee.
-- [ ] Provider/network availability và media expiry limitations.
+- [x] Mục đích informational.
+- [x] User chịu trách nhiệm với file họ cung cấp.
+- [x] Không bảo đảm username là stable identity.
+- [x] Không hứa xác định ý định unfollow.
+- [x] Không affiliation/endorsement/sponsorship với Meta.
+- [x] Trademark disclaimer đúng đặc tả.
+- [x] Không đưa điều khoản vượt quá khả năng thực tế của sản phẩm.
+- [x] Public availability không đồng nghĩa chuyển giao copyright.
+- [x] User chỉ download content họ sở hữu hoặc có quyền lưu.
+- [x] Không anonymous-viewing/private-access guarantee.
+- [x] Provider/network availability và media expiry limitations.
 
 ## 11.5 FAQ
 
 Tối thiểu trả lời:
 
-- [ ] Có cần Instagram password không?
-- [ ] File có bị upload không?
-- [ ] Dữ liệu được lưu ở đâu?
-- [ ] Làm sao xóa dữ liệu?
-- [ ] Vì sao cần hai snapshot?
-- [ ] “Lost follower” có chắc là unfollow không?
-- [ ] Hỗ trợ HTML/Facebook không?
-- [ ] Vì sao manual follower file có thể thiếu?
-- [ ] Có hoạt động trên mobile không?
-- [ ] Vì sao import lớn có thể cần desktop?
-- [ ] Story downloader có hoạt động với private account không?
-- [ ] Story lookup có được xử lý local không?
-- [ ] Username được gửi cho ai và có được lưu không?
-- [ ] Có tải được Story đã hết hạn/Close Friends không?
-- [ ] Tôi có được phép tải và sử dụng lại nội dung không?
+- [x] Có cần Instagram password không?
+- [x] File có bị upload không?
+- [x] Dữ liệu được lưu ở đâu?
+- [x] Làm sao xóa dữ liệu?
+- [x] Vì sao cần hai snapshot?
+- [x] “Lost follower” có chắc là unfollow không?
+- [x] Hỗ trợ HTML/Facebook không?
+- [x] Vì sao manual follower file có thể thiếu?
+- [x] Có hoạt động trên mobile không?
+- [x] Vì sao import lớn có thể cần desktop?
+- [x] Story downloader có hoạt động với private account không?
+- [x] Story lookup có được xử lý local không?
+- [x] Username được gửi cho ai và có được lưu không?
+- [x] Có tải được Story đã hết hạn/Close Friends không?
+- [x] Tôi có được phép tải và sử dụng lại nội dung không?
 
 ## 11.6 Footer/legal positioning
 
@@ -1928,46 +1929,46 @@ Hiển thị disclaimer:
 
 > This product is not affiliated with, endorsed by, or sponsored by Instagram, Facebook, or Meta Platforms, Inc. Instagram and Facebook are trademarks of their respective owners.
 
-- [ ] Có bản dịch phù hợp nhưng không làm sai ý nghĩa pháp lý.
-- [ ] Link Privacy, Terms, FAQ, How it works.
-- [ ] Không dùng tên/domain gây hiểu nhầm là sản phẩm chính thức.
+- [x] Có bản dịch phù hợp nhưng không làm sai ý nghĩa pháp lý.
+- [x] Link Privacy, Terms, FAQ, How it works.
+- [x] Không dùng tên/domain gây hiểu nhầm là sản phẩm chính thức.
 
 ## 11.7 Metadata và SEO
 
-- [ ] Unique title cho từng public route.
-- [ ] Unique meta description.
-- [ ] Canonical URLs từ configured site URL.
-- [ ] Open Graph metadata/assets local.
-- [ ] Favicon/app icons.
-- [ ] `robots.txt`.
-- [ ] `sitemap.xml`.
-- [ ] Organization/WebSite structured data khi thông tin chính xác.
-- [ ] FAQ structured data chỉ khi nội dung và policy phù hợp.
-- [ ] Không serialize local analyzer state vào metadata/URL.
-- [ ] Không index URL có dữ liệu người dùng.
-- [ ] `/story-downloader` có metadata riêng nhưng username/result/token không nằm trong crawlable URL/metadata.
-- [ ] Story media endpoints non-indexable và token hết hạn ngắn.
+- [x] Unique title cho từng public route.
+- [x] Unique meta description.
+- [x] Canonical URLs từ configured site URL.
+- [x] Open Graph metadata/assets local.
+- [x] Favicon/app icons.
+- [x] `robots.txt`.
+- [x] `sitemap.xml`.
+- [x] Organization/WebSite structured data khi thông tin chính xác.
+- [x] FAQ structured data chỉ khi nội dung và policy phù hợp.
+- [x] Không serialize local analyzer state vào metadata/URL.
+- [x] Không index URL có dữ liệu người dùng.
+- [x] `/story-downloader` có metadata riêng nhưng username/result/token không nằm trong crawlable URL/metadata.
+- [x] Story media endpoints non-indexable và token hết hạn ngắn.
 
 ## 11.8 Marketing quality checks
 
-- [ ] Tất cả copy có cả EN/VI.
-- [ ] Heading hierarchy semantic.
-- [ ] CTA keyboard accessible.
-- [ ] Không layout shift do media/font.
-- [ ] Images có kích thước/alt phù hợp.
-- [ ] Không remote tracker/asset.
-- [ ] Story page nói rõ functional provider network dependency, không gọi nó là tracker.
-- [ ] Axe pass.
-- [ ] Metadata snapshot tests hoặc route assertions phù hợp.
+- [x] Tất cả copy có cả EN/VI.
+- [x] Heading hierarchy semantic.
+- [x] CTA keyboard accessible.
+- [x] Không layout shift do media/font.
+- [x] Images có kích thước/alt phù hợp.
+- [x] Không remote tracker/asset.
+- [x] Story page nói rõ functional provider network dependency, không gọi nó là tracker.
+- [x] Axe pass.
+- [x] Metadata snapshot tests hoặc route assertions phù hợp.
 
 ## 11.9 Exit criteria M7
 
-- [ ] Đủ 6 routes V1.
-- [ ] Privacy/terms/limitations copy đầy đủ.
-- [ ] SEO assets/routes build được ở static output.
-- [ ] Không có claim sai về privacy hoặc unfollow intent.
-- [ ] Không có trademark presentation gây hiểu nhầm.
-- [ ] Typecheck/lint/tests/build pass.
+- [x] Đủ 6 routes V1.
+- [x] Privacy/terms/limitations copy đầy đủ.
+- [x] SEO assets/routes build được ở static output.
+- [x] Không có claim sai về privacy hoặc unfollow intent.
+- [x] Không có trademark presentation gây hiểu nhầm.
+- [x] Typecheck/lint/tests/build pass.
 
 ---
 
@@ -2765,6 +2766,79 @@ Mỗi implementation chunk khi bàn giao phải báo cáo:
 
 ---
 
+# 19A. M8A - Website accounts, email verification và RBAC
+
+**Trạng thái:** Đã hoàn thành lớp mã nguồn ngày 2026-09-17; migration/live email/deployment smoke đang chờ PostgreSQL production và mật khẩu ứng dụng SMTP mới.
+
+## 19A.1 Ranh giới dữ liệu
+
+- [x] Folmetry account là danh tính website, không phải Instagram login.
+- [x] ZIP, raw JSON, relationship records, local profile labels và snapshots tiếp tục nằm trong browser/IndexedDB.
+- [x] Admin không có API hoặc UI đọc dữ liệu quan hệ cục bộ.
+- [x] Story handle vẫn là luồng mạng riêng và nay yêu cầu session hợp lệ.
+- [x] Privacy/spec được nâng lên revision 1.2 trước khi release auth.
+
+## 19A.2 Authentication core
+
+- [x] Ghim Better Auth runtime/CLI cùng phiên bản 1.6.33 đã vá security advisory.
+- [x] Dùng adapter PostgreSQL và database-backed sessions.
+- [x] Bật email/password; chính sách server bắt buộc 10–128 ký tự, ít nhất một chữ hoa, một chữ số và một ký tự đặc biệt.
+- [x] Bổ sung username duy nhất và cho phép đăng nhập bằng email hoặc username.
+- [x] Bắt buộc email verification trước khi đăng nhập.
+- [x] Verification token hết hạn sau 1 giờ.
+- [x] Password-reset token hết hạn sau 1 giờ.
+- [x] Thu hồi sessions sau password reset.
+- [x] Cookie/session options do auth library quản lý server-side.
+- [x] Chỉ cho phép redirect sau auth tới allowlist same-origin.
+- [x] Generic response cho forgot-password để hạn chế email enumeration.
+- [x] Safe error mapping không trả exception/database detail cho UI.
+- [x] Rate limit riêng cho sign-in, sign-up, verify và password reset.
+
+## 19A.3 Email
+
+- [x] SMTP transport chỉ chạy server-side.
+- [x] `SMTP_PASSWORD` chỉ lấy từ environment và không dùng `NEXT_PUBLIC_*`.
+- [x] Có cả plain-text và HTML cho verification/reset email.
+- [x] `.env.example` chỉ chứa placeholder, không chứa secret thật.
+- [x] README yêu cầu thu hồi app password từng bị lộ.
+- [!] Tạo app password Gmail mới và cấu hình trong secret store production.
+- [!] Smoke test delivery, spam placement, expired link và replay token trên môi trường thật.
+
+## 19A.4 Authorization và admin
+
+- [x] Chỉ có role `user` và `admin`; đăng ký thường mặc định là `user`.
+- [x] Email bootstrap trong `ADMIN_EMAIL` được gán role admin và vẫn phải verify email.
+- [x] `/app`, `/story-downloader`, `/account`, `/admin/users` kiểm tra session ở server.
+- [x] Story lookup/highlight/media APIs trả `401` nếu thiếu session.
+- [x] `/admin/users` kiểm tra role server-side trước khi query.
+- [x] Admin có thể list/search, đổi role, suspend/restore, revoke sessions và delete user.
+- [x] UI ngăn admin tự suspend, tự hạ quyền hoặc tự xóa; server plugin tiếp tục enforce quyền.
+- [x] Protected/auth routes dùng `noindex`; sitemap chỉ chứa public marketing routes.
+
+## 19A.5 UX và vận hành
+
+- [x] Có `/login`, `/register`, `/forgot-password`, `/reset-password`, `/account`, `/admin/users`.
+- [x] Có thanh độ mạnh/checklist mật khẩu khi đăng ký và form đổi mật khẩu trong profile.
+- [x] Đổi mật khẩu yêu cầu mật khẩu hiện tại và thu hồi các session khác.
+- [x] `ADMIN_USERNAME` được dành riêng và tự gán cho đăng ký khớp `ADMIN_EMAIL`; không hard-code mật khẩu admin.
+- [x] Header phản ánh anonymous/user/admin session và có sign-out.
+- [x] Có trạng thái cấu hình auth/SMTP còn thiếu mà không hiển thị secret value.
+- [x] Responsive CSS cho auth forms và admin table.
+- [x] Có scripts `auth:migrate` và `auth:info` dùng cấu hình CLI tách biệt.
+- [x] Có E2E auth bypass chỉ trong non-production test server; production hard-disable bằng `NODE_ENV`.
+- [!] Cấp managed PostgreSQL `DATABASE_URL` và chạy `pnpm auth:migrate`.
+- [!] Đăng ký/verify bootstrap admin và smoke toàn bộ admin actions trên DB thật.
+- [!] Cấu hình `BETTER_AUTH_URL`, `SITE_URL`, trusted production origin và HTTPS.
+
+## 19A.6 Acceptance gates
+
+- [x] Unit tests cho config readiness, safe redirect và safe error mapping.
+- [x] TypeScript strict và ESLint pass cho auth source.
+- [x] Full typecheck/lint/unit/build pass (`pnpm check`: 40 files, 225 tests) và Chromium E2E pass (20/20), gồm password-policy/strength tests.
+- [!] Live PostgreSQL migration và email delivery cần external credentials mới; không dùng credential đã lộ.
+
+---
+
 # 20. Definition of Done toàn dự án
 
 V1 chỉ hoàn thành khi đồng thời thỏa mãn:
@@ -2786,6 +2860,8 @@ V1 chỉ hoàn thành khi đồng thời thỏa mãn:
 - [ ] Highlights/items đúng khi provider hỗ trợ.
 - [ ] Individual image/video preview/download đúng.
 - [ ] Story empty/private/unavailable/rate-limit/token-expiry states đúng.
+- [ ] Register, verify email, login, logout và password reset chạy trên hạ tầng thật.
+- [ ] Admin quản trị user/role/suspension/session/delete đúng quyền.
 
 ## Privacy và security
 
@@ -2802,6 +2878,8 @@ V1 chỉ hoàn thành khi đồng thời thỏa mãn:
 - [ ] Story query/result/media không app-persist mặc định.
 - [ ] Provider key/media-token secret không lộ client.
 - [ ] Story media route không phải open proxy/SSRF primitive.
+- [ ] Auth secrets/SMTP password/database URL không xuất hiện trong source, client bundle hoặc log.
+- [ ] Admin không thể đọc ZIP/snapshot/relationship data cục bộ.
 
 ## UX và nội dung
 

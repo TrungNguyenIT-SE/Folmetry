@@ -7,6 +7,7 @@ import { useI18n } from "@/i18n";
 export function HomeContent() {
   const { dictionary } = useI18n();
   const copy = dictionary.home;
+  const marketing = dictionary.marketing.home;
   return (
     <main className="page-shell" id="main-content">
       <section className="hero" aria-labelledby="home-title">
@@ -23,6 +24,26 @@ export function HomeContent() {
         <article className="card"><h2>{copy.localTitle}</h2><p>{copy.localBody}</p></article>
         <article className="card"><h2>{copy.boundariesTitle}</h2><p>{copy.boundariesBody}</p></article>
       </section>
+      <section className="marketing-section" aria-labelledby="learn-title">
+        <p className="eyebrow">{marketing.learnEyebrow}</p>
+        <h2 id="learn-title">{marketing.learnTitle}</h2>
+        <p className="section-lede">{marketing.learnBody}</p>
+        <div className="feature-grid">{marketing.learnItems.map((item) => <article className="card" key={item.title}><h3>{item.title}</h3><p>{item.body}</p></article>)}</div>
+      </section>
+      <section className="marketing-section" aria-labelledby="steps-title">
+        <p className="eyebrow">{marketing.stepsEyebrow}</p>
+        <h2 id="steps-title">{marketing.stepsTitle}</h2>
+        <ol className="step-grid">{marketing.steps.map((step, index) => <li key={step.title}><span aria-hidden="true">{index + 1}</span><div><h3>{step.title}</h3><p>{step.body}</p></div></li>)}</ol>
+      </section>
+      <section className="marketing-split" aria-labelledby="privacy-architecture-title">
+        <div><p className="eyebrow">{marketing.privacyEyebrow}</p><h2 id="privacy-architecture-title">{marketing.privacyTitle}</h2><p>{marketing.privacyBody}</p></div>
+        <ul>{marketing.privacyPoints.map((point) => <li key={point}>{point}</li>)}</ul>
+      </section>
+      <section className="marketing-section limitations" aria-labelledby="limitations-title">
+        <p className="eyebrow">{marketing.limitationsEyebrow}</p><h2 id="limitations-title">{marketing.limitationsTitle}</h2><p className="section-lede">{marketing.limitationsBody}</p>
+        <ul>{marketing.limitationsPoints.map((point) => <li key={point}>{point}</li>)}</ul>
+      </section>
+      <section className="faq-preview" aria-labelledby="faq-preview-title"><div><p className="eyebrow">{marketing.faqEyebrow}</p><h2 id="faq-preview-title">{marketing.faqTitle}</h2><p>{marketing.faqBody}</p></div><Link className="button button--secondary" href="/faq">{marketing.faqAction}</Link></section>
       <aside className="story-cta" aria-labelledby="story-cta-title">
         <div>
           <p className="eyebrow">{dictionary.nav.stories}</p>
@@ -31,6 +52,7 @@ export function HomeContent() {
         </div>
         <Link className="button button--secondary" href="/story-downloader">{copy.storyCtaAction}</Link>
       </aside>
+      <section className="final-cta" aria-labelledby="final-cta-title"><div><h2 id="final-cta-title">{marketing.finalTitle}</h2><p>{marketing.finalBody}</p></div><Link className="button button--primary" href="/app">{marketing.finalAction}</Link></section>
     </main>
   );
 }

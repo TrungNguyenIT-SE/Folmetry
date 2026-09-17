@@ -2,7 +2,7 @@ import "server-only";
 
 import { STORY_POLICY, StoryError, toStoryError, type StoryApiFailure, type StoryApiSuccess } from "../model";
 
-export const NO_STORE_HEADERS = { "Cache-Control": "no-store, max-age=0", "Pragma": "no-cache", "X-Content-Type-Options": "nosniff" } as const;
+export const NO_STORE_HEADERS = { "Cache-Control": "no-store, max-age=0", "Pragma": "no-cache", "X-Content-Type-Options": "nosniff", "X-Robots-Tag": "noindex, nofollow, noarchive" } as const;
 
 export function jsonSuccess<T>(data: T, status = 200): Response {
   return Response.json({ ok: true, data } satisfies StoryApiSuccess<T>, { status, headers: NO_STORE_HEADERS });

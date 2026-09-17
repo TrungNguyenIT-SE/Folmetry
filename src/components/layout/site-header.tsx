@@ -1,8 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import folmetryLogo from "../../../folmetry.png";
+import { AccountNavigation } from "@/components/layout/account-navigation";
 import { PreferenceControls } from "@/components/layout/preference-controls";
 import { useI18n } from "@/i18n";
 
@@ -21,8 +24,8 @@ export function SiteHeader() {
       <div className="site-header__inner">
         <a className="skip-link" href="#main-content">{dictionary.a11y.skipToContent}</a>
         <Link className="brand" href="/" aria-label={dictionary.nav.homeLabel}>
-          <span className="brand__mark" aria-hidden="true">P</span>
-          <span>Private Social Insights</span>
+          <Image alt="" className="brand__logo" height={44} priority src={folmetryLogo} width={44} />
+          <span>Folmetry</span>
         </Link>
         <nav aria-label={dictionary.a11y.primaryNavigation}>
           <ul className="nav-list">
@@ -38,7 +41,10 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
-        <PreferenceControls />
+        <div className="site-header__actions">
+          <AccountNavigation />
+          <PreferenceControls />
+        </div>
       </div>
     </header>
   );

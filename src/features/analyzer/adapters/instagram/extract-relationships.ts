@@ -19,6 +19,31 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function handleFromInstagramHref(value: unknown): unknown {
+  if (typeof value !== "string") return undefined;
+
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || !["instagram.com", "www.instagram.com"].includes(url.hostname.toLowerCase())) {
+      return undefined;
+    }
+
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const handleIndex = pathParts[0]?.toLowerCase() === "_u" ? 1 : 0;
+    return pathParts[handleIndex];
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeFirstHandle(...candidates: readonly unknown[]) {
+  for (const candidate of candidates) {
+    const normalized = normalizeInstagramHandle(candidate);
+    if (normalized.ok) return normalized;
+  }
+  return undefined;
+}
+
 function recognizedEntries(content: unknown, kind: RelationshipKind): readonly unknown[] | undefined {
   if (Array.isArray(content)) {
     return content;
@@ -78,8 +103,14 @@ export function extractInstagramRelationships(
         continue;
       }
 
-      const normalized = normalizeInstagramHandle(item["value"]);
-      if (!normalized.ok) {
+      // Instagram exports have used both `value` and the parent entry's `title`
+      // for usernames. A strict Instagram profile URL is a final compatibility fallback.
+      const normalized = normalizeFirstHandle(
+        item["value"],
+        entry["title"],
+        handleFromInstagramHref(item["href"]),
+      );
+      if (normalized === undefined) {
         invalidEntryCount += 1;
         continue;
       }

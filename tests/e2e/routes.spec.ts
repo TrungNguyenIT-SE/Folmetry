@@ -29,6 +29,55 @@ test("foundation pages have no automatically detectable accessibility violations
   expect(results.violations).toEqual([]);
 });
 
+test("protected tools require a real website session", async ({ browser }) => {
+  const context = await browser.newContext({ extraHTTPHeaders: {} });
+  try {
+    const page = await context.newPage();
+    await page.goto("/app");
+    await expect(page).toHaveURL(/\/login\?next=%2Fapp$/);
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+
+    const response = await context.request.post("/api/story/lookup", {
+      data: { handle: "public.test" },
+    });
+    expect(response.status()).toBe(401);
+    expect(await response.json()).toMatchObject({ code: "UNAUTHORIZED" });
+  } finally {
+    await context.close();
+  }
+});
+
+test("public metadata endpoints and page SEO are available", async ({ page, request }) => {
+  const expectedTitles = new Set<string>();
+  for (const route of routes) {
+    await page.goto(route.path);
+    const title = await page.title();
+    expect(title).toContain("Folmetry");
+    expect(expectedTitles.has(title)).toBe(false);
+    expectedTitles.add(title);
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+    expect(new URL(canonical ?? "", page.url()).pathname).toBe(route.path);
+  }
+
+  for (const asset of ["/robots.txt", "/sitemap.xml", "/manifest.webmanifest", "/opengraph-image"]) {
+    const response = await request.get(asset);
+    expect(response.ok(), asset).toBe(true);
+  }
+  const iconHref = await page.locator('link[rel="icon"]').first().getAttribute("href");
+  expect(iconHref).toBeTruthy();
+  expect((await request.get(new URL(iconHref ?? "", page.url()).toString())).ok()).toBe(true);
+  expect(await (await request.get("/robots.txt")).text()).toContain("Disallow: /api/");
+  expect(await (await request.get("/sitemap.xml")).text()).not.toContain("/api/");
+});
+
+test("FAQ exposes fifteen accessible questions and valid structured data", async ({ page }) => {
+  await page.goto("/faq");
+  await expect(page.locator(".faq-list details")).toHaveCount(15);
+  const schema = await page.locator('script[type="application/ld+json"]').allTextContents();
+  const faq = schema.map((value) => JSON.parse(value) as { "@type"?: string; mainEntity?: unknown[] }).find((value) => value["@type"] === "FAQPage");
+  expect(faq?.mainEntity).toHaveLength(15);
+});
+
 test("Story utility discloses its boundary and remains safely disabled without approval", async ({ page }) => {
   const externalRequests: string[] = [];
   page.on("request", (request) => {
@@ -165,14 +214,14 @@ test("shell navigation exposes visible keyboard focus and active state", async (
   await skip.focus();
   await expect(skip).toBeFocused();
   await expect(skip).toBeVisible();
-  const home = page.getByRole("link", { name: "Private Social Insights home" });
+  const home = page.getByRole("link", { name: "Folmetry home" });
   await home.focus();
   await expect(home).toBeFocused();
   const analyzer = page.getByRole("link", { name: "Analyzer" });
   await analyzer.focus();
   await expect(analyzer).toBeFocused();
   await expect(analyzer).toHaveAttribute("aria-current", "page");
-  const faq = page.getByRole("link", { name: "FAQ" });
+  const faq = page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "FAQ" });
   await faq.focus();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/faq$/);

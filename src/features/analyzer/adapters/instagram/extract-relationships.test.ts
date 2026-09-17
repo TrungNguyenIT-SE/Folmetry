@@ -35,6 +35,50 @@ describe("extractInstagramRelationships", () => {
     ]);
   });
 
+  it("extracts the current following schema when the username is stored in title", () => {
+    const result = extractInstagramRelationships(
+      {
+        relationships_following: [
+          {
+            title: "current.schema",
+            string_list_data: [
+              { href: "https://www.instagram.com/_u/current.schema", timestamp: 1_700_000_400 },
+            ],
+          },
+        ],
+      },
+      "following",
+    );
+
+    expect(result.records).toEqual([
+      {
+        handle: "current.schema",
+        normalizedHandle: "current.schema",
+        connectedAt: 1_700_000_400_000,
+      },
+    ]);
+  });
+
+  it("uses only a valid Instagram profile URL as the final username fallback", () => {
+    const valid = extractInstagramRelationships(
+      [{ string_list_data: [{ href: "https://www.instagram.com/_u/url_fallback/" }] }],
+      "followers",
+    );
+    expect(valid.records[0]).toMatchObject({
+      handle: "url_fallback",
+      normalizedHandle: "url_fallback",
+    });
+
+    expect(
+      importErrorCode(() =>
+        extractInstagramRelationships(
+          [{ string_list_data: [{ href: "https://example.com/not_instagram" }] }],
+          "followers",
+        ),
+      ),
+    ).toBe("NO_VALID_RELATIONSHIPS");
+  });
+
   it("keeps valid entries while aggregating safe malformed/missing timestamp warnings", async () => {
     const content = await readJsonFixture("instagram", "mixed", "followers_1.json");
     const result = extractInstagramRelationships(content, "followers");

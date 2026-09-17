@@ -1,13 +1,47 @@
 import type { Dictionary } from "@/i18n/types";
+import { marketingVi } from "@/i18n/marketing-content";
 
 export const vi = {
-  meta: { siteName: "Private Social Insights", description: "Phân tích quan hệ Instagram ưu tiên quyền riêng tư, tách biệt với tiện ích Tin công khai." },
+  meta: { siteName: "Folmetry", description: "Phân tích quan hệ Instagram ưu tiên quyền riêng tư, tách biệt với tiện ích Tin công khai." },
   a11y: { skipToContent: "Chuyển đến nội dung chính", primaryNavigation: "Điều hướng chính", legalNavigation: "Điều hướng pháp lý", language: "Ngôn ngữ", theme: "Giao diện", closeDialog: "Đóng hộp thoại" },
-  nav: { analyzer: "Phân tích", stories: "Tin", howItWorks: "Cách hoạt động", faq: "Hỏi đáp", privacy: "Quyền riêng tư", terms: "Điều khoản", homeLabel: "Trang chủ Private Social Insights" },
+  nav: { analyzer: "Phân tích", stories: "Tin", howItWorks: "Cách hoạt động", faq: "Hỏi đáp", privacy: "Quyền riêng tư", terms: "Điều khoản", homeLabel: "Trang chủ Folmetry", signIn: "Đăng nhập", register: "Đăng ký", account: "Tài khoản", admin: "Quản trị", signOut: "Đăng xuất" },
   locale: { english: "English", vietnamese: "Tiếng Việt" },
   theme: { system: "Theo hệ thống", light: "Sáng", dark: "Tối" },
+  auth: {
+    security: {
+      identifier: "Email hoặc tên đăng nhập",
+      username: "Tên đăng nhập",
+      usernameHint: "Dùng 3-30 chữ cái, chữ số, dấu gạch dưới hoặc dấu chấm.",
+      passwordInvalid: "Mật khẩu cần ít nhất 10 ký tự, một chữ viết hoa, một chữ số và một ký tự đặc biệt.",
+      currentPassword: "Mật khẩu hiện tại",
+      newPassword: "Mật khẩu mới",
+      confirmPassword: "Xác nhận mật khẩu mới",
+      changePassword: "Đổi mật khẩu",
+      changingPassword: "Đang đổi mật khẩu…",
+      passwordChanged: "Đã đổi mật khẩu. Các phiên đăng nhập khác đã được đăng xuất.",
+      title: "Mật khẩu và bảo mật",
+      body: "Bạn cần nhập mật khẩu hiện tại; sau khi đổi, các phiên đăng nhập khác sẽ bị đăng xuất.",
+      passwordStrength: {
+        label: "Độ mạnh mật khẩu",
+        levels: ["Chưa nhập", "Rất yếu", "Yếu", "Khá", "Mạnh"],
+        minimumLength: "Ít nhất 10 ký tự",
+        uppercase: "Ít nhất một chữ viết hoa",
+        number: "Ít nhất một chữ số",
+        special: "Ít nhất một ký tự đặc biệt",
+      },
+    },
+    common: { email: "Email", password: "Mật khẩu", genericError: "Không thể hoàn tất yêu cầu. Vui lòng thử lại.", previous: "Trước", next: "Sau" },
+    errors: { emailNotVerified: "Hãy xác minh email trước khi đăng nhập. Một email xác minh mới đã được gửi.", invalidCredentials: "Email, tên đăng nhập hoặc mật khẩu không đúng.", existingUser: "Đã tồn tại tài khoản dùng email này.", banned: "Tài khoản này hiện đang bị khóa.", rateLimited: "Có quá nhiều lần thử. Vui lòng chờ rồi thử lại.", invalidPassword: "Mật khẩu hiện tại không đúng.", passwordPolicy: "Mật khẩu mới chưa đáp ứng các yêu cầu bảo mật.", usernameTaken: "Tên đăng nhập này không khả dụng." },
+    login: { eyebrow: "Tài khoản Folmetry", title: "Đăng nhập", description: "Truy cập công cụ phân tích riêng tư và tiện ích Tin công khai bằng tài khoản Folmetry.", submit: "Đăng nhập", pending: "Đang đăng nhập…", forgot: "Quên mật khẩu?", register: "Tạo tài khoản" },
+    register: { eyebrow: "Tài khoản Folmetry", title: "Tạo tài khoản", description: "Xác minh email để kích hoạt truy cập. Folmetry không yêu cầu thông tin đăng nhập Instagram.", name: "Tên hiển thị", passwordHint: "Dùng 10–128 ký tự và đáp ứng mọi yêu cầu bên dưới.", confirm: "Xác nhận mật khẩu", mismatch: "Mật khẩu xác nhận không khớp.", submit: "Tạo tài khoản", pending: "Đang tạo tài khoản…", existing: "Đã có tài khoản? Đăng nhập", complete: "Hãy mở hộp thư và xác minh email trước khi đăng nhập. Liên kết hết hạn sau một giờ." },
+    forgot: { eyebrow: "Khôi phục tài khoản", title: "Đặt lại mật khẩu", description: "Nhập email. Phản hồi sẽ không tiết lộ tài khoản có tồn tại hay không.", submit: "Gửi liên kết đặt lại", pending: "Đang gửi…", complete: "Nếu tài khoản tồn tại, liên kết đặt lại mật khẩu đã được gửi.", back: "Quay lại đăng nhập" },
+    reset: { eyebrow: "Khôi phục tài khoản", title: "Chọn mật khẩu mới", description: "Hoàn tất đặt lại sẽ đăng xuất các phiên hiện có để bảo vệ tài khoản.", password: "Mật khẩu mới", confirm: "Xác nhận mật khẩu mới", submit: "Cập nhật mật khẩu", pending: "Đang cập nhật…", invalid: "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.", complete: "Đã cập nhật mật khẩu.", signIn: "Đăng nhập bằng mật khẩu mới." },
+    setup: { title: "Cần cấu hình xác thực", body: "Môi trường này chưa kết nối cơ sở dữ liệu xác thực và dịch vụ email.", action: "Cấu hình các biến chỉ dành cho server, chạy migration auth rồi khởi động lại server:" },
+    account: { eyebrow: "Tài khoản Folmetry", status: "Trạng thái tài khoản", verification: "Xác minh", verified: "Đã xác minh", pending: "Đang chờ", role: "Vai trò", admin: "Admin", user: "User", openAdmin: "Mở trang quản trị user", revoke: "Đăng xuất các phiên khác", revoked: "Các phiên khác đã được đăng xuất.", revokeError: "Không thể cập nhật các phiên.", signOut: "Đăng xuất", privacyTitle: "Ranh giới quyền riêng tư", privacyBody: "Tài khoản Folmetry được lưu trên server. ZIP Instagram và snapshot quan hệ vẫn nằm trong trình duyệt và admin không thể truy cập." },
+    admin: { eyebrow: "Quản trị", title: "Quản lý user", description: "Quản lý tài khoản, vai trò, quyền truy cập và session Folmetry. Dữ liệu Instagram cục bộ không bao giờ xuất hiện tại đây.", users: "Người dùng", intro: "Quản lý vai trò, quyền truy cập và session đang hoạt động.", search: "Tìm theo email", role: "Vai trò", status: "Trạng thái", created: "Ngày tạo", actions: "Thao tác", active: "Hoạt động", suspended: "Đã khóa", makeUser: "Đặt làm user", makeAdmin: "Đặt làm admin", restore: "Mở khóa", suspend: "Khóa", revoke: "Thu hồi session", delete: "Xóa", empty: "Không có user phù hợp.", loadError: "Không thể tải danh sách user.", updateError: "Không thể cập nhật user.", confirmDelete: "Xóa user này? Thao tác không thể hoàn tác.", of: "trên" },
+  },
   footer: { localBoundary: "Bản xuất dữ liệu quan hệ của bạn chỉ ở trên thiết bị này.", storyBoundary: "Tra cứu Tin công khai là một tính năng mạng riêng biệt." },
-  home: { eyebrow: "Riêng tư từ kiến trúc", title: "Hiểu thay đổi quan hệ mà không giao mật khẩu của bạn.", description: "Phân tích bản xuất Instagram JSON chính thức ngay trong trình duyệt. Tra cứu Tin công khai là tính năng mạng riêng biệt và được thông báo rõ.", openAnalyzer: "Mở công cụ phân tích", howItWorks: "Cách hoạt động", principlesLabel: "Nguyên tắc sản phẩm", noLoginTitle: "Không đăng nhập tài khoản", noLoginBody: "Chúng tôi không yêu cầu mật khẩu, cookie, access token hay mã xác thực hai bước Instagram.", localTitle: "Phân tích quan hệ cục bộ", localBody: "ZIP quan hệ và dữ liệu người theo dõi đã chuẩn hóa được xử lý trên thiết bị này.", boundariesTitle: "Ranh giới minh bạch", boundariesBody: "Yêu cầu Tin qua mạng được tách khỏi lịch sử quan hệ cục bộ của bạn.", storyCtaTitle: "Bạn đang tìm Tin hoặc Tin nổi bật công khai?", storyCtaBody: "Tiện ích đó dùng yêu cầu server/nhà cung cấp được công bố và không đọc cơ sở dữ liệu quan hệ cục bộ.", storyCtaAction: "Xem tiện ích Tin" },
+  home: { eyebrow: "Riêng tư từ kiến trúc", title: "Hiểu thay đổi quan hệ mà không giao mật khẩu của bạn.", description: "Phân tích bản xuất Instagram JSON chính thức ngay trong trình duyệt. Tra cứu Tin công khai là tính năng mạng riêng biệt và được thông báo rõ.", openAnalyzer: "Mở công cụ phân tích", howItWorks: "Cách hoạt động", principlesLabel: "Nguyên tắc sản phẩm", noLoginTitle: "Không đăng nhập Instagram", noLoginBody: "Chúng tôi không yêu cầu mật khẩu, cookie, access token hay mã xác thực hai bước Instagram.", localTitle: "Phân tích quan hệ cục bộ", localBody: "ZIP quan hệ và dữ liệu người theo dõi đã chuẩn hóa được xử lý trên thiết bị này.", boundariesTitle: "Ranh giới minh bạch", boundariesBody: "Yêu cầu Tin qua mạng được tách khỏi lịch sử quan hệ cục bộ của bạn.", storyCtaTitle: "Bạn đang tìm Tin hoặc Tin nổi bật công khai?", storyCtaBody: "Tiện ích đó dùng yêu cầu server/nhà cung cấp được công bố và không đọc cơ sở dữ liệu quan hệ cục bộ.", storyCtaAction: "Xem tiện ích Tin" },
   pages: {
     analyzer: { eyebrow: "Phân tích quan hệ cục bộ", title: "Bản xuất dữ liệu ở lại trên thiết bị của bạn.", description: "Tạo hồ sơ tài khoản cục bộ riêng biệt, nhập bản xuất JSON chính thức, kiểm tra từng snapshot và so sánh thay đổi quan hệ theo thời gian.", notice: "ZIP và JSON được phân tích cục bộ trong worker riêng. Không file nào được tải lên và không cần thông tin đăng nhập Instagram." },
     stories: { eyebrow: "Tiện ích mạng riêng biệt", title: "Xem Tin công khai với ranh giới quyền riêng tư rõ ràng.", description: "Khi được bật, handle công khai đã nhập sẽ được gửi tới server và nhà cung cấp đã cấu hình, và có thể xuất hiện trong log vận hành theo chính sách của nhà cung cấp. Bản xuất quan hệ không bao giờ nằm trong yêu cầu này.", notice: "Tra cứu Tin chưa được bật. Tính năng chỉ hỗ trợ tài khoản công khai, tôn trọng kiểm soát truy cập và bản quyền, và không yêu cầu thông tin đăng nhập Instagram." },
@@ -16,6 +50,7 @@ export const vi = {
     privacy: { eyebrow: "Quyền riêng tư", title: "Hai tính năng, hai ranh giới dữ liệu rõ ràng.", description: "Bản xuất quan hệ được giữ cục bộ. Khi bật tra cứu Tin, chỉ handle công khai đã nhập được gửi qua server tới nhà cung cấp và có thể nằm trong log vận hành của họ." },
     terms: { eyebrow: "Điều khoản", title: "Sử dụng dịch vụ có trách nhiệm.", description: "Chỉ phân tích dữ liệu bạn được phép sử dụng và chỉ tải media công khai khi bạn sở hữu hoặc được phép lưu. Dịch vụ này không liên kết hay được Meta hoặc Instagram chứng thực." },
   },
+  marketing: marketingVi,
   analyzer: {
     account: { title: "Tài khoản cục bộ", label: "Nhãn tài khoản", username: "Username Instagram (không bắt buộc)", create: "Tạo tài khoản", select: "Chọn tài khoản", edit: "Sửa tài khoản" },
     import: { title: "Nhập bản xuất", zip: "Chọn ZIP", json: "Chọn các file JSON", cancel: "Hủy nhập", privacy: "File được xử lý cục bộ và không tải lên.", stages: { validating: "Đang kiểm tra", scanning_archive: "Đang quét kho lưu trữ", reading_relationship_files: "Đang đọc file quan hệ", parsing_json: "Đang phân tích JSON", normalizing: "Đang chuẩn hóa quan hệ", fingerprinting: "Đang tạo dấu vân tay", complete: "Hoàn tất" } },

@@ -365,10 +365,17 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
       ? getImportErrorMessage(dictionary, error.code as Parameters<typeof getImportErrorMessage>[1])
       : getPersistenceErrorMessage(dictionary, error.code as Parameters<typeof getPersistenceErrorMessage>[1]);
 
-  if (loading) return <StatusRegion>{copy.ux.loading}</StatusRegion>;
+  if (loading) {
+    return (
+      <main className="page-shell page-shell--analyzer" id="main-content">
+        <StatusRegion>{copy.ux.loading}</StatusRegion>
+      </main>
+    );
+  }
 
   return (
-    <div className="analyzer-app">
+    <main className="page-shell page-shell--analyzer" id="main-content">
+      <div className="analyzer-app">
       <header className="analyzer-heading">
         <span className="eyebrow">{dictionary.pages.analyzer.eyebrow}</span>
         <h1>{dictionary.pages.analyzer.title}</h1>
@@ -513,6 +520,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
           <Button onClick={() => setDeleteMode(undefined)} type="button" variant="secondary">{copy.delete.cancel}</Button>
         </div>
       </Dialog>
-    </div>
+      </div>
+    </main>
   );
 }

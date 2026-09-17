@@ -9,11 +9,15 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="site-footer__inner">
-        <div>
+        <div className="site-footer__summary">
+          <strong className="site-footer__brand">Folmetry</strong>
           <p>{dictionary.footer.localBoundary}</p>
           <p>{dictionary.footer.storyBoundary}</p>
+          <p className="site-footer__disclaimer">{dictionary.marketing.footerDisclaimer}</p>
         </div>
         <nav aria-label={dictionary.a11y.legalNavigation}>
+          <Link href="/how-it-works">{dictionary.nav.howItWorks}</Link>
+          <Link href="/faq">{dictionary.nav.faq}</Link>
           <Link href="/privacy">{dictionary.nav.privacy}</Link>
           <Link href="/terms">{dictionary.nav.terms}</Link>
         </nav>

@@ -4,9 +4,19 @@
 > **Primary V1 platform:** Instagram  
 > **Future adapter:** Facebook  
 > **Document purpose:** Source-of-truth implementation specification for Codex / coding agents  
-> **Spec version:** 1.1  
-> **Verified baseline date:** 2026-09-15  
+> **Spec version:** 1.2
+> **Verified baseline date:** 2026-09-17
 > **Status:** Ready for implementation
+
+---
+
+## Revision 1.2 summary
+
+Version 1.2 adds first-party Folmetry website accounts for public deployment. It introduces verified email/password authentication, database-backed sessions, password recovery, `user`/`admin` roles, and server-side user administration.
+
+This does **not** convert the relationship analyzer into cloud storage. Instagram ZIP files, raw JSON, normalized relationships, local profile labels, snapshots, diffs, and CSV output remain browser-local. Administrators can manage Folmetry identities, roles, suspension state, and sessions, but cannot inspect local Instagram relationship data.
+
+Where version 1.1 or older sections exclude authentication, email, or every server database, this revision supersedes those exclusions only for the narrowly scoped account subsystem. Server-side relationship-file processing and cloud snapshot synchronization remain prohibited.
 
 ---
 
@@ -40,7 +50,7 @@ Treat this file as the product and engineering source of truth.
 12. All fixtures must be synthetic/anonymized.
 13. The UI must never state with absolute certainty that a person intentionally “unfollowed” the user when the data only proves the account disappeared from a later follower snapshot.
 14. Prefer wording such as **“Lost follower”** / **“No longer in your followers since the previous snapshot”** and explain the limitation.
-15. V1 may include only the minimal backend routes required for public Story/Highlights lookup and safe media delivery. Do not use that backend for relationship imports, authentication, payments, cloud sync, analytics, or tracking.
+15. V1 may include backend routes for account authentication/administration and public Story/Highlights delivery. Do not use that backend for relationship imports, cloud snapshot sync, payments, analytics, or tracking.
 16. Do not add dependencies merely for convenience. Prefer browser/platform APIs and small, well-maintained libraries.
 17. TypeScript strict mode is mandatory. Avoid `any`.
 18. Every core parser and diff rule must have automated tests before considering the feature complete.
@@ -79,7 +89,7 @@ The product must answer these questions without requiring Instagram credentials:
 
 ## 1.2 The core value proposition
 
-> Analyze your Instagram followers privately. No password. No account login. Your export stays on your device.
+> Analyze your Instagram followers privately. No Instagram password. Your export stays on your device.
 
 For the separate Story/Highlights tool:
 
@@ -238,6 +248,14 @@ V1 must include:
 - Clear pre-submit disclosure that the public handle is sent to our server and configured provider.
 - Abuse controls, request timeouts, response-size limits, provider schema validation, and safe error mapping.
 - A provider adapter so vendors can be replaced without changing UI/domain contracts.
+- Folmetry email/password registration and sign-in with mandatory email verification.
+- Unique username registration and sign-in by either email or username.
+- Password policy enforced server-side: 10–128 characters with at least one uppercase letter, one number, and one ASCII special character.
+- Accessible password-strength feedback during registration and authenticated password changes from the account profile.
+- Password reset with short-lived single-use tokens and session revocation.
+- PostgreSQL-backed sessions and exactly two application roles: `user` and `admin`.
+- Admin user management for listing/searching users, role changes, suspension, session revocation, and deletion.
+- Server-side authorization checks on every protected page and API route.
 
 ## 3.2 Explicitly out of scope for V1
 
@@ -246,11 +264,9 @@ Do not implement:
 - Facebook analyzer implementation.
 - Instagram OAuth.
 - Facebook Login.
-- Server-side database.
 - Server-side processing of Instagram export files or relationship data.
-- User authentication.
-- Cloud synchronization.
-- Email.
+- Cloud synchronization of Instagram relationship data.
+- Transactional email other than account verification and password recovery.
 - Billing/Stripe.
 - Push notifications.
 - Scheduled background scanning.
@@ -1472,7 +1488,7 @@ Hero example direction:
 
 ```text
 See what changed in your Instagram followers.
-No password. No account login. Your data stays on your device.
+No Instagram password. Your relationship data stays on your device.
 
 [Analyze my export]
 [How it works]
@@ -2794,11 +2810,11 @@ Reject PR/code that does any of the following:
 
 ---
 
-# 46. Future cloud architecture — NOT V1
+# 46. Future relationship-data cloud sync - NOT V1
 
 Only consider this after local-first product validation.
 
-Potential later model:
+The Folmetry identity database introduced in revision 1.2 is not relationship-data cloud sync. A potential later sync model would be:
 
 ```text
 Browser parser

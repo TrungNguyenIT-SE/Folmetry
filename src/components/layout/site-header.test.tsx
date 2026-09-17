@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
 
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppPreferencesProvider } from "@/i18n";

@@ -13,6 +13,7 @@ export default defineConfig({
   reporter: isCi ? [["html", { open: "never" }], ["github"]] : "list",
   use: {
     baseURL,
+    extraHTTPHeaders: { "x-folmetry-e2e-auth": "playwright-local-only" },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

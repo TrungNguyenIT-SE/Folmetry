@@ -1,0 +1,151 @@
+type Section = { id: string; title: string; paragraphs: string[]; points: string[] };
+
+const section = (id: string, title: string, paragraphs: string[], points: string[] = []): Section => ({ id, title, paragraphs, points });
+
+export const marketingEn = {
+  footerDisclaimer: "This product is not affiliated with, endorsed by, or sponsored by Instagram, Facebook, or Meta Platforms, Inc. Instagram and Facebook are trademarks of their respective owners.",
+  home: {
+    learnEyebrow: "Useful, not invasive", learnTitle: "What your own exports can tell you", learnBody: "Turn official follower and following lists into a clear, reviewable picture without granting account access.",
+    learnItems: [
+      { title: "Your current picture", body: "See followers, following, mutual connections, and accounts that do not follow back." },
+      { title: "Changes between snapshots", body: "Compare two saved exports to find new and missing followers and calculate the net change." },
+      { title: "Lists you can use", body: "Search large result sets and export relevant categories as CSV for your own records." },
+    ],
+    stepsEyebrow: "Three clear steps", stepsTitle: "From official export to local insight",
+    steps: [
+      { title: "Request your export", body: "In Meta Accounts Center, select the Instagram account, relationship data, JSON, and the all-time range when available." },
+      { title: "Analyze on this device", body: "Choose the original ZIP. A browser worker reads and normalizes the relationship files without uploading them." },
+      { title: "Save and compare", body: "Review the snapshot date, save normalized records locally, then import a later export to see changes." },
+    ],
+    privacyEyebrow: "Privacy architecture", privacyTitle: "The sensitive workflow stays in your browser", privacyBody: "Relationship analysis and public Story lookup have deliberately separate data paths.",
+    privacyPoints: ["Raw relationship ZIP and JSON files are read transiently and are not stored by the app.", "Only normalized handles, relationship timestamps, and snapshot metadata are saved after you confirm.", "Saved relationship data remains in this browser's IndexedDB until you delete it.", "Story lookup is a separate network feature and never reads the local relationship database."],
+    limitationsEyebrow: "Accuracy without guesswork", limitationsTitle: "A difference is evidence of change—not proof of intent", limitationsBody: "The analyzer reports what differs between two exports. It does not claim to know why a handle changed or disappeared.",
+    limitationsPoints: ["A missing handle may result from a rename, deactivation, deletion, suspension, or export differences.", "The first snapshot establishes a baseline; it cannot reconstruct earlier follows or unfollows.", "Relationship dates come from the export and may not be present or equally precise for every record."],
+    faqEyebrow: "Questions before importing", faqTitle: "Know exactly what happens to your data", faqBody: "Read concise answers about files, storage, deletion, accuracy, shared devices, Stories, and responsible use.", faqAction: "Read all answers",
+    finalTitle: "Ready to inspect your own relationship export?", finalBody: "No Instagram login. Start locally, review the result, and choose whether anything is saved.", finalAction: "Open the analyzer",
+  },
+  howItWorks: {
+    cta: "Analyze an export",
+    sections: [
+      section("request", "1. Request the right data from Meta", ["Use the official download flow for the Instagram account you want to inspect. Meta may change menu names and placement, so these labels are guidance rather than a permanent map."], ["Open Accounts Center and find the option to download or transfer your information.", "Choose the correct Instagram account and select followers/following or connections.", "Choose JSON rather than HTML and the all-time date range when available.", "Download the ZIP. The analyzer never needs your password, cookie, token, or two-factor code."]),
+      section("analyze", "2. Parse the export in your browser", ["Choose the original ZIP for reliable file discovery. Manual JSON selection is available as a recovery path.", "A browser worker validates, reads, and normalizes the relationship files. The ZIP and raw JSON are not uploaded or retained by this app."]),
+      section("review", "3. Review before saving", ["Check the local profile, detected counts, warnings, and snapshot date. Saving writes only normalized relationship records and snapshot metadata to IndexedDB in this browser."], ["Use separate local profiles so exports from different accounts are not mixed.", "You can inspect a result without saving it.", "Delete one snapshot, one profile, or all local app data at any time."]),
+      section("compare", "4. Compare a later snapshot", ["Import a second export for the same local profile to calculate additions, removals, and net change. The first snapshot is only a baseline and cannot reveal earlier events."], ["A disappeared handle is not proof of a deliberate unfollow.", "Renames, deactivation, deletion, suspension, and export differences can produce the same change.", "Exported timestamps are shown when available and are not independently verified."]),
+      section("stories", "A separate path for public Stories", ["Story and Highlight lookup does not use an export. When enabled, it sends the public handle to this site's server and configured provider. It never reads local relationship snapshots."]),
+    ],
+  },
+  privacy: {
+    sections: [
+      section("relationship-files", "Relationship files are processed locally", ["The relationship ZIP and JSON are parsed in your browser. This app does not upload those files or ask for Instagram credentials."], ["Raw contents are held only as needed for the current analysis.", "The raw archive is not stored after processing.", "Relationship data is never sent to the Story provider."]),
+      section("local-storage", "What is saved on this device", ["After confirmation, normalized handles, available relationship timestamps, snapshot metadata, local profile labels, and settings may be saved in this browser's IndexedDB."], ["Delete one snapshot, one profile and its snapshots, or all local data in the app.", "Clearing browser site data also removes it.", "Someone using the same browser profile on a shared device may be able to open saved data."]),
+      section("website-account", "What the Folmetry account service stores", ["Registration and sign-in store your name, email, verification state, password credential hash, role, suspension state, sessions, and security tokens in the server database. Passwords are not stored in readable form."], ["Verification and password-reset messages are sent through the configured email provider.", "Administrators can manage website users and sessions but cannot read browser-local Instagram relationship data.", "Routine security metadata such as session time, IP address, and user-agent may be processed for authentication and abuse prevention."]),
+      section("network", "Ordinary hosting metadata", ["Like most hosted websites, hosting and network infrastructure may process routine metadata such as IP address, time, requested path, and user-agent for delivery, reliability, security, and abuse prevention. We do not claim that visiting is absolutely anonymous or leaves no server metadata."]),
+      section("stories", "Story lookup has a different boundary", ["When enabled, a submitted public handle is sent to this site's server and configured Story provider. The provider may record request parameters and operational metadata under its reviewed, current policy.", "The app does not persist Story or Highlight results in its database. Short-lived signed media links and upstream caches may exist for delivery; provider and infrastructure logs are outside the local analyzer's controls."], ["Only public accounts are supported.", "No Instagram credential is requested.", "Local relationship profiles and snapshots are not read or included."]),
+      section("accuracy", "Limits and independence", ["A missing handle can reflect a rename, deactivation, deletion, suspension, or export difference—not necessarily an intentional unfollow. This product is independent and is not affiliated with, endorsed by, or sponsored by Instagram, Facebook, or Meta Platforms, Inc."]),
+    ],
+  },
+  terms: {
+    sections: [
+      section("responsibility", "Use data you are authorized to use", ["Use the analyzer only with exports you own or are permitted to process. You are responsible for applicable law, platform terms, and other people's rights."]),
+      section("interpretation", "Results are informational", ["Results reflect differences in supplied exports and carry no guarantee of completeness or accuracy. A username is not guaranteed to be a stable identity, and results are not proof of another person's intent or conduct."], ["The first snapshot cannot reconstruct earlier activity.", "Renames, account state changes, and export variation can affect comparisons."]),
+      section("public-media", "Respect access controls and copyright", ["Story lookup is for publicly available accounts only and does not guarantee anonymous viewing or private access. Do not bypass access controls. Download media only when you own it, have permission, or otherwise have a lawful right to save it. You remain responsible for reuse and distribution."]),
+      section("availability", "Network features are not guaranteed", ["Story and Highlight availability depends on public account status, upstream services, provider access, expiring media URLs, rate limits, and network conditions. Content may be unavailable, incomplete, or cease working without notice."]),
+      section("independence", "Independent service", ["This product is not affiliated with, endorsed by, or sponsored by Instagram, Facebook, or Meta Platforms, Inc. Instagram and Facebook are trademarks of their respective owners."]),
+    ],
+  },
+  faq: {
+    listTitle: "Frequently asked questions",
+    items: [
+      { question: "Do I need to log in to Instagram?", answer: "No. The analyzer uses your official export, and the Story utility never asks for a password, cookie, token, or two-factor code." },
+      { question: "Are my ZIP or JSON files uploaded?", answer: "No. Relationship files are parsed locally in a browser worker and are not sent to this site's server." },
+      { question: "What is saved after an import?", answer: "After confirmation, normalized handles, available timestamps, snapshot metadata, a local profile label, and settings may be saved in IndexedDB. Raw files are not saved." },
+      { question: "How do I delete my data?", answer: "Delete a snapshot, a profile and its snapshots, or all app data in the analyzer. Clearing this site's browser storage also removes it." },
+      { question: "Why do I need two snapshots?", answer: "The first snapshot is a baseline. A later snapshot for the same local profile is required to calculate additions and removals; earlier events cannot be reconstructed." },
+      { question: "Does a lost follower prove an unfollow?", answer: "No. A rename, deactivation, deletion, suspension, or export difference can look the same. The app reports change, not intent." },
+      { question: "Are HTML exports or Facebook data supported?", answer: "No. The analyzer expects Instagram relationship data in JSON. Choose JSON rather than HTML and the correct Instagram account in Accounts Center." },
+      { question: "Why can manual follower selection be incomplete?", answer: "Large exports may split followers across followers_1.json, followers_2.json, and more. Missing one part creates an incomplete result, which is why the original ZIP is recommended." },
+      { question: "Does the analyzer work on mobile?", answer: "Modern mobile browsers can work, but file selection, memory limits, and browser storage behavior vary. Keep the page open while an import is processing." },
+      { question: "Why might a large import need a desktop?", answer: "Large ZIP files need more memory and processing time. A current desktop browser is usually more reliable when a mobile browser reloads, stalls, or rejects the file." },
+      { question: "Can it view private accounts?", answer: "No. It is limited to media the provider can lawfully access from public accounts and does not bypass access controls." },
+      { question: "Is Story lookup processed locally?", answer: "No. When enabled, the submitted public handle is sent to this site's server and configured provider. Local relationship data is never included." },
+      { question: "Who receives the username, and is it stored?", answer: "A relationship profile's optional username stays in this browser. A handle entered in Story lookup is sent to the server and provider; the app does not persist Story search history, though provider or infrastructure logs may exist." },
+      { question: "Can it download expired or Close Friends Stories?", answer: "No guarantee is possible. It cannot bypass Close Friends or private access controls, and expired media is usually unavailable once upstream access or its media URL has ended." },
+      { question: "May I download and reuse public media?", answer: "Public visibility does not transfer copyright. Download and reuse only content you own, have permission to save, or otherwise have a lawful right to use." },
+    ],
+    ctaTitle: "Ready to inspect your export?", ctaBody: "Sign in to Folmetry, then analyze the export locally without sharing Instagram credentials.", ctaAction: "Open the analyzer",
+  },
+} as const;
+
+export const marketingVi = {
+  footerDisclaimer: "Sản phẩm này không liên kết, không được chứng thực và không được tài trợ bởi Instagram, Facebook hoặc Meta Platforms, Inc. Instagram và Facebook là nhãn hiệu của các chủ sở hữu tương ứng.",
+  home: {
+    learnEyebrow: "Hữu ích, không xâm phạm", learnTitle: "Bản xuất của chính bạn có thể cho biết gì", learnBody: "Biến danh sách người theo dõi và đang theo dõi chính thức thành bức tranh rõ ràng mà không cấp quyền truy cập tài khoản.",
+    learnItems: [
+      { title: "Bức tranh hiện tại", body: "Xem người theo dõi, đang theo dõi, quan hệ hai chiều và tài khoản không theo dõi lại." },
+      { title: "Thay đổi giữa hai snapshot", body: "So sánh hai bản xuất để tìm người theo dõi mới, đã mất và tính thay đổi ròng." },
+      { title: "Danh sách có thể sử dụng", body: "Tìm kiếm kết quả lớn và xuất các nhóm cần thiết thành CSV cho hồ sơ riêng." },
+    ],
+    stepsEyebrow: "Ba bước rõ ràng", stepsTitle: "Từ bản xuất chính thức đến kết quả cục bộ",
+    steps: [
+      { title: "Yêu cầu bản xuất", body: "Trong Trung tâm tài khoản Meta, chọn tài khoản Instagram, dữ liệu quan hệ, JSON và toàn bộ thời gian khi có." },
+      { title: "Phân tích trên thiết bị", body: "Chọn ZIP gốc. Worker trong trình duyệt đọc và chuẩn hóa file quan hệ mà không tải lên." },
+      { title: "Lưu và so sánh", body: "Kiểm tra ngày snapshot, lưu bản ghi đã chuẩn hóa cục bộ, rồi nhập bản xuất sau để xem thay đổi." },
+    ],
+    privacyEyebrow: "Kiến trúc riêng tư", privacyTitle: "Quy trình nhạy cảm ở lại trong trình duyệt", privacyBody: "Phân tích quan hệ và tra cứu Tin công khai có hai luồng dữ liệu tách biệt có chủ đích.",
+    privacyPoints: ["ZIP và JSON quan hệ thô chỉ được đọc tạm thời và không được ứng dụng lưu.", "Chỉ handle đã chuẩn hóa, thời gian quan hệ và metadata snapshot được lưu sau khi bạn xác nhận.", "Dữ liệu đã lưu nằm trong IndexedDB của trình duyệt này cho đến khi bạn xóa.", "Tra cứu Tin là tính năng mạng riêng và không đọc cơ sở dữ liệu quan hệ cục bộ."],
+    limitationsEyebrow: "Chính xác, không suy đoán", limitationsTitle: "Khác biệt là dấu hiệu thay đổi—không phải bằng chứng về ý định", limitationsBody: "Công cụ báo cáo điểm khác nhau giữa hai bản xuất; không khẳng định lý do một handle thay đổi hoặc biến mất.",
+    limitationsPoints: ["Handle biến mất có thể do đổi tên, vô hiệu hóa, xóa, đình chỉ hoặc khác biệt giữa các bản xuất.", "Snapshot đầu tiên chỉ tạo mốc; không thể dựng lại lượt theo dõi hoặc bỏ theo dõi trước đó.", "Ngày quan hệ đến từ bản xuất và có thể thiếu hoặc không có cùng độ chính xác cho mọi bản ghi."],
+    faqEyebrow: "Câu hỏi trước khi nhập", faqTitle: "Biết chính xác điều gì xảy ra với dữ liệu", faqBody: "Đọc câu trả lời về file, lưu trữ, xóa, độ chính xác, thiết bị dùng chung, Tin và cách dùng có trách nhiệm.", faqAction: "Đọc tất cả câu trả lời",
+    finalTitle: "Sẵn sàng kiểm tra bản xuất quan hệ của bạn?", finalBody: "Không đăng nhập Instagram. Bắt đầu cục bộ, xem kết quả rồi tự chọn có lưu hay không.", finalAction: "Mở công cụ phân tích",
+  },
+  howItWorks: {
+    cta: "Phân tích bản xuất",
+    sections: [
+      section("request", "1. Yêu cầu đúng dữ liệu từ Meta", ["Dùng quy trình tải dữ liệu chính thức cho tài khoản cần kiểm tra. Meta có thể đổi tên hoặc vị trí menu, vì vậy các nhãn sau chỉ là hướng dẫn."], ["Mở Trung tâm tài khoản và tìm tùy chọn tải xuống hoặc chuyển thông tin.", "Chọn đúng tài khoản Instagram và dữ liệu người theo dõi/đang theo dõi hoặc kết nối.", "Chọn JSON thay vì HTML và toàn bộ thời gian khi có.", "Tải ZIP. Công cụ không cần mật khẩu, cookie, token hay mã xác thực hai bước."]),
+      section("analyze", "2. Đọc bản xuất trong trình duyệt", ["Nên chọn ZIP gốc để dò file đáng tin cậy. Chọn JSON thủ công là phương án khôi phục.", "Worker trong trình duyệt kiểm tra, đọc và chuẩn hóa file quan hệ. ZIP và JSON thô không được tải lên hoặc lưu." ]),
+      section("review", "3. Kiểm tra trước khi lưu", ["Kiểm tra hồ sơ cục bộ, số lượng phát hiện, cảnh báo và ngày snapshot. Khi lưu, chỉ bản ghi đã chuẩn hóa và metadata snapshot được ghi vào IndexedDB."], ["Dùng hồ sơ riêng để không trộn bản xuất từ nhiều tài khoản.", "Bạn có thể xem kết quả mà không lưu.", "Có thể xóa một snapshot, một hồ sơ hoặc toàn bộ dữ liệu cục bộ."]),
+      section("compare", "4. So sánh snapshot sau", ["Nhập bản xuất thứ hai cho cùng hồ sơ để tính mục thêm, mất và thay đổi ròng. Snapshot đầu tiên chỉ là mốc và không thể cho biết sự kiện trước đó."], ["Handle biến mất không chứng minh hành động bỏ theo dõi có chủ ý.", "Đổi tên, vô hiệu hóa, xóa, đình chỉ và khác biệt bản xuất có thể tạo cùng thay đổi.", "Mốc thời gian từ bản xuất không được ứng dụng xác minh độc lập."]),
+      section("stories", "Luồng riêng cho Tin công khai", ["Tra cứu Tin và Tin nổi bật không dùng bản xuất. Khi được bật, tính năng gửi handle công khai tới server website và nhà cung cấp; không đọc snapshot quan hệ cục bộ."]),
+    ],
+  },
+  privacy: {
+    sections: [
+      section("relationship-files", "File quan hệ được xử lý cục bộ", ["ZIP và JSON quan hệ được đọc trong trình duyệt. Ứng dụng không tải file lên và không yêu cầu thông tin đăng nhập Instagram."], ["Nội dung thô chỉ tồn tại khi cần cho lần phân tích hiện tại.", "Ứng dụng không lưu kho dữ liệu thô sau khi xử lý.", "Dữ liệu quan hệ không bao giờ gửi cho nhà cung cấp Tin."]),
+      section("local-storage", "Nội dung được lưu trên thiết bị", ["Sau khi xác nhận, handle đã chuẩn hóa, thời gian quan hệ nếu có, metadata snapshot, nhãn hồ sơ và cài đặt có thể được lưu trong IndexedDB."], ["Xóa một snapshot, một hồ sơ cùng snapshot, hoặc toàn bộ dữ liệu trong ứng dụng.", "Xóa dữ liệu website trong trình duyệt cũng loại bỏ chúng.", "Người khác dùng cùng hồ sơ trình duyệt trên thiết bị chung có thể mở dữ liệu đã lưu."]),
+      section("website-account", "Dữ liệu dịch vụ tài khoản Folmetry lưu", ["Khi đăng ký và đăng nhập, cơ sở dữ liệu server lưu tên, email, trạng thái xác minh, credential mật khẩu đã băm, vai trò, trạng thái khóa, session và token bảo mật. Mật khẩu không được lưu ở dạng đọc được."], ["Email xác minh và đặt lại mật khẩu được gửi qua nhà cung cấp email đã cấu hình.", "Admin có thể quản lý user và session website nhưng không thể đọc dữ liệu quan hệ Instagram nằm trong trình duyệt.", "Metadata bảo mật thông thường như thời gian session, địa chỉ IP và user-agent có thể được xử lý để xác thực và chống lạm dụng."]),
+      section("network", "Metadata lưu trữ web thông thường", ["Như hầu hết website, nền tảng hosting và hạ tầng mạng có thể xử lý địa chỉ IP, thời gian, đường dẫn và user-agent để phân phối, bảo mật, vận hành và chống lạm dụng. Chúng tôi không tuyên bố việc truy cập là ẩn danh tuyệt đối hoặc không để lại metadata server."]),
+      section("stories", "Tra cứu Tin có ranh giới khác", ["Khi được bật, handle công khai được gửi tới server website và nhà cung cấp Tin. Nhà cung cấp có thể ghi tham số yêu cầu và metadata vận hành theo chính sách hiện hành đã được rà soát.", "Ứng dụng không lưu kết quả Tin hoặc Tin nổi bật trong cơ sở dữ liệu. Link media ngắn hạn và cache thượng nguồn có thể tồn tại để phân phối; log nhà cung cấp và hạ tầng nằm ngoài kiểm soát của công cụ cục bộ."], ["Chỉ hỗ trợ tài khoản công khai.", "Không yêu cầu thông tin đăng nhập Instagram.", "Hồ sơ và snapshot quan hệ cục bộ không được đọc hoặc đưa vào yêu cầu."]),
+      section("accuracy", "Giới hạn và tính độc lập", ["Handle biến mất có thể do đổi username, vô hiệu hóa, xóa, đình chỉ hoặc khác biệt bản xuất—không nhất thiết là bỏ theo dõi có chủ ý. Sản phẩm độc lập, không liên kết, không được chứng thực hoặc tài trợ bởi Instagram, Facebook hay Meta Platforms, Inc."]),
+    ],
+  },
+  terms: {
+    sections: [
+      section("responsibility", "Chỉ dùng dữ liệu bạn được phép sử dụng", ["Chỉ dùng công cụ với bản xuất thuộc về bạn hoặc bạn được phép xử lý. Bạn chịu trách nhiệm tuân thủ pháp luật, điều khoản nền tảng và quyền của người khác."]),
+      section("interpretation", "Kết quả chỉ mang tính thông tin", ["Kết quả phản ánh khác biệt trong bản xuất và không được bảo đảm đầy đủ hoặc chính xác. Username không được bảo đảm là định danh ổn định; không xem kết quả là bằng chứng về ý định hoặc hành vi của người khác."], ["Snapshot đầu tiên không thể dựng lại hoạt động trước đó.", "Đổi tên, trạng thái tài khoản và biến thể bản xuất có thể ảnh hưởng phép so sánh."]),
+      section("public-media", "Tôn trọng kiểm soát truy cập và bản quyền", ["Tra cứu Tin chỉ dành cho tài khoản công khai và không bảo đảm xem ẩn danh hoặc truy cập riêng tư. Không vượt qua kiểm soát truy cập. Chỉ tải media khi bạn sở hữu, được cho phép hoặc có quyền hợp pháp khác. Bạn chịu trách nhiệm về việc sử dụng lại và phân phối."]),
+      section("availability", "Tính năng mạng không được bảo đảm", ["Khả dụng của Tin và Tin nổi bật phụ thuộc trạng thái tài khoản, dịch vụ thượng nguồn, quyền truy cập nhà cung cấp, URL hết hạn, giới hạn tần suất và mạng. Nội dung có thể thiếu hoặc ngừng hoạt động mà không báo trước."]),
+      section("independence", "Dịch vụ độc lập", ["Sản phẩm này không liên kết, không được chứng thực và không được tài trợ bởi Instagram, Facebook hoặc Meta Platforms, Inc. Instagram và Facebook là nhãn hiệu của các chủ sở hữu tương ứng."]),
+    ],
+  },
+  faq: {
+    listTitle: "Câu hỏi thường gặp",
+    items: [
+      { question: "Tôi có cần đăng nhập Instagram không?", answer: "Không. Công cụ dùng bản xuất chính thức; tiện ích Tin không yêu cầu mật khẩu, cookie, token hay mã xác thực hai bước." },
+      { question: "ZIP hoặc JSON có được tải lên không?", answer: "Không. File quan hệ được đọc cục bộ trong worker và không gửi tới server website." },
+      { question: "Nội dung nào được lưu sau khi nhập?", answer: "Sau khi xác nhận, handle đã chuẩn hóa, thời gian nếu có, metadata snapshot, nhãn hồ sơ và cài đặt có thể được lưu trong IndexedDB. File thô không được lưu." },
+      { question: "Tôi xóa dữ liệu bằng cách nào?", answer: "Xóa snapshot, hồ sơ cùng snapshot hoặc toàn bộ dữ liệu trong công cụ. Xóa bộ nhớ website cũng loại bỏ chúng." },
+      { question: "Vì sao cần hai snapshot?", answer: "Snapshot đầu tiên là mốc. Cần snapshot sau cho cùng hồ sơ để tính mục thêm và mất; không thể dựng lại sự kiện trước mốc đầu." },
+      { question: "Người theo dõi đã mất có chắc là họ bỏ theo dõi không?", answer: "Không. Đổi tên, vô hiệu hóa, xóa, đình chỉ hoặc khác biệt bản xuất có thể cho cùng kết quả. Ứng dụng báo thay đổi, không suy đoán ý định." },
+      { question: "Có hỗ trợ bản xuất HTML hoặc dữ liệu Facebook không?", answer: "Không. Công cụ cần dữ liệu quan hệ Instagram ở định dạng JSON. Hãy chọn JSON thay vì HTML và đúng tài khoản Instagram trong Trung tâm tài khoản." },
+      { question: "Vì sao chọn file follower thủ công có thể bị thiếu?", answer: "Bản xuất lớn có thể chia thành followers_1.json, followers_2.json và nhiều phần khác. Thiếu một phần sẽ làm kết quả không đầy đủ, nên ZIP gốc được khuyên dùng." },
+      { question: "Công cụ có hoạt động trên điện thoại không?", answer: "Trình duyệt di động hiện đại có thể chạy, nhưng chọn file, giới hạn bộ nhớ và lưu trữ khác nhau. Hãy giữ trang mở trong lúc xử lý." },
+      { question: "Vì sao bản nhập lớn có thể cần máy tính?", answer: "ZIP lớn cần nhiều bộ nhớ và thời gian xử lý. Trình duyệt desktop hiện đại thường ổn định hơn nếu điện thoại tải lại trang, bị treo hoặc từ chối file." },
+      { question: "Có xem được tài khoản riêng tư không?", answer: "Không. Tiện ích chỉ dùng media nhà cung cấp có thể truy cập hợp pháp từ tài khoản công khai và không vượt qua kiểm soát truy cập." },
+      { question: "Tra cứu Tin có được xử lý cục bộ không?", answer: "Không. Khi được bật, handle công khai được gửi tới server website và nhà cung cấp. Dữ liệu quan hệ cục bộ không bao giờ được đưa vào." },
+      { question: "Username được gửi cho ai và có được lưu không?", answer: "Username tùy chọn của hồ sơ quan hệ ở lại trong trình duyệt. Handle nhập để tra Tin được gửi tới server và nhà cung cấp; ứng dụng không lưu lịch sử tìm kiếm Tin, nhưng log hạ tầng hoặc nhà cung cấp có thể tồn tại." },
+      { question: "Có tải được Tin đã hết hạn hoặc Close Friends không?", answer: "Không có bảo đảm. Tiện ích không vượt qua quyền Close Friends hoặc tài khoản riêng tư; media hết hạn thường không còn khi quyền truy cập hoặc URL thượng nguồn đã kết thúc." },
+      { question: "Tôi có được tải và sử dụng lại media công khai không?", answer: "Hiển thị công khai không chuyển giao bản quyền. Chỉ tải và dùng lại nội dung bạn sở hữu, được cho phép hoặc có quyền hợp pháp khác." },
+    ],
+    ctaTitle: "Sẵn sàng kiểm tra bản xuất?", ctaBody: "Đăng nhập Folmetry rồi phân tích bản xuất cục bộ mà không cung cấp thông tin đăng nhập Instagram.", ctaAction: "Mở công cụ phân tích",
+  },
+} as const;
