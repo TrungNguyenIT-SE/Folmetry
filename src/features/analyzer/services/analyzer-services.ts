@@ -1,6 +1,7 @@
 import type { LocalAccount, LocalSnapshot } from "@/features/analyzer/model/types";
 import {
   AccountRepository,
+  analyzerDatabaseNameForOwner,
   createAnalyzerDatabase,
   LocalDataRepository,
   saveSnapshotWithMemoryFallback,
@@ -34,8 +35,10 @@ export interface AnalyzerServices {
   close(): void;
 }
 
-export function createBrowserAnalyzerServices(): AnalyzerServices {
-  const database = createAnalyzerDatabase();
+export function createBrowserAnalyzerServices(ownerId: string): AnalyzerServices {
+  const database = createAnalyzerDatabase({
+    name: analyzerDatabaseNameForOwner(ownerId),
+  });
   const accounts = new AccountRepository(database);
   const snapshots = new SnapshotRepository(database);
   const localData = new LocalDataRepository(database);

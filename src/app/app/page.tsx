@@ -5,6 +5,6 @@ import { createPageMetadata } from "@/lib/site-metadata";
 export const metadata = createPageMetadata({ title: "Local relationship analyzer", description: "Import an official Instagram relationship ZIP, review it locally, and compare private snapshots stored in this browser.", path: "/app", index: false });
 
 export default async function AnalyzerPage() {
-  await requireUser("/app");
-  return <AnalyzerApp />;
+  const session = await requireUser("/app");
+  return <AnalyzerApp storageScope={session.user.id} />;
 }

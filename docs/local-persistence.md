@@ -4,7 +4,18 @@
 
 The analyzer repository is a browser-only persistence boundary built on Dexie/IndexedDB. It is plain TypeScript and does not import React, Next.js, worker code, network clients, or Story/Highlights modules. Construct it from a client-side event/effect; importing the module itself does not open a database.
 
-Database name: `social-relationship-analyzer`. Schema version: `1`.
+Database name prefix: `social-relationship-analyzer:user:`. Each authenticated Folmetry user receives a distinct physical database whose suffix is the URI-encoded stable website user ID. Schema version: `1`.
+
+## Website-account isolation
+
+- `/app` obtains the authenticated `user.id` on the server and passes it only as the browser-storage scope.
+- Analyzer repositories never open the unscoped database for relationship accounts or snapshots.
+- Signing out and signing in as another Folmetry user in the same browser opens a different physical IndexedDB database.
+- Admin role does not bypass this boundary; the admin UI and server database have no read path to analyzer IndexedDB.
+- The former unscoped database, `social-relationship-analyzer`, is deliberately left untouched and quarantined. Its records have no trustworthy owner, so they are never automatically assigned to the next user who signs in. A user must re-import the original Instagram export into their scoped store.
+- Locale and theme preferences may remain device-wide. They do not contain relationship handles, local analyzer profiles, or snapshots.
+
+This is application-level account isolation, not encryption against someone who controls the operating-system/browser profile or browser developer tools. Shared devices should use separate OS/browser profiles.
 
 ```text
 accounts:  id, platform, username, createdAt, updatedAt
@@ -51,9 +62,9 @@ Persistence failures map to stable codes for unavailable IndexedDB, quota exhaus
 
 - Snapshot deletion requires confirmation.
 - Account deletion requires confirmation plus cascade acknowledgement.
-- Delete-all requires a stronger `all-local-data` scope token and clears accounts, snapshots, and settings in one transaction.
+- Delete-all requires a stronger `all-local-data` scope token and clears accounts, snapshots, and analyzer settings for only the signed-in Folmetry user's scoped database in one transaction.
 - Operations resolve only after the IndexedDB transaction commits, so the UI can clear its state after success without pretending deletion completed early.
 
 ## Tests
 
-Repository tests use a unique fake IndexedDB database per test and mandatory cleanup. They cover schema/opening, existing v1 data, blocked upgrade, account validation/update/order, snapshot ordering/baselines, duplicate races, timestamp conflicts, account/platform isolation, allowlisted storage, settings corruption, cascade and delete-all, failure mapping, and in-memory fallback. Playwright separately verifies persistence through a real browser page reload on Chromium, mobile Chromium, Firefox, and WebKit.
+Repository tests use a unique fake IndexedDB database per test and mandatory cleanup. They cover schema/opening, legacy-data quarantine, authenticated-owner isolation, existing v1 data, blocked upgrade, account validation/update/order, snapshot ordering/baselines, duplicate races, timestamp conflicts, account/platform isolation, allowlisted storage, settings corruption, cascade and delete-all, failure mapping, and in-memory fallback. Playwright separately verifies persistence through a real browser page reload and switches identities inside one browser context to prove that local analyzer data cannot cross website accounts.

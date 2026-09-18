@@ -42,6 +42,8 @@ import {
 
 export interface AnalyzerAppProps {
   readonly services?: AnalyzerServices;
+  /** Stable authenticated Folmetry user ID used only to scope browser storage. */
+  readonly storageScope?: string;
 }
 
 type DeleteMode = "account" | "all";
@@ -90,7 +92,7 @@ function inMemorySnapshot(input: SaveSnapshotInput): LocalSnapshot {
   };
 }
 
-export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
+export function AnalyzerApp({ services: providedServices, storageScope }: AnalyzerAppProps) {
   const { dictionary, formatNumber } = useI18n();
   const copy = dictionary.analyzer;
   const [workflow, dispatch] = useReducer(analyzerWorkflowReducer, INITIAL_ANALYZER_STATE);
@@ -132,7 +134,14 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
     let active = true;
     let api: AnalyzerServices;
     try {
-      api = providedServices ?? createBrowserAnalyzerServices();
+      if (providedServices !== undefined) {
+        api = providedServices;
+      } else {
+        if (storageScope === undefined) {
+          throw new Error("Authenticated analyzer storage scope is required.");
+        }
+        api = createBrowserAnalyzerServices(storageScope);
+      }
       servicesRef.current = api;
     } catch {
       queueMicrotask(() => {
@@ -163,7 +172,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
       api.close();
       servicesRef.current = undefined;
     };
-  }, [providedServices]);
+  }, [providedServices, storageScope]);
 
   const refreshAccounts = async (api: AnalyzerServices): Promise<readonly LocalAccount[]> => {
     const loaded = await api.listAccounts();

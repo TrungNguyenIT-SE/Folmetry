@@ -8,16 +8,18 @@ import { auth, type AuthSession } from "@/features/auth/server/auth";
 import { isAuthReady } from "@/features/auth/server/environment";
 
 function e2eSession(requestHeaders: Headers): AuthSession | null {
-  if (
-    process.env.NODE_ENV === "production" ||
-    requestHeaders.get("x-folmetry-e2e-auth") !== "playwright-local-only"
-  ) {
+  if (process.env.NODE_ENV === "production") {
     return null;
   }
+  const credential = requestHeaders.get("x-folmetry-e2e-auth") ?? "";
+  const match = /^playwright-local-only(?::([a-z0-9-]{1,32}))?$/.exec(credential);
+  if (match === null) return null;
+  const identity = match[1];
+  const userId = identity === undefined ? "folmetry-e2e-user" : `folmetry-e2e-${identity}`;
   const createdAt = new Date(0);
   return {
     user: {
-      id: "folmetry-e2e-user",
+      id: userId,
       name: "Folmetry E2E",
       email: "e2e@example.invalid",
       emailVerified: true,
@@ -29,9 +31,9 @@ function e2eSession(requestHeaders: Headers): AuthSession | null {
       banExpires: null,
     },
     session: {
-      id: "folmetry-e2e-session",
+      id: `${userId}-session`,
       token: "test-token-not-valid-outside-e2e",
-      userId: "folmetry-e2e-user",
+      userId,
       createdAt,
       updatedAt: createdAt,
       expiresAt: new Date(4_102_444_800_000),

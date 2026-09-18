@@ -5,8 +5,10 @@ import type { Snapshot } from "@/features/analyzer/model/types";
 import {
   ACCOUNT_LABEL_MAX_LENGTH,
   AccountRepository,
+  ANALYZER_DATABASE_NAME,
   ANALYZER_DATABASE_SCHEMA,
   ANALYZER_DATABASE_VERSION,
+  analyzerDatabaseNameForOwner,
   AnalyzerDatabase,
   createAnalyzerDatabase,
   deleteAnalyzerDatabase,
@@ -81,6 +83,43 @@ async function accountAndSnapshots(database: AnalyzerDatabase) {
 }
 
 describe("database schema", () => {
+  it("isolates authenticated owners and leaves unscoped legacy data quarantined", async () => {
+    const legacyDatabase = createTestDatabase(ANALYZER_DATABASE_NAME);
+    const adminDatabase = createTestDatabase(analyzerDatabaseNameForOwner("admin-user-id"));
+    const regularDatabase = createTestDatabase(analyzerDatabaseNameForOwner("regular-user-id"));
+    const legacyAccounts = new AccountRepository(legacyDatabase, {
+      createId: () => "legacy-account",
+    });
+    const adminAccounts = new AccountRepository(adminDatabase, {
+      createId: () => "admin-account",
+    });
+    const regularAccounts = new AccountRepository(regularDatabase);
+
+    await legacyAccounts.create({ platform: "instagram", label: "Unknown legacy owner" });
+    await adminAccounts.create({ platform: "instagram", label: "Admin private archive" });
+
+    expect(analyzerDatabaseNameForOwner("admin-user-id")).not.toBe(
+      analyzerDatabaseNameForOwner("regular-user-id"),
+    );
+    expect(analyzerDatabaseNameForOwner("admin-user-id")).not.toBe(ANALYZER_DATABASE_NAME);
+    expect((await adminAccounts.list()).map(({ label }) => label)).toEqual([
+      "Admin private archive",
+    ]);
+    expect(await regularAccounts.list()).toEqual([]);
+    expect((await legacyAccounts.list()).map(({ label }) => label)).toEqual([
+      "Unknown legacy owner",
+    ]);
+  });
+
+  it("rejects a missing authenticated owner scope", () => {
+    expect(() => analyzerDatabaseNameForOwner("   ")).toThrowError(
+      expect.objectContaining({
+        code: "UNKNOWN_PERSISTENCE_ERROR",
+        context: { reason: "invalid-owner-scope" },
+      }),
+    );
+  });
+
   it("opens an explicit v1 schema without indexing nested relationship arrays", async () => {
     const database = createTestDatabase();
     await openAnalyzerDatabase(database);

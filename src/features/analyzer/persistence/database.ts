@@ -8,7 +8,24 @@ import type {
 import { PersistenceDomainError, mapPersistenceError } from "@/features/analyzer/persistence/errors";
 
 export const ANALYZER_DATABASE_NAME = "social-relationship-analyzer";
+export const ANALYZER_USER_DATABASE_PREFIX = `${ANALYZER_DATABASE_NAME}:user:`;
 export const ANALYZER_DATABASE_VERSION = 1;
+
+/**
+ * Returns a collision-free database name for one authenticated Folmetry user.
+ *
+ * The original, unscoped database name is deliberately not reused or migrated:
+ * data previously written there has no trustworthy owner and must never be
+ * assigned to whichever website account happens to sign in next.
+ */
+export function analyzerDatabaseNameForOwner(ownerId: string): string {
+  if (ownerId.trim().length === 0 || ownerId.length > 512) {
+    throw new PersistenceDomainError("UNKNOWN_PERSISTENCE_ERROR", {
+      reason: "invalid-owner-scope",
+    });
+  }
+  return `${ANALYZER_USER_DATABASE_PREFIX}${encodeURIComponent(ownerId)}`;
+}
 
 export const ANALYZER_DATABASE_SCHEMA = Object.freeze({
   accounts: "id, platform, username, createdAt, updatedAt",

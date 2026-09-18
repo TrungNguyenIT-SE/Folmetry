@@ -737,11 +737,13 @@ Story/Highlights lookup results, submitted handles, media URLs, media bytes, and
 
 ## 9.2 Database
 
-Suggested database name:
+Database naming contract:
 
 ```text
-social-relationship-analyzer
+social-relationship-analyzer:user:<encoded Folmetry user.id>
 ```
+
+The analyzer must use a distinct physical IndexedDB database for every authenticated Folmetry user. It must never read relationship accounts or snapshots from the historical unscoped `social-relationship-analyzer` database because those records have no trustworthy website-account owner. Do not automatically migrate or claim that legacy data; require re-import into the authenticated user's scoped database.
 
 Suggested schema version 1:
 
@@ -1932,7 +1934,9 @@ Security updates to framework/runtime are release blockers when relevant.
 
 ## 22.6 Shared-device warning
 
-Because snapshot history is stored in browser IndexedDB, privacy page/settings should state that anyone with access to the same browser profile may potentially access the local history.
+Normal application UI must isolate analyzer data by the authenticated Folmetry `user.id`, including when multiple people sign in sequentially through the same browser profile. Admin status must not grant access to another user's browser-local analyzer store.
+
+Because snapshot history is stored in browser IndexedDB, privacy page/settings should also state that this is application-level isolation rather than encryption against someone who controls the same browser profile, operating-system account, or developer tools.
 
 Provide one-click local deletion.
 

@@ -47,6 +47,34 @@ test("protected tools require a real website session", async ({ browser }) => {
   }
 });
 
+test("local analyzer data is isolated between website accounts in one browser", async ({ browser }) => {
+  const context = await browser.newContext({
+    extraHTTPHeaders: { "x-folmetry-e2e-auth": "playwright-local-only:admin" },
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto("/app");
+    await page.getByLabel("Account label").fill("Admin private archive");
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page.getByLabel("Select account")).toContainText("Admin private archive");
+
+    await context.setExtraHTTPHeaders({
+      "x-folmetry-e2e-auth": "playwright-local-only:regular-user",
+    });
+    await page.goto("/app");
+    await expect(page.getByText("No local accounts yet.")).toBeVisible();
+    await expect(page.getByText("Admin private archive")).toHaveCount(0);
+
+    await context.setExtraHTTPHeaders({
+      "x-folmetry-e2e-auth": "playwright-local-only:admin",
+    });
+    await page.goto("/app");
+    await expect(page.getByLabel("Select account")).toContainText("Admin private archive");
+  } finally {
+    await context.close();
+  }
+});
+
 test("public metadata endpoints and page SEO are available", async ({ page, request }) => {
   const expectedTitles = new Set<string>();
   for (const route of routes) {
