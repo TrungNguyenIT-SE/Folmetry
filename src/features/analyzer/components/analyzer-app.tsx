@@ -34,6 +34,7 @@ import { ResultsView } from "./results-view";
 import {
   analyzerWorkflowReducer,
   INITIAL_ANALYZER_STATE,
+  type AnalyzerWorkflowState,
   type ImportSourceSummary,
   type ReviewDraft,
   type WorkflowError,
@@ -44,6 +45,31 @@ export interface AnalyzerAppProps {
 }
 
 type DeleteMode = "account" | "all";
+
+function WorkflowRail({ workflow }: Readonly<{ workflow: AnalyzerWorkflowState }>) {
+  const { dictionary } = useI18n();
+  const copy = dictionary.analyzer.ux;
+  const active = workflow.status === "NO_ACCOUNT"
+    ? 0
+    : workflow.status === "REVIEW_IMPORT" || workflow.status === "SAVING"
+      ? 2
+      : workflow.status === "RESULTS"
+        ? 3
+        : 1;
+  const labels = [copy.workflowAccount, copy.workflowImport, copy.workflowReview, copy.workflowResults];
+  return (
+    <nav aria-label={copy.workflowLabel} className="workflow-rail" tabIndex={0}>
+      <ol>
+        {labels.map((label, index) => (
+          <li aria-current={index === active ? "step" : undefined} className={index < active ? "is-complete" : ""} key={label}>
+            <span aria-hidden="true">{index < active ? "✓" : index + 1}</span>
+            <strong>{label}</strong>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
 
 function localDateTimeValue(timestamp: number): string {
   const date = new Date(timestamp);
@@ -383,6 +409,8 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
         <p className="privacy-note">{dictionary.pages.analyzer.notice}</p>
       </header>
 
+      <WorkflowRail workflow={workflow} />
+
       <AccountPanel
         key={selectedAccountId ?? "no-account"}
         accounts={accounts}
@@ -479,12 +507,14 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
             </Card>
           ) : null}
 
-          <Card heading={copy.ux.dataControls}>
-            <div className="button-row">
-              <Button onClick={() => setDeleteMode("account")} type="button" variant="danger">{copy.ux.deleteAccount}</Button>
-              <Button onClick={() => setDeleteMode("all")} type="button" variant="danger">{copy.ux.deleteAll}</Button>
-            </div>
-          </Card>
+          <div className="danger-zone">
+            <Card heading={copy.ux.dataControls}>
+              <div className="button-row">
+                <Button onClick={() => setDeleteMode("account")} type="button" variant="danger">{copy.ux.deleteAccount}</Button>
+                <Button onClick={() => setDeleteMode("all")} type="button" variant="danger">{copy.ux.deleteAll}</Button>
+              </div>
+            </Card>
+          </div>
         </>
       )}
 

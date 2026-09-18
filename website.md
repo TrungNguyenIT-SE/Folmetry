@@ -4,9 +4,17 @@
 > **Primary V1 platform:** Instagram  
 > **Future adapter:** Facebook  
 > **Document purpose:** Source-of-truth implementation specification for Codex / coding agents  
-> **Spec version:** 1.2
+> **Spec version:** 1.3
 > **Verified baseline date:** 2026-09-17
 > **Status:** Ready for implementation
+
+---
+
+## Revision 1.3 summary
+
+Version 1.3 introduces the Folmetry Signature Experience, a whole-product visual and interaction system named **Private Signal Observatory**. It makes local processing, privacy boundaries, data states, and relationship changes visible through a precise observatory-inspired interface without changing any product capability or privacy guarantee.
+
+The system uses code-native CSS/SVG, semantic design tokens, progressive enhancement, and restrained state-linked motion. It must remain fully usable without animation, with reduced motion, on small screens, and when modern visual effects are unavailable. Decorative effects must never delay content, obscure controls, reduce contrast, or compete with result data.
 
 ---
 
@@ -1652,19 +1660,22 @@ Media UI requirements:
 
 ## 18.1 Design direction
 
-Use a clean, trustworthy privacy/security product aesthetic rather than an “Instagram clone”.
+Use Folmetry's **Private Signal Observatory** direction: a calm, high-precision workspace where relationship signals can be inspected without surrendering private source data. The interface should feel authored, technical, and trustworthy rather than resembling an "Instagram clone" or a generic AI-generated SaaS landing page.
 
 Avoid copying Instagram trade dress, gradients, logo styling, or UI patterns too closely.
 
-Suggested attributes:
+Required attributes:
 
-- generous whitespace;
-- strong typography hierarchy;
-- soft card boundaries;
-- restrained accent color;
-- clear data visualization;
-- minimal decorative animation;
-- confidence and privacy over hype.
+- a disciplined 12-column desktop grid and constrained reading widths;
+- strong editorial typography with tabular numerals for metrics;
+- layered surfaces, precise hairlines, and a subtle signal-grid atmosphere;
+- electric-indigo primary accents plus cyan signal accents used sparingly;
+- clear, state-aware data visualization and explicit privacy boundaries;
+- code-native relationship-orbit motifs that are unique to Folmetry;
+- motion tied to navigation, parsing, selection, or state changes only;
+- confidence, legibility, and privacy over visual hype.
+
+Do not use random glowing blobs, decorative particle fields, excessive glassmorphism, stock dashboard illustrations, fake charts, gratuitous 3D, or endless ambient animation. Do not imitate Instagram's trade dress. A visual effect without semantic or spatial purpose must be removed.
 
 ## 18.2 Theme
 
@@ -1679,6 +1690,8 @@ dark
 Use semantic CSS variables/tokens.
 
 Do not hard-code theme colors in feature components.
+
+Token families must cover canvas, elevated/sunken surfaces, primary and subtle text, hairline and strong borders, primary/signal/success/warning/destructive states, focus, radii, shadow/elevation, layout width, and motion timing/easing. Light and dark themes must preserve the same hierarchy rather than simply invert colors.
 
 ## 18.3 Responsive breakpoints
 
@@ -1700,6 +1713,27 @@ Relationship tables must remain usable on mobile, possibly switching to compact 
 Respect `prefers-reduced-motion`.
 
 Do not animate count changes in a way that delays access to actual values.
+
+Motion must be progressive enhancement. Core interaction and comprehension cannot depend on View Transitions, scroll-driven animation, backdrop filters, masks, or blend modes. Repeated ambient effects are prohibited; bounded emphasis is allowed for active drag/drop, parsing, loading, successful completion, and explicit selection. Target interaction transitions of roughly 120–240ms and larger spatial transitions no longer than 400ms.
+
+## 18.5 Signature components
+
+- Header: stable spatial anchor, compact active-route treatment, and accessible preference/account controls.
+- Hero: editorial promise paired with an abstract relationship signal field; the graphic is decorative and hidden from assistive technology.
+- Cards: one structural language with hierarchy expressed by spacing, border strength, and surface depth rather than unrelated gradients.
+- Analyzer: local-processing boundary, drop zone, progress, review, metrics, tabs, and relationship rows must read as one inspection workflow.
+- Story/Highlights: clearly separate its network boundary from the local analyzer while retaining the same component grammar.
+- Authentication/admin: focused, calm work surfaces with unambiguous validation and dangerous-action styling.
+- Footer: a deliberate closing region with product boundary copy and legible legal navigation, never a floating or overlapping afterthought.
+
+## 18.6 Performance and visual resilience
+
+- Prefer CSS and inline SVG to runtime animation libraries and WebGL.
+- Avoid remote decorative assets and third-party font requests at runtime.
+- Reserve media dimensions to prevent layout shift.
+- Keep filters and backdrop effects bounded to small stable regions.
+- Ensure usable fallbacks when `color-mix()`, backdrop filtering, scroll-driven animation, or View Transitions are unavailable.
+- Validate at 360, 390, 768, 1024, 1440, and 1920 CSS pixels in both themes where practical.
 
 ---
 

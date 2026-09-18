@@ -338,8 +338,9 @@ Quy tắc dependency:
 | M6S | Public Story/Highlights subsystem | M0 + M1 + M5 | Provider adapter, secure routes, gallery, individual download |
 | M7 | Marketing, legal, SEO | M5 | Public routes, copy, metadata, sitemap/robots |
 | M8A | Website accounts, email và RBAC | M7 | Better Auth, PostgreSQL, verify/reset email, user/admin, protected tools |
+| M8UX | Folmetry Signature Experience | M6 + M6S + M7 + M8A | Big visual update toàn site, design system riêng, motion có chủ đích, visual regression |
 | M8 | Security/privacy hardening | M3 + M6 + M6S + M7 | CSP, headers, network-boundary assertions, security review |
-| M9 | Performance/accessibility hardening | M6 + M6S + M7 | Mobile, WCAG, large-data/media behavior, Lighthouse |
+| M9 | Performance/accessibility hardening | M6 + M6S + M7 + M8UX | Mobile, WCAG, large-data/media behavior, Lighthouse |
 | M10 | CI/CD và release | M8 + M9 | Full gates, deploy, post-deploy verification |
 
 Có thể triển khai M4 và M5 song song sau khi contract domain của M2 ổn định, nhưng không nối UI thật vào repository/worker trước khi interface và tests cốt lõi đã chốt.
@@ -2836,6 +2837,457 @@ Mỗi implementation chunk khi bàn giao phải báo cáo:
 - [x] TypeScript strict và ESLint pass cho auth source.
 - [x] Full typecheck/lint/unit/build pass (`pnpm check`: 40 files, 225 tests) và Chromium E2E pass (20/20), gồm password-policy/strength tests.
 - [!] Live PostgreSQL migration và email delivery cần external credentials mới; không dùng credential đã lộ.
+
+---
+
+# 19B. M8UX — Folmetry Signature Experience: big update giao diện toàn website
+
+**Trạng thái:** Đã hoàn thành toàn bộ phạm vi implementation M8UX ngày 2026-09-18 cho art direction `Private Signal Observatory`, design system V2, global shell, landing, analyzer, Story/Highlights, auth/account/admin, editorial/utility pages, motion, responsive và accessibility hardening. `pnpm check` đạt 227/227 test, build đủ 19 route và vượt qua UI budget; Playwright đạt 102/102 ca khả dụng trên Chromium desktop/mobile, Firefox và WebKit, với 2 ca forced-colors được skip có chủ đích ở engine không hỗ trợ emulation; production audit không có lỗ hổng đã biết. Các phép đo p75 thực địa, thiết bị iOS/Android thật và production-preview sign-off là release gates sau deploy, không phải phần code còn thiếu.
+
+### Sổ nghiệm thu M8UX (authoritative closeout)
+
+Quy ước: `[x]` đã hoàn thành và có bằng chứng trong repository; `[-]` chủ động không áp dụng theo quyết định thiết kế/kỹ thuật; `[!]` release gate cần URL hoặc thiết bị production thật. Danh sách chi tiết bên dưới là acceptance catalog gốc; sổ nghiệm thu này là trạng thái chốt triển khai.
+
+- [x] UX0 — inventory route/state, issue log, baseline Git `ab4606f` và tài liệu nền được lưu trong `docs/ui-foundations.md`/`website.md`.
+- [x] UX1 — khóa hướng `Private Signal Observatory`, motif, anti-pattern và lý do loại hai hướng còn lại.
+- [x] UX2 — token V2 cho palette/semantic color, type, spacing, container, radius, elevation, duration và easing; không có font/asset trang trí từ xa.
+- [x] UX3 — primitive variants/states, field feedback, surfaces, badge semantics và component tests.
+- [x] UX4 — header/footer/navigation/preferences responsive; mobile menu có focus trap, Escape, trả focus và khóa scroll đúng.
+- [x] UX5 — landing, pipeline semantic, dual data boundary, How it works, FAQ, Privacy, Terms, 404 và error boundary.
+- [x] UX6 — analyzer workflow rail theo state thật, import/review/results/history timeline, sticky tabs và danger zone; không đổi domain logic.
+- [x] UX7 — Story/Highlights states, network disclosure, bounded media behavior và keyboard navigation cho highlights.
+- [x] UX8 — auth/account/admin surfaces; admin mobile cards và dialog xác nhận theo mức rủi ro.
+- [x] UX9 — motion có giới hạn, chỉ chạy khi có trạng thái phù hợp; hỗ trợ reduced-motion, save-data, tab ẩn, touch/coarse pointer và forced colors.
+- [x] UX10 — automated hardening: 227 unit tests, 102 E2E pass, axe, keyboard, 320px reflow, 200% text, CLS lab, reduced motion, đa trình duyệt, production build, UI budget và dependency audit.
+- [x] Visual QA thủ công bằng ảnh đại diện tại 390/768/1440 cho home, analyzer, menu mobile và editorial; ảnh tạm đã được dọn sau review.
+- [x] Performance budget khóa bằng `scripts/check-ui-budget.mjs`: CSS 66,299/120,000 B; JS 1,122,971/1,500,000 B; largest chunk 228,919/300,000 B.
+- [x] Rollback, asset provenance, font bake-off, motion policy và rationale được ghi trong `docs/ui-foundations.md`.
+- [-] View Transition API: không bật vì hiện chưa có shared-element use case đủ giá trị; navigation vẫn native và ổn định.
+- [-] WebGL, particle engine, remote font, raster decoration, fake dashboard data và design-lab route production: không dùng để giữ riêng tư, hiệu năng và tránh thẩm mỹ AI đại trà.
+- [-] Pixel-snapshot CI đa hệ điều hành: không khóa ảnh bitmap dễ sai khác font/render; thay bằng geometry, overflow, axe, CLS, state và multi-browser assertions ổn định.
+- [!] Đo Core Web Vitals p75/Lighthouse trên URL production với traffic thật sau deploy.
+- [!] Smoke test trên iOS Safari/Android Chrome thiết bị thật, bàn phím ảo và safe-area thực.
+- [!] Product/design/accessibility/privacy sign-off trên production preview.
+
+**Mục tiêu:** đưa Folmetry từ giao diện chức năng tốt thành một sản phẩm có ngôn ngữ thị giác riêng, cao cấp, dễ nhận diện và nhất quán trên toàn bộ marketing, analyzer, Story, auth, account và admin. “Đẳng cấp” được đo bằng tính nguyên bản, độ rõ ràng, cảm giác hoàn thiện, hiệu năng và accessibility; không đo bằng số lượng hiệu ứng.
+
+## 19B.1 Nguyên tắc chỉ đạo
+
+- [x] Không bắt chước Instagram, Apple, Linear, Vercel hay một landing page mẫu cụ thể.
+- [x] Không dùng công thức AI/SaaS đại trà: nền tím-xanh, glow khắp nơi, blob ngẫu nhiên, glass card hàng loạt, bento grid vô nghĩa, icon sparkles và copy cường điệu.
+- [x] Mọi hiệu ứng phải phục vụ ít nhất một mục đích: định hướng, phản hồi thao tác, giải thích dữ liệu, thể hiện tiến trình hoặc tăng nhận diện thương hiệu.
+- [x] Phần analyzer ưu tiên đọc dữ liệu và hoàn thành tác vụ; phần marketing được phép giàu không khí hơn nhưng không hy sinh tốc độ.
+- [x] Không dùng animation để che loading thật, trì hoãn dữ liệu hoặc làm người dùng chờ.
+- [x] Không đưa dữ liệu Instagram thật vào visual trang marketing, asset demo hoặc screenshot public.
+- [x] Không thêm tracker, remote font, remote texture, remote icon hoặc CDN asset chỉ để trang trí.
+- [x] Light, dark và system là ba trải nghiệm được thiết kế thực sự, không phải đảo màu cơ học.
+- [x] EN/VI phải được kiểm tra độc lập vì tiếng Việt dài và có dấu, không thiết kế chỉ theo chuỗi tiếng Anh ngắn.
+- [x] WCAG 2.2 AA, `prefers-reduced-motion`, keyboard và screen reader là constraint ngay từ concept.
+
+## 19B.2 Art direction — “Private Signal Observatory”
+
+Folmetry được định vị như một **đài quan sát tín hiệu quan hệ cá nhân**: riêng tư, chính xác, điềm tĩnh và có chiều sâu. Ngôn ngữ hình ảnh lấy cảm hứng từ signal map, snapshot, timeline và local processing, nhưng không biến thành giao diện sci-fi giả lập.
+
+### Dấu ấn nhận diện bắt buộc
+
+- [x] Một "signal field" riêng của Folmetry: mạng điểm/đường rất tiết chế, sinh từ SVG/CSS local, dùng như motif nền hoặc divider chứ không phải biểu đồ dữ liệu giả.
+- [x] Một hệ “snapshot frames”: khung lớp, đường thời gian và điểm neo thể hiện trước/sau, dùng nhất quán trong hero, import progress và history.
+- [x] Một chi tiết "local pulse": tín hiệu vòng ngắn biểu thị xử lý ngay trên thiết bị; không dùng cloud icon chung chung.
+- [x] Typography có nhịp editorial rõ: display, interface, numeric và mono/metadata; số liệu phải là nhân vật chính trong dashboard.
+- [x] Góc, đường viền, shadow và độ sâu có quy luật; không để mỗi card mang một phong cách.
+- [x] Logo hiện tại được giữ nguyên tài sản gốc; chỉ chuẩn hóa clear-space, kích thước và cách đặt trên surface.
+
+### Những thứ chủ động không dùng
+
+- [x] Không nền sao chuyển động, mưa ma trận, particle chạy liên tục hoặc WebGL chỉ để gây ấn tượng.
+- [x] Không custom cursor, cursor trail, scroll hijacking hoặc magnetic button làm thay đổi hành vi con trỏ.
+- [x] Không parallax mạnh, tilt 3D trên mọi card hoặc perspective gây chóng mặt.
+- [x] Không chữ gradient trên tất cả heading.
+- [x] Không glassmorphism nếu surface không có lý do phân lớp rõ ràng.
+- [x] Không fake terminal, fake code block hoặc fake security badge.
+- [x] Không animation loop vô hạn trong analyzer, auth và admin.
+
+## 19B.3 Discovery và baseline trước khi thiết kế
+
+### Kiểm kê route/state
+
+- [x] `/`: hero, trust boundary, product value, how-it-works, limitations, FAQ preview, CTA.
+- [x] `/app`: loading, no account, ready import, drag active, parsing, review, saving, first result, historical result, error, dialogs.
+- [x] `/story-downloader`: idle, loading, empty, private/unavailable, rate limit, gallery, highlights, expired media.
+- [x] `/login`, `/register`, `/forgot-password`, `/reset-password`.
+- [x] `/account`: profile, verification, password change, session controls.
+- [x] `/admin/users`: loading, search, empty, pagination, actions, destructive confirmation.
+- [x] `/how-it-works`, `/faq`, `/privacy`, `/terms`.
+- [x] `404`, error boundary, auth-not-configured và offline/degraded states.
+
+### Baseline bắt buộc lưu trước khi sửa
+
+- [ ] Screenshot light/dark, EN/VI tại 360, 390, 768, 1024, 1440 và 1920px.
+- [ ] Screenshot các state analyzer chính bằng fixture synthetic.
+- [ ] Ghi kích thước CSS/JS hiện tại theo route và số request asset.
+- [ ] Đo LCP, INP proxy/lab interaction, CLS và Lighthouse cho landing/analyzer shell.
+- [ ] Ghi contrast, target size, focus visibility và số axe violations.
+- [ ] Lập inventory token/component đang dùng và chỗ CSS bị trùng/ngoại lệ.
+- [ ] Ghi lại vấn đề layout hiện tại: hierarchy, density, whitespace, line length, responsive, table và footer.
+- [ ] Không xóa screenshot baseline cho đến khi visual review cuối hoàn tất.
+
+## 19B.4 Concept sprint và duyệt hướng
+
+Không code production ngay từ moodboard. Tạo ba concept tĩnh cho cùng một tập nội dung thật của Folmetry:
+
+1. **Signal Observatory** — tối, sâu, precision, topology tiết chế.
+2. **Editorial Intelligence** — sáng, typography mạnh, data-first, gần sản phẩm nghiên cứu cao cấp.
+3. **Dual Realm** — marketing giàu chiều sâu, workspace trung tính và cực rõ.
+
+Mỗi concept phải có:
+
+- [ ] Hero desktop và mobile.
+- [ ] Analyzer dashboard với dữ liệu synthetic.
+- [ ] Form đăng ký và password strength.
+- [ ] Footer/legal section.
+- [ ] Light/dark pair.
+- [ ] Motion storyboard 6–10 frame cho navigation/import/result reveal.
+- [ ] Giải thích vì sao concept phù hợp Folmetry và điểm nào không được dùng.
+
+Gate duyệt concept:
+
+- [ ] Nhận diện được Folmetry khi bỏ logo khỏi mockup.
+- [ ] Không bị nhầm với template AI/SaaS phổ biến.
+- [ ] Dữ liệu và privacy boundary vẫn dễ hiểu trong 5 giây đầu.
+- [ ] Mobile không phải bản desktop bị co lại.
+- [ ] Hiệu ứng có fallback tĩnh đẹp và đầy đủ thông tin.
+
+## 19B.5 Design token architecture V2
+
+### Color
+
+- [ ] Tách primitive palette khỏi semantic token.
+- [ ] Semantic roles tối thiểu: canvas, elevated, inset, interactive, text-primary, text-secondary, text-tertiary, border-subtle, border-strong, signal, positive, warning, danger, info và focus.
+- [ ] Có token cho data series và delta positive/negative/neutral; không dùng màu làm tín hiệu duy nhất.
+- [ ] Light theme dùng nền trung tính có độ ấm nhẹ, không phải trắng tuyệt đối trên toàn trang.
+- [ ] Dark theme dùng graphite nhiều lớp, tránh đen tuyệt đối và tránh bloom quá mức.
+- [ ] Kiểm tra contrast cho text, icon, border quan trọng, focus ring và chart.
+
+### Typography
+
+- [ ] Thực hiện font bake-off với nội dung EN/VI thật và bảng số liệu.
+- [ ] Chỉ chọn font có giấy phép rõ ràng, hỗ trợ đầy đủ dấu tiếng Việt và có thể self-host.
+- [ ] Không chọn font chỉ vì đang phổ biến trong website AI.
+- [ ] Xác định roles: display, heading, body, UI label, numeric/tabular và code/metadata.
+- [ ] Dùng fluid type scale có giới hạn; không để hero lấn át nội dung ở laptop thấp.
+- [ ] Giới hạn line length theo loại nội dung; legal/editorial không vượt quá ngưỡng đọc thoải mái.
+- [ ] Bật `font-variant-numeric: tabular-nums` cho dashboard và history.
+
+### Space, grid và shape
+
+- [ ] Dùng spacing scale cố định thay cho margin rời rạc.
+- [ ] Container tiers: reading, form, workspace và wide-data.
+- [ ] Grid 4 cột mobile, 8 cột tablet, 12 cột desktop với gutter fluid.
+- [ ] Density modes theo ngữ cảnh: expressive marketing, comfortable product, compact admin.
+- [ ] Radius scale và shadow/elevation scale có tối đa số cấp cần thiết.
+- [ ] Border/highlight dùng để tạo cấu trúc trước khi dùng shadow.
+- [ ] Safe-area inset và viewport động trên mobile được tính từ đầu.
+
+### Motion tokens
+
+- [ ] Duration tiers gợi ý: instant 80–120ms, response 160–220ms, transition 280–420ms, narrative tối đa 700ms.
+- [ ] Easing riêng cho enter, exit, emphasis và progress.
+- [ ] Chỉ animate `transform`, `opacity` hoặc thuộc tính đã benchmark khi có thể.
+- [ ] Không animate layout lớn gây CLS hoặc main-thread jank.
+- [ ] Reduced-motion thay chuyển động bằng opacity/color/state tức thời; không chỉ đặt duration bằng 0 một cách mù quáng.
+
+## 19B.6 Component system V2
+
+### Primitives
+
+- [ ] Button/LinkButton với primary, secondary, quiet, danger và icon-only.
+- [ ] Input, select, password, search, file picker, checkbox/switch nếu thực sự cần.
+- [ ] Field anatomy thống nhất: label, hint, requirement, error, success và character/state feedback.
+- [ ] Card/surface variants: plain, elevated, inset, interactive và critical.
+- [ ] Badge/status, progress, skeleton, empty state, inline notice, toast/status region.
+- [ ] Tabs, segmented control, pagination, dialog, dropdown/menu và tooltip/popover.
+- [ ] Tooltip/popover phải dismissible, hoverable, persistent và dùng được bằng keyboard.
+- [ ] Mỗi primitive có focus, disabled, loading, error, dark/light và reduced-motion states.
+
+### Data components
+
+- [ ] Metric card có hierarchy số liệu, delta và context rõ.
+- [ ] Relationship row/card responsive; không ép table desktop lên mobile.
+- [ ] Timeline snapshot và compare rail thể hiện thời gian thật, không trang trí giả.
+- [ ] Sparkline chỉ dùng khi có chuỗi dữ liệu đủ nghĩa; luôn có text equivalent.
+- [ ] Data table admin có sticky header hợp lý, overflow kiểm soát và action không làm cột vỡ.
+- [ ] Empty/zero/unknown/error là bốn state khác nhau về copy và hình ảnh.
+
+### Internal design lab
+
+- [ ] Tạo route/dev harness nội bộ hoặc fixture page không index/không ship production nếu cần.
+- [ ] Render mọi component, theme, locale, viewport và state từ dữ liệu synthetic.
+- [ ] Dùng design lab làm nguồn screenshot regression; không biến nó thành dependency nặng nếu component tests đủ dùng.
+
+## 19B.7 Global shell, navigation và footer
+
+- [x] Header desktop có hierarchy rõ giữa brand, product navigation, account và preferences.
+- [x] Header tablet không wrap ngẫu nhiên; có breakpoint/chế độ điều hướng được thiết kế riêng.
+- [ ] Mobile navigation dùng panel/menu có focus management, close bằng Escape và không khóa sai scroll.
+- [x] Active route dùng nhiều hơn màu: weight, marker và `aria-current`.
+- [x] Theme/locale controls gọn, không cạnh tranh CTA chính.
+- [x] Sticky behavior không che focus target hoặc heading anchor.
+- [x] Footer có brand summary, privacy boundary, legal navigation và disclaimer với hierarchy rõ.
+- [x] Không có vùng rỗng bất thường, overlap hoặc footer bị dồn ở viewport thấp.
+- [ ] Route transition chỉ bật progressive enhancement; điều hướng vẫn hoàn chỉnh nếu API không hỗ trợ.
+
+## 19B.8 Landing page redesign
+
+- [ ] Hero trình bày đúng hai miền dữ liệu: relationship analysis local và Story lookup qua network.
+- [x] Signature signal field chạy nhẹ, local và không đọc dữ liệu người dùng.
+- [x] CTA chính vào analyzer; CTA phụ giải thích quy trình.
+- [x] Trust proof không dùng logo/chứng nhận giả; dùng facts có thể kiểm chứng.
+- [ ] Minh họa quy trình ZIP → worker → IndexedDB → insight bằng visual semantic.
+- [ ] Demo dashboard dùng synthetic handles/counts được đánh dấu là minh họa.
+- [ ] Scroll reveal theo section, không reveal từng dòng chữ.
+- [x] Nội dung limitations/legal không bị thu nhỏ hoặc giấu để đổi lấy vẻ đẹp.
+- [x] Mobile hero giảm decor, ưu tiên headline/CTA và không đẩy giá trị chính xuống quá sâu.
+
+## 19B.9 Analyzer redesign
+
+Analyzer là trọng tâm sản phẩm; hiệu ứng phải giảm sau khi người dùng bắt đầu thao tác.
+
+- [ ] Tách rõ ba vùng: local profile, import/workflow, insight/history.
+- [ ] Có step/state indicator dựa trên state machine thật, không tạo progress giả.
+- [ ] Drop zone có trạng thái idle/hover/drag/validating/parsing/error riêng.
+- [ ] “Local processing” effect chỉ chạy trong import thật; dừng ngay khi complete/cancel/error.
+- [ ] Review import dùng summary layout dễ quét và cảnh báo có priority.
+- [ ] Result overview ưu tiên metric, relationship categories và snapshot context.
+- [ ] Count reveal không che số cuối, không chạy lâu và tắt khi reduced motion.
+- [ ] Result tabs sticky có kiểm soát trên desktop, chuyển thành scroll/selector hợp lý trên mobile.
+- [ ] List row có search/sort/copy/open-profile nhưng không biến thành bảng action dày đặc.
+- [ ] History dùng visual timeline/compare rail; luôn kèm date/count text.
+- [ ] Destructive controls tách khỏi primary workflow và có confirmation rõ.
+- [ ] Large dataset không làm tăng DOM/animation tuyến tính theo số record.
+- [ ] Không render particle/node cho từng follower.
+
+## 19B.10 Story/Highlights redesign
+
+- [ ] Network disclosure đặt ngay cạnh input nhưng ngắn, dễ đọc và không giống banner lỗi.
+- [ ] Public-only, provider/network và copyright boundary có hierarchy riêng.
+- [ ] Search state chuyển đổi mượt nhưng luôn phản ánh request thật.
+- [ ] Gallery dùng aspect ratio ổn định, skeleton đúng kích thước và lazy loading.
+- [ ] Highlight selector dùng cover/title/count rõ, keyboard navigation đầy đủ.
+- [ ] Video không autoplay có âm thanh; controls và error/expired state dễ nhận biết.
+- [ ] Download action không bị lẫn với navigation hoặc preview.
+- [ ] Không dùng hiệu ứng làm tăng số media request hoặc preload ngoài ý muốn.
+
+## 19B.11 Auth, account và admin redesign
+
+- [x] Auth shell tạo cảm giác tin cậy, tập trung; decor không gây nhiễu form.
+- [x] Password strength dễ hiểu, không chỉ đổi màu và không cổ vũ mật khẩu yếu.
+- [ ] Verification/reset/setup states dùng cùng một status language.
+- [ ] Account chia identity, security, sessions và privacy boundary thành nhóm rõ.
+- [ ] Admin có density cao hơn nhưng vẫn thoáng, scan nhanh và không giấu destructive action.
+- [ ] Table chuyển thành cards/rows trên mobile thay vì scroll ngang vô hạn khi khả thi.
+- [ ] Ban/delete/role change có affordance khác nhau và confirmation phù hợp mức rủi ro.
+- [ ] Không hiển thị dữ liệu relationship local trong bất kỳ mockup/admin surface nào.
+
+## 19B.12 Editorial, legal, error và utility pages
+
+- [ ] How-it-works có visual sequence đồng bộ với analyzer thật.
+- [ ] FAQ accordion có rhythm tốt, focus rõ và không animate height gây giật.
+- [ ] Privacy/Terms ưu tiên đọc dài: mục lục, anchor, line length và heading hierarchy.
+- [ ] Legal copy không bị đặt trong font quá nhỏ hoặc contrast thấp.
+- [ ] 404/error có personality Folmetry nhưng CTA phục hồi rõ ràng.
+- [ ] Setup/degraded states đưa ra hành động cụ thể, không lộ secret/config value.
+
+## 19B.13 Motion và hiệu ứng công nghệ
+
+### Được phép sau khi prototype/benchmark
+
+- [x] CSS/SVG signal field tĩnh hoặc chuyển động rất chậm ở marketing hero.
+- [ ] View Transition API cho route/state transition theo progressive enhancement.
+- [ ] CSS view/scroll timeline cho một số section marketing nếu browser hỗ trợ.
+- [ ] Mask/reveal, line draw và number transition ngắn gắn với trạng thái thật.
+- [ ] Subtle pointer response trên desktop có hover; không áp dụng thiết bị touch.
+- [x] Gradient/noise local nhẹ để tạo vật liệu, với fallback solid.
+
+### Guardrails
+
+- [x] Không dùng WebGL/Three.js mặc định; chỉ xem xét nếu prototype chứng minh giá trị khác biệt và đạt budget.
+- [x] Không JS `scroll` listener cho animation nếu CSS/progressive enhancement đủ dùng.
+- [x] Không hơn một hiệu ứng "hero" nổi bật trong cùng viewport.
+- [ ] Không animation khi tab background, save-data hoặc reduced-motion.
+- [ ] Không flashing quá ngưỡng an toàn; không strobe/chromatic aberration liên tục.
+- [ ] Focus, click, type, drag và submit phải có phản hồi trong khoảng cảm nhận tức thời.
+- [ ] Hover content phải dismissible/hoverable/persistent theo WCAG.
+
+## 19B.14 Asset và illustration pipeline
+
+- [ ] Mọi asset có owner, license, source và mục đích rõ.
+- [x] Ưu tiên SVG/CSS/code-native cho topology, icons và diagrams.
+- [ ] Chỉ dùng raster khi chất liệu thực sự cần; tạo nhiều kích thước và nén phù hợp.
+- [ ] Không nhúng base64 lớn vào CSS/JS.
+- [ ] Logo/icon có kích thước khai báo để tránh CLS.
+- [x] Decorative asset có `alt=""`; informative graphic có text alternative.
+- [x] Không dùng ảnh stock "người nhìn dashboard" hoặc hình AI chung chung.
+- [ ] Icon set nhất quán stroke/optical size; không trộn nhiều bộ icon.
+
+## 19B.15 Performance budget
+
+Baseline được đo trước; redesign không được regression không kiểm soát.
+
+- [ ] Core Web Vitals target tại p75: LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1.
+- [ ] Marketing Lighthouse Performance mục tiêu ≥ 95 trên profile đã thống nhất.
+- [ ] Không tăng route JavaScript marketing quá 10% baseline nếu không có justification đo được.
+- [ ] Motion/decor không được nằm trong critical path của analyzer/auth/admin.
+- [ ] Không có animation task dài > 50ms trong interaction trace mục tiêu.
+- [ ] Không tạo CLS từ font, hero art, media gallery, toast hoặc status transition.
+- [ ] Font subset theo script/weight thực dùng; preload tối thiểu và có fallback metrics phù hợp.
+- [ ] SVG/filter/noise được benchmark trên mobile; bỏ filter gây paint cost cao.
+- [ ] Story gallery giữ bounded concurrent media và không preload toàn bộ video.
+- [ ] Analyzer large-list performance không giảm vì visual wrapper/effect.
+
+## 19B.16 Accessibility và reduced experience
+
+- [ ] WCAG 2.2 AA manual review trên mọi route/state quan trọng.
+- [ ] Target tối thiểu 24×24 CSS px theo AA; mục tiêu sản phẩm 44×44 cho control chính.
+- [ ] Focus không bị sticky header/dialog che và luôn có indicator đủ contrast.
+- [ ] Zoom 200% và text-only zoom không gây overlap/cắt nội dung.
+- [x] Reflow 320px không cần scroll ngang ngoại trừ vùng dữ liệu có lý do/documentation.
+- [ ] Keyboard hoàn thành được đăng ký, import, review, results, history, Story và admin.
+- [ ] Screen reader nhận state/progress/error mà không bị live region spam.
+- [ ] Mọi interaction kéo có single-pointer/button alternative.
+- [x] Reduced-motion screenshot và E2E xác nhận không còn transform/parallax bắt buộc.
+- [ ] High-contrast/forced-colors smoke test cho navigation, form, focus và trạng thái.
+
+## 19B.17 Responsive strategy
+
+- [ ] 320–430px: single-column, sticky actions có safe-area, không miniaturize desktop.
+- [ ] 600–900px: tablet layout riêng; navigation, card grid và admin không wrap ngẫu nhiên.
+- [x] 1024–1440px: workspace tận dụng chiều rộng nhưng giữ reading measure.
+- [x] ≥1440px: constrained composition, không kéo paragraph/card rỗng hết màn hình.
+- [ ] Landscape mobile/tablet được kiểm tra với keyboard ảo và dialog.
+- [ ] Vietnamese wrapping được test ở width nhỏ nhất trước khi duyệt component.
+- [x] Footer, header, tabs, result controls và auth form không overlap ở mọi target width.
+
+## 19B.18 Implementation sequence
+
+### UX0 — Audit và baseline
+
+- [ ] Hoàn tất inventory, screenshots, metrics, route/state matrix và issue log.
+- [x] Cập nhật `website.md` revision mới để thay thế chỉ dẫn “minimal decorative animation” bằng motion policy M8UX đã duyệt.
+
+### UX1 — Art direction
+
+- [ ] Tạo ba concept, chọn một, khóa signature motifs và anti-pattern list.
+- [ ] Duyệt cả desktop/mobile, light/dark và EN/VI trước khi code production.
+
+### UX2 — Foundations
+
+- [x] Token V2, system-font pipeline không remote request, grid/container, elevation, motion và icon rules.
+- [ ] Migration map từ token/component cũ; tránh big-bang CSS không kiểm soát.
+
+### UX3 — Primitives và design lab
+
+- [ ] Xây primitives, interaction states, component tests và visual fixtures.
+- [ ] Không migrate page khi primitive nền chưa đạt accessibility gate.
+
+### UX4 — Global shell
+
+- [x] Header/navigation/footer/preferences và responsive shell; chủ động không thêm route transition khi chưa có shared-element use case đủ giá trị.
+
+### UX5 — Marketing/editorial
+
+- [x] Home, how-it-works, FAQ, privacy, terms, 404/error.
+- [ ] Chốt marketing performance trước khi thêm effect thứ hai.
+
+### UX6 — Analyzer
+
+- [x] Migrate tuần tự theo state: no-account → import → progress → review → results → history/error.
+- [ ] So sánh với fixture và baseline sau mỗi state; không đổi domain logic.
+
+### UX7 — Story/media
+
+- [x] Migrate lookup, disclosure, state feedback, galleries, highlights và download.
+
+### UX8 — Auth/account/admin
+
+- [x] Migrate auth forms, password feedback, account security và admin data surfaces.
+
+### UX9 — Motion pass
+
+- [x] Chỉ thêm motion sau khi static hierarchy, responsive và accessibility đã đạt.
+- [ ] Profile paint/composite/main-thread sau từng nhóm effect.
+
+### UX10 — Hardening và rollout
+
+- [ ] Visual regression, multi-browser, mobile devices, axe/manual WCAG, Lighthouse và production preview.
+- [ ] Fix theo severity; không chấp nhận “đẹp trên máy thiết kế” làm gate.
+
+## 19B.19 Test strategy
+
+### Automated
+
+- [ ] Component tests cho variants/states của primitives.
+- [ ] Screenshot visual regression tại 390, 768, 1440 cho light/dark và EN/VI representative routes.
+- [x] E2E geometry assertions: không overlap, không clipping, không unexpected horizontal overflow.
+- [x] E2E reduced-motion và keyboard navigation.
+- [ ] Axe trên landing, auth, analyzer states, Story results, account, admin và legal.
+- [ ] CLS assertions quanh font/media/status loading khi công cụ cho phép.
+- [ ] Bundle/CSS budget report trong CI.
+- [x] Production build và route smoke không phụ thuộc animation API.
+
+### Manual visual review
+
+- [ ] Chrome, Edge, Firefox, Safari/WebKit.
+- [ ] iOS Safari và Android Chrome representative.
+- [ ] 100%, 125%, 150%, 200% zoom.
+- [ ] Light/dark/system; EN/VI; reduced motion; forced colors.
+- [ ] Slow CPU/network, offline/degraded provider và large dataset.
+- [ ] Header/footer ở viewport thấp, keyboard mở, address bar động và safe area.
+
+## 19B.20 Review gates và tiêu chí loại bỏ
+
+Một thiết kế/effect bị loại nếu có một trong các điều kiện:
+
+- [ ] Chỉ tồn tại để “trông công nghệ” nhưng không hỗ trợ nội dung/tác vụ.
+- [ ] Giống rõ ràng template AI/SaaS phổ biến hoặc trade dress của thương hiệu khác.
+- [ ] Làm sai privacy boundary hoặc tạo cảm giác Folmetry kết nối trực tiếp tài khoản Instagram.
+- [ ] Không có reduced-motion/fallback hợp lệ.
+- [ ] Tăng LCP/INP/CLS hoặc bundle vượt budget mà không có lợi ích đo được.
+- [ ] Làm keyboard, screen reader, zoom hoặc mobile khó hơn.
+- [ ] Tạo layout shift, overlap, scroll ngang hoặc làm mất nội dung tiếng Việt.
+- [ ] Dùng dữ liệu giả như thể đó là dữ liệu thật của người dùng.
+- [ ] Tăng network/media request ngoài ý muốn.
+
+## 19B.21 Rollout và rollback
+
+- [ ] Triển khai trên branch/preview riêng; không redesign trực tiếp production từng mảnh không đồng bộ.
+- [ ] Chia PR theo foundation/shell/route family để review được.
+- [ ] Giữ domain, persistence, auth và provider contracts ổn định trong redesign.
+- [ ] Có checklist rollback token/shell/motion nếu production metric regression.
+- [ ] So sánh before/after bằng screenshot và metric, không chỉ nhận xét cảm tính.
+- [ ] Sau rollout kiểm tra field Core Web Vitals, lỗi client, conversion chính và support feedback.
+- [ ] Không dùng dark pattern hoặc analytics xâm phạm riêng tư để đo “engagement”.
+
+## 19B.22 Definition of Done M8UX
+
+- [ ] Art direction được duyệt và có thể nhận diện khi ẩn logo.
+- [ ] Tất cả route/state trong inventory đã migrate hoặc có quyết định giữ nguyên bằng văn bản.
+- [ ] Design tokens/primitives V2 thay thế style rời rạc; không còn duplicate CSS nghiêm trọng.
+- [ ] Light/dark/system và EN/VI hoàn chỉnh.
+- [ ] Desktop/tablet/mobile không overlap, clipping hoặc overflow ngoài chủ đích.
+- [ ] Motion có ý nghĩa, không jank và reduced-motion hoàn chỉnh.
+- [ ] WCAG 2.2 AA automated + manual gates đạt.
+- [ ] Core Web Vitals/bundle không vượt budget.
+- [ ] Analyzer large-data và Story media behavior không regression.
+- [ ] Visual regression được đưa vào CI cho state đại diện.
+- [ ] Production preview được sign-off về product, design, accessibility, privacy và engineering.
+- [ ] `pnpm check`, full E2E đa trình duyệt, audit và production smoke pass.
+
+## 19B.23 Tài liệu chuẩn dùng khi triển khai
+
+- [WCAG 2.2](https://www.w3.org/TR/WCAG22/): focus, target size, dragging, hover/focus content và motion.
+- [Core Web Vitals thresholds](https://web.dev/articles/defining-core-web-vitals-thresholds): đánh giá LCP, INP, CLS ở percentile 75; không đánh đổi trải nghiệm thật lấy điểm demo.
+- [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API): progressive enhancement, không phải dependency chức năng.
+- [CSS scroll-driven animations](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Scroll-driven_animations): chỉ dùng với `@supports`, reduced-motion và fallback tĩnh.
 
 ---
 

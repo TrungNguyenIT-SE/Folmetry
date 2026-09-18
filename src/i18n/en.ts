@@ -12,6 +12,8 @@ export const en = {
     language: "Language",
     theme: "Theme",
     closeDialog: "Close dialog",
+    openMenu: "Open navigation menu",
+    closeMenu: "Close navigation menu",
   },
   nav: {
     analyzer: "Analyzer",
@@ -60,7 +62,7 @@ export const en = {
     reset: { eyebrow: "Account recovery", title: "Choose a new password", description: "Completing this reset signs out existing sessions for your protection.", password: "New password", confirm: "Confirm new password", submit: "Update password", pending: "Updating…", invalid: "This password reset link is invalid or expired.", complete: "Password updated.", signIn: "Sign in with your new password." },
     setup: { title: "Authentication setup required", body: "This environment is not connected to the authentication database and email service yet.", action: "Configure these server-only variables, run the auth migration, then restart the server:" },
     account: { eyebrow: "Folmetry account", status: "Account status", verification: "Verification", verified: "Verified", pending: "Pending", role: "Role", admin: "Admin", user: "User", openAdmin: "Open user administration", revoke: "Sign out other sessions", revoked: "Other sessions have been signed out.", revokeError: "Sessions could not be updated.", signOut: "Sign out", privacyTitle: "Privacy boundary", privacyBody: "Your Folmetry account is stored on the server. Instagram ZIP files and relationship snapshots remain in this browser and are not available to administrators." },
-    admin: { eyebrow: "Administration", title: "User management", description: "Manage Folmetry accounts, roles, access and sessions. Local Instagram data is never exposed here.", users: "Users", intro: "Manage roles, access and active sessions.", search: "Search by email", role: "Role", status: "Status", created: "Created", actions: "Actions", active: "Active", suspended: "Suspended", makeUser: "Make user", makeAdmin: "Make admin", restore: "Restore", suspend: "Suspend", revoke: "Revoke sessions", delete: "Delete", empty: "No users match this search.", loadError: "Users could not be loaded.", updateError: "The user could not be updated.", confirmDelete: "Delete this user? This cannot be undone.", of: "of" },
+    admin: { eyebrow: "Administration", title: "User management", description: "Manage Folmetry accounts, roles, access and sessions. Local Instagram data is never exposed here.", users: "Users", userColumn: "User", intro: "Manage roles, access and active sessions.", search: "Search by email", role: "Role", status: "Status", created: "Created", actions: "Actions", active: "Active", suspended: "Suspended", makeUser: "Make user", makeAdmin: "Make admin", restore: "Restore", suspend: "Suspend", revoke: "Revoke sessions", delete: "Delete", empty: "No users match this search.", loadError: "Users could not be loaded.", updateError: "The user could not be updated.", confirmChange: "Confirm account change", confirmDelete: "Delete this user? This cannot be undone.", confirm: "Confirm", cancel: "Cancel", of: "of" },
   },
   footer: {
     localBoundary: "Your relationship export stays on this device.",
@@ -77,8 +79,10 @@ export const en = {
     noLoginBody: "We never ask for an Instagram password, cookie, access token, or two-factor code.",
     localTitle: "Local relationship analysis",
     localBody: "Your relationship ZIP and normalized follower data are processed on this device.",
+    localRealmLabel: "01 / Local",
     boundariesTitle: "Honest boundaries",
     boundariesBody: "Networked Story requests are isolated from your local relationship history.",
+    networkRealmLabel: "02 / Network",
     storyCtaTitle: "Looking for public Stories or Highlights?",
     storyCtaBody: "That utility uses a disclosed server/provider request and never reads your local relationship database.",
     storyCtaAction: "View Story utility",
@@ -129,6 +133,11 @@ export const en = {
     csv: { export: "Export CSV", filename: "relationship-insights", category: "Category", handle: "Handle", connectedAt: "Connected date", currentSnapshot: "Current snapshot", previousSnapshot: "Previous snapshot" },
     ux: {
       loading: "Loading local analyzer...",
+      workflowLabel: "Analyzer workflow",
+      workflowAccount: "Local profile",
+      workflowImport: "Import",
+      workflowReview: "Review",
+      workflowResults: "Insights",
       accountIntro: "Create a local account profile to keep separate Instagram exports from being mixed together. No Instagram login is required.",
       accountPrivacy: "The label and optional username are stored only in this browser.",
       labelHint: "Use a name you can recognize on a shared device.",
@@ -250,5 +259,5 @@ export const en = {
     persistence: { INDEXEDDB_UNAVAILABLE: "Local history storage is unavailable.", INDEXEDDB_QUOTA_EXCEEDED: "This browser has no remaining local storage quota.", PERSISTENCE_TRANSACTION_FAILED: "The local save transaction failed.", PERSISTENCE_MIGRATION_FAILED: "The local database could not be upgraded.", UNKNOWN_PERSISTENCE_ERROR: "Local history could not be saved.", ACCOUNT_NOT_FOUND: "The selected local account no longer exists.", SNAPSHOT_NOT_FOUND: "The selected snapshot no longer exists.", SNAPSHOT_DUPLICATE: "This snapshot already exists for the account.", SNAPSHOT_TIMESTAMP_CONFLICT: "Another snapshot uses the same date and time.", INVALID_ACCOUNT_LABEL: "Enter a valid local account label.", INVALID_ACCOUNT_USERNAME: "Enter a valid Instagram username.", INVALID_SNAPSHOT: "The snapshot metadata is invalid.", INVALID_SETTING: "The setting value is invalid.", DELETION_CONFIRMATION_REQUIRED: "Confirm the deletion before continuing." },
   },
   warnings: { MULTIPART_FOLLOWERS_MERGED: "Multiple follower files were merged.", DUPLICATE_HANDLES_REMOVED: "Duplicate handles were removed.", INVALID_ENTRY_SKIPPED: "Invalid relationship entries were skipped.", MISSING_OPTIONAL_TIMESTAMP: "Some optional relationship dates were unavailable.", UNKNOWN_NON_CRITICAL_FILE_IGNORED: "Unrelated archive files were ignored.", LARGE_EXPORT_PERFORMANCE_WARNING: "This large export may take longer to process.", MANUAL_IMPORT_COMPLETENESS_UNVERIFIED: "Confirm that every followers part was selected.", TIMESTAMP_CONFLICT_RESOLVED: "Conflicting relationship dates were resolved conservatively.", HISTORICAL_COUNT_INCONSISTENCY: "The historical counts were inconsistent with the calculated difference." },
-  common: { retry: "Try again", returnHome: "Return home", errorEyebrow: "Something went wrong", errorTitle: "This page could not be displayed.", errorBody: "Your local relationship data has not been sent anywhere.", notFoundEyebrow: "404", notFoundTitle: "Page not found", notFoundBody: "The address may be incorrect or the page may have moved." },
+  common: { retry: "Try again", returnHome: "Return home", onThisPage: "On this page", errorEyebrow: "Something went wrong", errorTitle: "This page could not be displayed.", errorBody: "Your local relationship data has not been sent anywhere.", notFoundEyebrow: "404", notFoundTitle: "Page not found", notFoundBody: "The address may be incorrect or the page may have moved." },
 } as const;

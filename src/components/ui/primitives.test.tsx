@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Badge, Dialog, Field, ProgressStatus, Tabs } from "@/components/ui";
+import { Badge, Button, Card, Dialog, Field, ProgressStatus, Tabs } from "@/components/ui";
 
 describe("accessible UI primitives", () => {
   it("connects field labels, descriptions, and errors", () => {
@@ -46,7 +46,19 @@ describe("accessible UI primitives", () => {
 
   it("uses text/symbol semantics in badges and native determinate progress", () => {
     render(<><Badge tone="success">Saved</Badge><ProgressStatus label="Importing" value={2} max={4} /></>);
-    expect(screen.getByText("Saved").textContent).toBe("●Saved");
+    expect(screen.getByText("Saved").textContent).toBe("✓Saved");
     expect(screen.getByRole("progressbar", { name: "Importing" }).getAttribute("value")).toBe("2");
+  });
+
+  it("exposes quiet, icon-only, surface, and successful field states", () => {
+    render(<>
+      <Button aria-label="Settings" iconOnly variant="quiet">S</Button>
+      <Card heading="Inset" surface="inset"><p>Content</p></Card>
+      <Field label="Username" success="Available" />
+    </>);
+    expect(screen.getByRole("button", { name: "Settings" }).className).toContain("button--icon");
+    expect(screen.getByRole("button", { name: "Settings" }).className).toContain("button--quiet");
+    expect(screen.getByRole("heading", { name: "Inset" }).parentElement?.className).toContain("card--inset");
+    expect(screen.getByRole("textbox", { name: "Username" }).getAttribute("aria-describedby")).toContain("success");
   });
 });

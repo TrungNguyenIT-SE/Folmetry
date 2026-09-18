@@ -72,6 +72,20 @@ function Highlights({ collections, download, empty, loading, refresh }: Readonly
   const [error, setError] = useState(false);
   const controller = useRef<AbortController | undefined>(undefined);
 
+  const moveHighlightFocus = (event: React.KeyboardEvent<HTMLButtonElement>): void => {
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+    const buttons = Array.from(event.currentTarget.closest(".highlight-list")?.querySelectorAll<HTMLButtonElement>(".highlight-card") ?? []);
+    const current = buttons.indexOf(event.currentTarget);
+    if (current < 0 || buttons.length === 0) return;
+    event.preventDefault();
+    const next = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? buttons.length - 1
+        : (current + (event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1) + buttons.length) % buttons.length;
+    buttons[next]?.focus();
+  };
+
   useEffect(() => () => controller.current?.abort(), []);
 
   const select = async (id: string): Promise<void> => {
@@ -94,7 +108,7 @@ function Highlights({ collections, download, empty, loading, refresh }: Readonly
       <div className="highlight-list" role="list">
         {collections.map((collection) => (
           <div key={collection.id} role="listitem">
-            <button aria-pressed={selected === collection.id} className="highlight-card" onClick={() => void select(collection.id)} type="button">
+            <button aria-pressed={selected === collection.id} className="highlight-card" onClick={() => void select(collection.id)} onKeyDown={moveHighlightFocus} type="button">
               {collection.coverRef ? <Image alt="" height={120} src={mediaUrl(collection.coverRef)} unoptimized width={120} /> : <span className="highlight-card__placeholder" aria-hidden="true" />}
               <span><strong>{collection.title}</strong>{collection.itemCount === undefined ? null : <small>{collection.itemCount}</small>}</span>
             </button>
@@ -147,8 +161,8 @@ export function StoryDownloaderApp() {
 
   return (
     <RouteIntro description={page.description} eyebrow={page.eyebrow} title={page.title}>
-      <div className="story-app">
-        <form className="story-form" onSubmit={(event) => void submit(event)}>
+      <div className="story-app" data-state={state}>
+        <form aria-busy={state === "loading"} className="story-form" onSubmit={(event) => void submit(event)}>
           <Field autoComplete="off" description={story.hint} disabled={state === "loading"} label={story.label} name="handle" onChange={(event) => setHandle(event.target.value)} placeholder="@username" required spellCheck={false} value={handle} />
           <p className="privacy-note">{story.disclosure}</p>
           <div className="button-row">

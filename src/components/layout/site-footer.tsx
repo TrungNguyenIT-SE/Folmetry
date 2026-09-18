@@ -10,7 +10,10 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div className="site-footer__summary">
-          <strong className="site-footer__brand">Folmetry</strong>
+          <div className="site-footer__brand-line">
+            <strong className="site-footer__brand">Folmetry</strong>
+            <span className="site-footer__status" aria-hidden="true">LOCAL / PRIVATE</span>
+          </div>
           <p>{dictionary.footer.localBoundary}</p>
           <p>{dictionary.footer.storyBoundary}</p>
           <p className="site-footer__disclaimer">{dictionary.marketing.footerDisclaimer}</p>

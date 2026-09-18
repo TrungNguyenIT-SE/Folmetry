@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -20,5 +20,18 @@ describe("SiteHeader", () => {
     expect(screen.getByRole("link", { name: "Stories" }).getAttribute("href")).toBe(
       "/story-downloader",
     );
+  });
+
+  it("manages mobile menu focus, Escape, and scroll locking", async () => {
+    render(<AppPreferencesProvider><SiteHeader /></AppPreferencesProvider>);
+    const trigger = screen.getByRole("button", { name: "Open navigation menu" });
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("link", { name: "Analyzer" })));
+    expect(document.body.style.overflow).toBe("hidden");
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger);
+    expect(document.body.style.overflow).toBe("");
   });
 });

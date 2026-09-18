@@ -4,27 +4,30 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
 
-type Variant = "primary" | "secondary" | "danger";
+type Variant = "primary" | "secondary" | "quiet" | "danger";
+type Surface = "plain" | "elevated" | "inset" | "interactive" | "critical";
 
-export function Button({ variant = "primary", className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { readonly variant?: Variant }) {
-  return <button className={`button button--${variant} ${className}`.trim()} {...props} />;
+export function Button({ variant = "primary", iconOnly = false, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { readonly variant?: Variant; readonly iconOnly?: boolean }) {
+  return <button className={`button button--${variant}${iconOnly ? " button--icon" : ""} ${className}`.trim()} {...props} />;
 }
 
 export function ButtonLink({ href, children, variant = "primary" }: Readonly<{ href: Route; children: ReactNode; variant?: Exclude<Variant, "danger"> }>) {
   return <Link className={`button button--${variant}`} href={href}>{children}</Link>;
 }
 
-export function Field({ label, description, error, ...props }: InputHTMLAttributes<HTMLInputElement> & Readonly<{ label: string; description?: string; error?: string }>) {
+export function Field({ label, description, error, success, ...props }: InputHTMLAttributes<HTMLInputElement> & Readonly<{ label: string; description?: string; error?: string; success?: string }>) {
   const generatedId = useId();
   const id = props.id ?? generatedId;
   const descriptionId = description === undefined ? undefined : `${id}-description`;
   const errorId = error === undefined ? undefined : `${id}-error`;
+  const successId = success === undefined ? undefined : `${id}-success`;
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
       {description === undefined ? null : <p id={descriptionId}>{description}</p>}
-      <input {...props} id={id} aria-invalid={error === undefined ? undefined : true} aria-describedby={[descriptionId, errorId].filter(Boolean).join(" ") || undefined} />
+      <input {...props} id={id} aria-invalid={error === undefined ? undefined : true} aria-describedby={[descriptionId, errorId, successId].filter(Boolean).join(" ") || undefined} />
       {error === undefined ? null : <p className="field__error" id={errorId}>{error}</p>}
+      {success === undefined ? null : <p className="field__success" id={successId}>{success}</p>}
     </div>
   );
 }
@@ -35,12 +38,13 @@ export function SelectField({ label, children, ...props }: SelectHTMLAttributes<
   return <div className="field"><label htmlFor={id}>{label}</label><select {...props} id={id}>{children}</select></div>;
 }
 
-export function Card({ children, heading }: Readonly<{ children: ReactNode; heading?: string }>) {
-  return <section className="card">{heading === undefined ? null : <h2>{heading}</h2>}{children}</section>;
+export function Card({ children, heading, surface = "plain" }: Readonly<{ children: ReactNode; heading?: string; surface?: Surface }>) {
+  return <section className={`card card--${surface}`}>{heading === undefined ? null : <h2>{heading}</h2>}{children}</section>;
 }
 
 export function Badge({ children, tone = "neutral" }: Readonly<{ children: ReactNode; tone?: "neutral" | "success" | "warning" | "danger" }>) {
-  return <span className={`badge badge--${tone}`}><span aria-hidden="true" className="badge__symbol">●</span>{children}</span>;
+  const symbol = { neutral: "•", success: "✓", warning: "!", danger: "×" }[tone];
+  return <span className={`badge badge--${tone}`}><span aria-hidden="true" className="badge__symbol">{symbol}</span>{children}</span>;
 }
 
 export function StatusRegion({ children, assertive = false }: Readonly<{ children: ReactNode; assertive?: boolean }>) {

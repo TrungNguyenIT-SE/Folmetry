@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 
-import { Badge, Button, Field, StatusRegion } from "@/components/ui";
+import { Badge, Button, Dialog, Field, StatusRegion } from "@/components/ui";
 import { authClient } from "@/features/auth/client";
 import { useI18n } from "@/i18n";
 
 type AdminUser = NonNullable<Awaited<ReturnType<typeof authClient.admin.listUsers>>["data"]>["users"][number];
 
 const pageSize = 50;
+type AdminActionKind = "role" | "access" | "sessions" | "delete";
 
 export function AdminUserManager({ currentUserId, initialUsers, initialTotal }: Readonly<{ currentUserId: string; initialUsers: readonly AdminUser[]; initialTotal: number }>) {
   const { dictionary, formatDate } = useI18n();
@@ -19,6 +20,7 @@ export function AdminUserManager({ currentUserId, initialUsers, initialTotal }: 
   const [offset, setOffset] = useState(0);
   const [search, setSearch] = useState("");
   const [pendingId, setPendingId] = useState<string>();
+  const [action, setAction] = useState<{ readonly kind: AdminActionKind; readonly user: AdminUser }>();
   const [error, setError] = useState<string>();
 
   const loadUsers = async (nextOffset = 0): Promise<void> => {
@@ -53,6 +55,17 @@ export function AdminUserManager({ currentUserId, initialUsers, initialTotal }: 
     await loadUsers(offset);
   };
 
+  const runAction = async (): Promise<void> => {
+    if (action === undefined) return;
+    const { kind, user } = action;
+    const isAdmin = String(user.role ?? "user").split(",").includes("admin");
+    if (kind === "role") await mutate(user.id, async () => authClient.admin.setRole({ userId: user.id, role: isAdmin ? "user" : "admin" }));
+    if (kind === "access") await mutate(user.id, async () => user.banned ? authClient.admin.unbanUser({ userId: user.id }) : authClient.admin.banUser({ userId: user.id, banReason: "Suspended by administrator" }));
+    if (kind === "sessions") await mutate(user.id, async () => authClient.admin.revokeUserSessions({ userId: user.id }));
+    if (kind === "delete") await mutate(user.id, async () => authClient.admin.removeUser({ userId: user.id }));
+    setAction(undefined);
+  };
+
   return (
     <section className="admin-users" aria-labelledby="admin-users-title">
       <div className="admin-users__heading">
@@ -64,7 +77,7 @@ export function AdminUserManager({ currentUserId, initialUsers, initialTotal }: 
       {error === undefined ? null : <StatusRegion assertive>{error}</StatusRegion>}
       <div className="admin-table-wrap">
         <table className="admin-table">
-          <thead><tr><th scope="col">User</th><th scope="col">{copy.role}</th><th scope="col">{copy.status}</th><th scope="col">{copy.created}</th><th scope="col">{copy.actions}</th></tr></thead>
+          <thead><tr><th scope="col">{copy.userColumn}</th><th scope="col">{copy.role}</th><th scope="col">{copy.status}</th><th scope="col">{copy.created}</th><th scope="col">{copy.actions}</th></tr></thead>
           <tbody>
             {users.map((user) => {
               const isSelf = user.id === currentUserId;
@@ -72,15 +85,15 @@ export function AdminUserManager({ currentUserId, initialUsers, initialTotal }: 
               const pending = pendingId === user.id;
               return (
                 <tr key={user.id}>
-                  <td><strong>{user.name}</strong><span>{user.email}</span></td>
-                  <td><Badge tone={isAdmin ? "success" : "neutral"}>{isAdmin ? accountCopy.admin : accountCopy.user}</Badge></td>
-                  <td><Badge tone={user.banned ? "danger" : "success"}>{user.banned ? copy.suspended : copy.active}</Badge></td>
-                  <td>{formatDate(new Date(user.createdAt))}</td>
-                  <td><div className="row-actions">
-                    <Button disabled={pending || isSelf} onClick={() => void mutate(user.id, async () => authClient.admin.setRole({ userId: user.id, role: isAdmin ? "user" : "admin" }))} type="button" variant="secondary">{isAdmin ? copy.makeUser : copy.makeAdmin}</Button>
-                    <Button disabled={pending || isSelf} onClick={() => void mutate(user.id, async () => user.banned ? authClient.admin.unbanUser({ userId: user.id }) : authClient.admin.banUser({ userId: user.id, banReason: "Suspended by administrator" }))} type="button" variant="secondary">{user.banned ? copy.restore : copy.suspend}</Button>
-                    <Button disabled={pending || isSelf} onClick={() => void mutate(user.id, async () => authClient.admin.revokeUserSessions({ userId: user.id }))} type="button" variant="secondary">{copy.revoke}</Button>
-                    <Button disabled={pending || isSelf} onClick={() => { if (window.confirm(copy.confirmDelete)) void mutate(user.id, async () => authClient.admin.removeUser({ userId: user.id })); }} type="button" variant="danger">{copy.delete}</Button>
+                  <td data-label={copy.userColumn}><strong>{user.name}</strong><span>{user.email}</span></td>
+                  <td data-label={copy.role}><Badge tone={isAdmin ? "success" : "neutral"}>{isAdmin ? accountCopy.admin : accountCopy.user}</Badge></td>
+                  <td data-label={copy.status}><Badge tone={user.banned ? "danger" : "success"}>{user.banned ? copy.suspended : copy.active}</Badge></td>
+                  <td data-label={copy.created}>{formatDate(new Date(user.createdAt))}</td>
+                  <td data-label={copy.actions}><div className="row-actions">
+                    <Button disabled={pending || isSelf} onClick={() => setAction({ kind: "role", user })} type="button" variant="secondary">{isAdmin ? copy.makeUser : copy.makeAdmin}</Button>
+                    <Button disabled={pending || isSelf} onClick={() => setAction({ kind: "access", user })} type="button" variant="secondary">{user.banned ? copy.restore : copy.suspend}</Button>
+                    <Button disabled={pending || isSelf} onClick={() => setAction({ kind: "sessions", user })} type="button" variant="secondary">{copy.revoke}</Button>
+                    <Button disabled={pending || isSelf} onClick={() => setAction({ kind: "delete", user })} type="button" variant="danger">{copy.delete}</Button>
                   </div></td>
                 </tr>
               );
@@ -94,6 +107,18 @@ export function AdminUserManager({ currentUserId, initialUsers, initialTotal }: 
         <Button disabled={offset + users.length >= total} onClick={() => void loadUsers(offset + pageSize)} type="button" variant="secondary">{dictionary.auth.common.next}</Button>
       </div>
       {users.length === 0 && error === undefined ? <p>{copy.empty}</p> : null}
+      <Dialog
+        alert={action?.kind === "delete" || (action?.kind === "access" && !action.user.banned)}
+        description={action?.kind === "delete" ? copy.confirmDelete : `${copy.confirmChange}: ${action?.user.email ?? ""}`}
+        onClose={() => setAction(undefined)}
+        open={action !== undefined}
+        title={action?.kind === "delete" ? copy.delete : copy.confirmChange}
+      >
+        <div className="button-row">
+          <Button onClick={() => void runAction()} type="button" variant={action?.kind === "delete" || (action?.kind === "access" && !action.user.banned) ? "danger" : "primary"}>{copy.confirm}</Button>
+          <Button onClick={() => setAction(undefined)} type="button" variant="secondary">{copy.cancel}</Button>
+        </div>
+      </Dialog>
     </section>
   );
 }

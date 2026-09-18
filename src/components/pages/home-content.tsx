@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { SignalField } from "@/components/layout/signal-field";
 import { useI18n } from "@/i18n";
 
 export function HomeContent() {
@@ -10,14 +11,21 @@ export function HomeContent() {
   const marketing = dictionary.marketing.home;
   return (
     <main className="page-shell" id="main-content">
-      <section className="hero" aria-labelledby="home-title">
-        <p className="eyebrow">{copy.eyebrow}</p>
-        <h1 id="home-title">{copy.title}</h1>
-        <p className="lede">{copy.description}</p>
-        <div className="actions">
-          <Link className="button button--primary" href="/app">{copy.openAnalyzer}</Link>
-          <Link className="button button--secondary" href="/how-it-works">{copy.howItWorks}</Link>
+      <section className="hero hero--signature" aria-labelledby="home-title">
+        <div className="hero__copy">
+          <p className="eyebrow">{copy.eyebrow}</p>
+          <h1 id="home-title">{copy.title}</h1>
+          <p className="lede">{copy.description}</p>
+          <dl className="hero-boundaries">
+            <div><dt>{copy.localRealmLabel}</dt><dd><strong>{copy.localTitle}</strong><span>{copy.localBody}</span></dd></div>
+            <div><dt>{copy.networkRealmLabel}</dt><dd><strong>{copy.boundariesTitle}</strong><span>{copy.boundariesBody}</span></dd></div>
+          </dl>
+          <div className="actions">
+            <Link className="button button--primary" href="/app">{copy.openAnalyzer}</Link>
+            <Link className="button button--secondary" href="/how-it-works">{copy.howItWorks}</Link>
+          </div>
         </div>
+        <SignalField />
       </section>
       <section className="principle-grid" aria-label={copy.principlesLabel}>
         <article className="card"><h2>{copy.noLoginTitle}</h2><p>{copy.noLoginBody}</p></article>
@@ -33,6 +41,11 @@ export function HomeContent() {
       <section className="marketing-section" aria-labelledby="steps-title">
         <p className="eyebrow">{marketing.stepsEyebrow}</p>
         <h2 id="steps-title">{marketing.stepsTitle}</h2>
+        <ol aria-label={marketing.pipelineLabel} className="data-pipeline">
+          {[marketing.pipelineZip, marketing.pipelineWorker, marketing.pipelineStore, marketing.pipelineInsight].map((label, index) => (
+            <li key={label}><span aria-hidden="true">0{index + 1}</span><strong>{label}</strong></li>
+          ))}
+        </ol>
         <ol className="step-grid">{marketing.steps.map((step, index) => <li key={step.title}><span aria-hidden="true">{index + 1}</span><div><h3>{step.title}</h3><p>{step.body}</p></div></li>)}</ol>
       </section>
       <section className="marketing-split" aria-labelledby="privacy-architecture-title">

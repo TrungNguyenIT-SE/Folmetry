@@ -180,7 +180,9 @@ test("IndexedDB history survives a page reload", async ({ page }) => {
 
 test("locale and theme preferences survive reload", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "VI" }).click();
+  const menuTrigger = page.getByRole("button", { name: "Open navigation menu" });
+  if (await menuTrigger.isVisible()) await menuTrigger.click();
+  await page.getByRole("button", { name: "VI", exact: true }).click();
   await page.getByRole("combobox", { name: "Giao diện" }).selectOption("dark");
   await expect(page.locator("html")).toHaveAttribute("lang", "vi");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -217,7 +219,9 @@ test("shell navigation exposes visible keyboard focus and active state", async (
   const home = page.getByRole("link", { name: "Folmetry home" });
   await home.focus();
   await expect(home).toBeFocused();
-  const analyzer = page.getByRole("link", { name: "Analyzer" });
+  const menuTrigger = page.getByRole("button", { name: "Open navigation menu" });
+  if (await menuTrigger.isVisible()) await menuTrigger.click();
+  const analyzer = page.getByRole("link", { name: "Analyzer", exact: true });
   await analyzer.focus();
   await expect(analyzer).toBeFocused();
   await expect(analyzer).toHaveAttribute("aria-current", "page");
@@ -236,11 +240,87 @@ test("shell has no horizontal overflow at supported responsive widths", async ({
       scrollWidth: document.documentElement.scrollWidth,
     }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+    if (width <= 752) {
+      await page.getByRole("button", { name: "Open navigation menu" }).click();
+    }
     await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
   }
 });
 
+test("mobile navigation traps focus, closes with Escape, and restores its trigger", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const trigger = page.getByRole("button", { name: "Open navigation menu" });
+  await trigger.click();
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Analyzer", exact: true })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeHidden();
+  await expect(trigger).toBeFocused();
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
+});
+
+test("Vietnamese dark mode reflows at 320px and remains accessible", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+  await page.getByRole("button", { name: "VI", exact: true }).click();
+  await page.getByRole("combobox", { name: "Giao diện" }).selectOption("dark");
+  await page.locator(".site-menu-button").click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "vi");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  const dimensions = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  const results = await createAxeBuilder(page).analyze();
+  expect(results.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical")).toEqual([]);
+});
+
+test("shell survives 200 percent text sizing and forced colors", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "Forced-colors emulation is verified in Chromium.");
+  await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
+  const dimensions = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  await expect(page.getByRole("link", { name: "Analyzer", exact: true })).toBeVisible();
+});
+
+test("signature motion is removed when reduced motion is requested", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const orbit = page.locator(".signal-field__orbit").first();
+  await expect(orbit).toBeVisible();
+  expect(await orbit.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
+
+  const primaryAction = page.getByRole("link", { name: "Open analyzer" }).first();
+  await primaryAction.hover({ force: true });
+  expect(await primaryAction.evaluate((element) => getComputedStyle(element).transform)).toBe("none");
+});
+
+test("landing reserves layout and stays within the CLS laboratory budget", async ({ page }) => {
+  await page.addInitScript(() => {
+    let cumulativeLayoutShift = 0;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & { readonly hadRecentInput: boolean; readonly value: number };
+        if (!shift.hadRecentInput) cumulativeLayoutShift += shift.value;
+      }
+    }).observe({ type: "layout-shift", buffered: true });
+    Object.defineProperty(window, "__folmetryCls", { get: () => cumulativeLayoutShift });
+  });
+  await page.goto("/");
+  await page.locator(".signal-field").waitFor();
+  await page.waitForTimeout(500);
+  const cls = await page.evaluate(() => (window as unknown as { readonly __folmetryCls: number }).__folmetryCls);
+  expect(cls).toBeLessThanOrEqual(0.1);
+});
+
 test("shell routes have no serious or critical accessibility violations", async ({ page }) => {
+  test.setTimeout(60_000);
   for (const route of routes) {
     await page.goto(route.path);
     const results = await createAxeBuilder(page).analyze();
@@ -255,10 +335,12 @@ test("shell routes have no serious or critical accessibility violations", async 
 test("analyzer completes two local imports, persists history, isolates accounts, and exports CSV", async ({ page }) => {
   test.slow();
   await page.goto("/app");
+  await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Local profile");
   await page.getByLabel("Account label").fill("Personal archive");
   await page.getByLabel("Instagram username (optional)").fill("private.local");
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page.getByRole("heading", { name: "Import an Instagram relationship export" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Import");
 
   const manualInput = page.locator('input[accept^=".json"]');
   await manualInput.setInputFiles([
@@ -266,9 +348,11 @@ test("analyzer completes two local imports, persists history, isolates accounts,
     path.join(instagramFixtures, "fixture-a", "following.json"),
   ]);
   await expect(page.getByRole("heading", { name: "Review import" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Review");
   await page.getByLabel("Snapshot date").fill("2026-01-01T10:00");
   await page.getByRole("button", { name: "Save snapshot" }).click();
   await expect(page.getByRole("heading", { name: "Relationship results" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Insights");
   await expect(page.getByText("This is the first snapshot", { exact: false })).toBeVisible();
 
   await manualInput.setInputFiles([
@@ -325,5 +409,36 @@ test("analyzer first-use layout has no horizontal overflow at supported widths",
     }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
     await expect(page.getByLabel("Account label")).toBeVisible();
+  }
+});
+
+test("analyzer content and footer keep separate responsive layout regions", async ({ page }) => {
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/app");
+    await expect(page.getByLabel("Account label")).toBeVisible();
+    const layout = await page.evaluate(() => {
+      const main = document.querySelector<HTMLElement>(".page-shell--analyzer")?.getBoundingClientRect();
+      const heading = document.querySelector<HTMLElement>(".analyzer-heading")?.getBoundingClientRect();
+      const card = document.querySelector<HTMLElement>(".analyzer-app > .card")?.getBoundingClientRect();
+      const summary = document.querySelector<HTMLElement>(".site-footer__summary")?.getBoundingClientRect();
+      const navigation = document.querySelector<HTMLElement>(".site-footer nav")?.getBoundingClientRect();
+      const overlaps = summary && navigation
+        ? summary.left < navigation.right && summary.right > navigation.left && summary.top < navigation.bottom && summary.bottom > navigation.top
+        : true;
+      return {
+        mainLeft: main?.left ?? -1,
+        mainRight: main?.right ?? Number.POSITIVE_INFINITY,
+        headingBottom: heading?.bottom ?? Number.POSITIVE_INFINITY,
+        cardTop: card?.top ?? -1,
+        footerOverlaps: overlaps,
+        viewportWidth: document.documentElement.clientWidth,
+      };
+    });
+
+    expect(layout.mainLeft).toBeGreaterThanOrEqual(16);
+    expect(layout.mainRight).toBeLessThanOrEqual(layout.viewportWidth - 16);
+    expect(layout.headingBottom).toBeLessThan(layout.cardTop);
+    expect(layout.footerOverlaps).toBe(false);
   }
 });

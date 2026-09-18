@@ -88,6 +88,22 @@ export function AppPreferencesProvider({ children }: Readonly<{ children: ReactN
     return () => query.removeEventListener("change", update);
   }, [theme]);
 
+  useEffect(() => {
+    type NetworkInformation = EventTarget & { readonly saveData?: boolean };
+    const connection = (navigator as Navigator & { readonly connection?: NetworkInformation }).connection;
+    const updateEnvironment = (): void => {
+      document.documentElement.dataset["documentHidden"] = document.hidden ? "true" : "false";
+      document.documentElement.dataset["saveData"] = connection?.saveData === true ? "true" : "false";
+    };
+    updateEnvironment();
+    document.addEventListener("visibilitychange", updateEnvironment);
+    connection?.addEventListener("change", updateEnvironment);
+    return () => {
+      document.removeEventListener("visibilitychange", updateEnvironment);
+      connection?.removeEventListener("change", updateEnvironment);
+    };
+  }, []);
+
   const setLocale = useCallback((nextLocale: Locale) => {
     localeTouchedRef.current = true;
     applyLocale(nextLocale);

@@ -12,6 +12,11 @@ export const marketingEn = {
       { title: "Lists you can use", body: "Search large result sets and export relevant categories as CSV for your own records." },
     ],
     stepsEyebrow: "Three clear steps", stepsTitle: "From official export to local insight",
+    pipelineLabel: "Local relationship-analysis data path",
+    pipelineZip: "Official ZIP",
+    pipelineWorker: "Browser worker",
+    pipelineStore: "Local IndexedDB",
+    pipelineInsight: "Private insight",
     steps: [
       { title: "Request your export", body: "In Meta Accounts Center, select the Instagram account, relationship data, JSON, and the all-time range when available." },
       { title: "Analyze on this device", body: "Choose the original ZIP. A browser worker reads and normalizes the relationship files without uploading them." },
@@ -86,6 +91,11 @@ export const marketingVi = {
       { title: "Danh sách có thể sử dụng", body: "Tìm kiếm kết quả lớn và xuất các nhóm cần thiết thành CSV cho hồ sơ riêng." },
     ],
     stepsEyebrow: "Ba bước rõ ràng", stepsTitle: "Từ bản xuất chính thức đến kết quả cục bộ",
+    pipelineLabel: "Luồng dữ liệu phân tích quan hệ cục bộ",
+    pipelineZip: "ZIP chính thức",
+    pipelineWorker: "Worker trình duyệt",
+    pipelineStore: "IndexedDB cục bộ",
+    pipelineInsight: "Kết quả riêng tư",
     steps: [
       { title: "Yêu cầu bản xuất", body: "Trong Trung tâm tài khoản Meta, chọn tài khoản Instagram, dữ liệu quan hệ, JSON và toàn bộ thời gian khi có." },
       { title: "Phân tích trên thiết bị", body: "Chọn ZIP gốc. Worker trong trình duyệt đọc và chuẩn hóa file quan hệ mà không tải lên." },

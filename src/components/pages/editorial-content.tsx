@@ -34,15 +34,23 @@ export function EditorialContent({ route }: Readonly<{ route: EditorialRoute }>)
 
   return (
     <RouteIntro description={page.description} eyebrow={page.eyebrow} title={page.title}>
-      <div className="editorial-stack">
-        {content.sections.map((section) => (
-          <section aria-labelledby={`${route}-${section.id}`} className="editorial-section" key={section.id}>
-            <h2 id={`${route}-${section.id}`}>{section.title}</h2>
-            {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            {section.points.length === 0 ? null : <ul>{section.points.map((point) => <li key={point}>{point}</li>)}</ul>}
-          </section>
-        ))}
-        {route === "howItWorks" ? <Link className="button button--primary editorial-cta" href="/app">{dictionary.marketing.howItWorks.cta}</Link> : null}
+      <div className={`editorial-layout${route === "howItWorks" ? " editorial-layout--sequence" : ""}`}>
+        {route === "privacy" || route === "terms" ? (
+          <nav aria-label={dictionary.common.onThisPage} className="editorial-toc">
+            <strong>{dictionary.common.onThisPage}</strong>
+            <ol>{content.sections.map((section) => <li key={section.id}><a href={`#${route}-${section.id}`}>{section.title}</a></li>)}</ol>
+          </nav>
+        ) : null}
+        <div className="editorial-stack">
+          {content.sections.map((section, index) => (
+            <section aria-labelledby={`${route}-${section.id}`} className="editorial-section" data-section-index={index + 1} key={section.id}>
+              <h2 id={`${route}-${section.id}`}>{section.title}</h2>
+              {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+              {section.points.length === 0 ? null : <ul>{section.points.map((point) => <li key={point}>{point}</li>)}</ul>}
+            </section>
+          ))}
+          {route === "howItWorks" ? <Link className="button button--primary editorial-cta" href="/app">{dictionary.marketing.howItWorks.cta}</Link> : null}
+        </div>
       </div>
     </RouteIntro>
   );
