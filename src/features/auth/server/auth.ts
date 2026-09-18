@@ -87,7 +87,7 @@ export const auth = betterAuth({
     revokeSessionsOnPasswordReset: true,
     resetPasswordTokenExpiresIn: 60 * 60,
     sendResetPassword: async ({ user, url }) => {
-      await sendAuthEmail({ kind: "reset", recipient: user.email, url });
+      await sendAuthEmail({ kind: "reset", recipient: user.email, recipientName: user.name, url });
     },
     customSyntheticUser: ({ coreFields, additionalFields, id }) => ({
       ...coreFields,
@@ -105,7 +105,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: 60 * 60,
     sendVerificationEmail: async ({ user, url }) => {
-      await sendAuthEmail({ kind: "verify", recipient: user.email, url });
+      await sendAuthEmail({ kind: "verify", recipient: user.email, recipientName: user.name, url });
     },
   },
   session: {
