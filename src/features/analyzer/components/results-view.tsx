@@ -338,7 +338,7 @@ export function ResultsView({
   ];
 
   return (
-    <Card heading={copy.ux.resultsTitle}>
+    <Card className="results-card" heading={copy.ux.resultsTitle}>
       {!saved ? <StatusRegion assertive>{copy.ux.unsavedResult}</StatusRegion> : null}
       <Tabs activeId={activeTab} items={tabs} label={copy.ux.resultsTitle} onChange={setActiveTab} />
       <Dialog alert description={dictionary.analyzer.delete.snapshotBody} onClose={() => setDeleteTarget(undefined)} open={deleteTarget !== undefined} title={dictionary.analyzer.delete.snapshotTitle}>

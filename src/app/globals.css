@@ -780,10 +780,22 @@ h2 {
   border-bottom: 1px solid var(--border);
 }
 
-.analyzer-app > .card > .tabs > [role="tablist"] {
-  position: sticky;
-  z-index: 5;
-  top: 5.75rem;
+.results-card > .tabs > [role="tablist"] {
+  position: relative;
+  z-index: 1;
+}
+
+.results-card .tabs {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.results-card .tabs > [role="tabpanel"] {
+  padding-block: 0;
+}
+
+.results-card .overview-panel {
+  margin-top: 0;
 }
 
 .tabs [role="tab"] {
@@ -2069,7 +2081,11 @@ body::before {
   padding: 0.3rem;
   border: 1px solid var(--border);
   border-radius: 0.8rem;
-  background: var(--muted-surface);
+  background: var(--card-elevated);
+}
+
+.results-card > .tabs > [role="tablist"] {
+  box-shadow: 0 0.4rem 1rem color-mix(in srgb, var(--foreground) 6%, transparent);
 }
 
 .tabs [role="tab"] {
@@ -2521,8 +2537,6 @@ body::before {
   .workflow-rail ol { min-width: 35rem; }
 
   .workflow-rail li { min-height: 4rem; }
-
-  .analyzer-app > .card > .tabs > [role="tablist"] { top: 0.5rem; }
 
   .relationship-list li,
   .snapshot-list li,

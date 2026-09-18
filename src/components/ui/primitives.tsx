@@ -38,8 +38,9 @@ export function SelectField({ label, children, ...props }: SelectHTMLAttributes<
   return <div className="field"><label htmlFor={id}>{label}</label><select {...props} id={id}>{children}</select></div>;
 }
 
-export function Card({ children, heading, surface = "plain" }: Readonly<{ children: ReactNode; heading?: string; surface?: Surface }>) {
-  return <section className={`card card--${surface}`}>{heading === undefined ? null : <h2>{heading}</h2>}{children}</section>;
+export function Card({ children, className, heading, surface = "plain" }: Readonly<{ children: ReactNode; className?: string; heading?: string; surface?: Surface }>) {
+  const classes = ["card", `card--${surface}`, className].filter(Boolean).join(" ");
+  return <section className={classes}>{heading === undefined ? null : <h2>{heading}</h2>}{children}</section>;
 }
 
 export function Badge({ children, tone = "neutral" }: Readonly<{ children: ReactNode; tone?: "neutral" | "success" | "warning" | "danger" }>) {

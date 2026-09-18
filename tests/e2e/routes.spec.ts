@@ -354,6 +354,15 @@ test("analyzer completes two local imports, persists history, isolates accounts,
   await expect(page.getByRole("heading", { name: "Relationship results" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Insights");
   await expect(page.getByText("This is the first snapshot", { exact: false })).toBeVisible();
+  const resultGeometry = await page.evaluate(() => {
+    const tabList = document.querySelector<HTMLElement>(".results-card [role='tablist']")?.getBoundingClientRect();
+    const firstMetric = document.querySelector<HTMLElement>(".results-card .summary-card")?.getBoundingClientRect();
+    return tabList === undefined || firstMetric === undefined
+      ? undefined
+      : { tabBottom: tabList.bottom, metricTop: firstMetric.top };
+  });
+  expect(resultGeometry).toBeDefined();
+  expect(resultGeometry!.metricTop - resultGeometry!.tabBottom).toBeGreaterThanOrEqual(12);
 
   await manualInput.setInputFiles([
     path.join(instagramFixtures, "fixture-b", "followers_1.json"),
