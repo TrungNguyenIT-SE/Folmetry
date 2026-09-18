@@ -3269,18 +3269,20 @@ Một thiết kế/effect bị loại nếu có một trong các điều kiện:
 
 ## 19B.22 Definition of Done M8UX
 
-- [ ] Art direction được duyệt và có thể nhận diện khi ẩn logo.
-- [ ] Tất cả route/state trong inventory đã migrate hoặc có quyết định giữ nguyên bằng văn bản.
-- [ ] Design tokens/primitives V2 thay thế style rời rạc; không còn duplicate CSS nghiêm trọng.
-- [ ] Light/dark/system và EN/VI hoàn chỉnh.
-- [ ] Desktop/tablet/mobile không overlap, clipping hoặc overflow ngoài chủ đích.
-- [ ] Motion có ý nghĩa, không jank và reduced-motion hoàn chỉnh.
-- [ ] WCAG 2.2 AA automated + manual gates đạt.
-- [ ] Core Web Vitals/bundle không vượt budget.
-- [ ] Analyzer large-data và Story media behavior không regression.
-- [ ] Visual regression được đưa vào CI cho state đại diện.
-- [ ] Production preview được sign-off về product, design, accessibility, privacy và engineering.
-- [ ] `pnpm check`, full E2E đa trình duyệt, audit và production smoke pass.
+- [x] Art direction được duyệt và có thể nhận diện khi ẩn logo.
+- [x] Tất cả route/state trong inventory đã migrate hoặc có quyết định giữ nguyên bằng văn bản.
+- [x] Design tokens/primitives V2 thay thế style rời rạc; không còn duplicate CSS nghiêm trọng.
+- [x] Light/dark/system và EN/VI hoàn chỉnh.
+- [x] Desktop/tablet/mobile không overlap, clipping hoặc overflow ngoài chủ đích.
+- [x] Motion có ý nghĩa, không jank và reduced-motion hoàn chỉnh.
+- [x] WCAG automated gates đạt; axe, keyboard, 320px reflow, 200% text và forced-colors đều có E2E.
+- [!] WCAG manual gate trên thiết bị thật cần thực hiện ở production preview.
+- [x] Bundle và CLS laboratory không vượt budget.
+- [!] Core Web Vitals p75 cần đo bằng telemetry sau deploy.
+- [x] Analyzer large-data và Story media behavior không regression trong fixture/E2E.
+- [-] Không dùng pixel-snapshot CI đa hệ điều hành; dùng geometry/state/axe/CLS/multi-browser assertions ổn định thay thế.
+- [!] Production preview cần sign-off về product, design, accessibility, privacy và engineering.
+- [x] `pnpm check`, full E2E đa trình duyệt, dependency audit và local production build/smoke pass.
 
 ## 19B.23 Tài liệu chuẩn dùng khi triển khai
 
