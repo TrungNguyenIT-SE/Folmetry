@@ -86,12 +86,18 @@ export function ImportPanel({ disabled = false, error, onArchive, onManualFiles 
       <details className="export-guide">
         <summary>{copy.ux.exportGuide}</summary>
         <ol>
+          <li>{copy.ux.guideMenu}</li>
           <li>{copy.ux.guideCenter}</li>
+          <li>{copy.ux.guideExport}</li>
+          <li>{copy.ux.guideAccount}</li>
+          <li>{copy.ux.guideDestination}</li>
           <li>{copy.ux.guideData}</li>
+          <li>{copy.ux.guideRange}</li>
           <li>{copy.ux.guideFormat}</li>
+          <li>{copy.ux.guideWait}</li>
           <li>{copy.ux.guideZip}</li>
-          <li>{copy.ux.guideChange}</li>
         </ol>
+        <p className="muted-copy">{copy.ux.guideChange}</p>
         <ButtonLink href="/how-it-works" variant="secondary">{dictionary.nav.howItWorks}</ButtonLink>
       </details>
     </Card>

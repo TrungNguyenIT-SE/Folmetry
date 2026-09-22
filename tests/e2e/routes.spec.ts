@@ -47,6 +47,37 @@ test("protected tools require a real website session", async ({ browser }) => {
   }
 });
 
+test("configured Google sign-in starts the official OAuth flow", async ({ browser }) => {
+  test.skip(
+    !process.env["GOOGLE_CLIENT_ID"] || !process.env["GOOGLE_CLIENT_SECRET"],
+    "Google OAuth credentials are intentionally optional.",
+  );
+  const context = await browser.newContext({ extraHTTPHeaders: {} });
+  try {
+    const page = await context.newPage();
+    await page.route("https://accounts.google.com/**", async (route) => {
+      await route.fulfill({ contentType: "text/html", body: "<h1>Google OAuth intercepted</h1>" });
+    });
+    await page.goto("/login?next=%2Fapp");
+    expect(await page.content()).not.toContain(process.env["GOOGLE_CLIENT_SECRET"]);
+    const googleRequest = page.waitForRequest((request) =>
+      request.url().startsWith("https://accounts.google.com/o/oauth2/v2/auth"),
+    );
+    await page.getByRole("button", { name: "Continue with Google" }).click();
+    const authorizationUrl = new URL((await googleRequest).url());
+
+    expect(authorizationUrl.searchParams.get("client_id")).toBe(process.env["GOOGLE_CLIENT_ID"]);
+    expect(authorizationUrl.searchParams.get("redirect_uri")).toBe(
+      "http://127.0.0.1:3000/api/auth/callback/google",
+    );
+    expect(authorizationUrl.searchParams.get("scope")?.split(" ")).toEqual(
+      expect.arrayContaining(["openid", "email", "profile"]),
+    );
+  } finally {
+    await context.close();
+  }
+});
+
 test("local analyzer data is isolated between website accounts in one browser", async ({ browser }) => {
   const context = await browser.newContext({
     extraHTTPHeaders: { "x-folmetry-e2e-auth": "playwright-local-only:admin" },

@@ -126,6 +126,9 @@ describe("AnalyzerApp", () => {
   it("creates an account, imports locally, reviews, saves, and shows results", async () => {
     const { container } = renderAnalyzer(createFakeServices());
     await createAccount();
+    expect(screen.getByText("Open Accounts Center, then Your information and permissions.")).toBeTruthy();
+    expect(screen.getByText(/10–15 minutes/)).toBeTruthy();
+    expect(screen.getByText(/keep only Followers and following selected/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Edit account" }));
     fireEvent.change(screen.getByLabelText("Account label"), { target: { value: "Personal archive" } });
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));

@@ -7,6 +7,7 @@ export * from "./auth-shell";
 export * from "./auth-setup-notice";
 export * from "./auth-setup-notice";
 export * from "./forgot-password-form";
+export * from "./google-sign-in";
 export * from "./login-form";
 export * from "./password-strength";
 export * from "./register-form";

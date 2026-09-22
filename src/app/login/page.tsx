@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthSetupNotice, AuthShell, LoginForm } from "@/features/auth/components";
-import { getAuthReadiness } from "@/features/auth/server/environment";
+import { getAuthReadiness, isGoogleAuthReady } from "@/features/auth/server/environment";
 import { getServerSession } from "@/features/auth/server/session";
 import { safeReturnTo } from "@/features/auth/return-to";
 
@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: Readonly<{ searchParam
 
   return (
     <AuthShell page="login">
-      {readiness.authReady ? <LoginForm returnTo={returnTo} /> : <AuthSetupNotice missing={readiness.missing.filter((key) => !key.startsWith("SMTP_"))} />}
+      {readiness.authReady ? <LoginForm googleEnabled={isGoogleAuthReady()} returnTo={returnTo} /> : <AuthSetupNotice missing={readiness.missing.filter((key) => !key.startsWith("SMTP_"))} />}
     </AuthShell>
   );
 }

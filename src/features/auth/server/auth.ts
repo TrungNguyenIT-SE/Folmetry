@@ -6,8 +6,10 @@ import { admin, username } from "better-auth/plugins";
 import { isPasswordPolicySatisfied, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_ERROR_CODE } from "@/features/auth/password-policy";
 import { authDatabase } from "@/features/auth/server/database";
 import { sendAuthEmail } from "@/features/auth/server/email";
-import { authBaseUrl, authSecret } from "@/features/auth/server/environment";
+import { authBaseUrl, authSecret, googleOAuthCredentials } from "@/features/auth/server/environment";
 import { SITE_NAME } from "@/lib/site-metadata";
+
+const google = googleOAuthCredentials();
 
 export const auth = betterAuth({
   appName: SITE_NAME,
@@ -15,6 +17,23 @@ export const auth = betterAuth({
   secret: authSecret(),
   database: authDatabase,
   trustedOrigins: [authBaseUrl()],
+  socialProviders: google === undefined
+    ? {}
+    : {
+        google: {
+          clientId: google.clientId,
+          clientSecret: google.clientSecret,
+        },
+      },
+  account: {
+    encryptOAuthTokens: true,
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      requireLocalEmailVerified: true,
+      allowDifferentEmails: false,
+    },
+  },
   hooks: {
     before: createAuthMiddleware(async (context) => {
       const passwordPaths = new Set([
@@ -122,6 +141,7 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/email": { window: 60, max: 10 },
       "/sign-in/username": { window: 60, max: 10 },
+      "/sign-in/social": { window: 60, max: 20 },
       "/sign-up/email": { window: 60 * 5, max: 5 },
       "/request-password-reset": { window: 60 * 5, max: 5 },
       "/send-verification-email": { window: 60 * 5, max: 5 },

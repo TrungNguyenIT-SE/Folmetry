@@ -8,9 +8,10 @@ import { useState, type FormEvent } from "react";
 import { Button, Field, StatusRegion } from "@/components/ui";
 import { authClient } from "@/features/auth/client";
 import { authErrorMessage } from "@/features/auth/components/auth-error";
+import { GoogleSignIn } from "@/features/auth/components/google-sign-in";
 import { useI18n } from "@/i18n";
 
-export function LoginForm({ returnTo }: Readonly<{ returnTo: Route }>) {
+export function LoginForm({ googleEnabled, returnTo }: Readonly<{ googleEnabled: boolean; returnTo: Route }>) {
   const router = useRouter();
   const { dictionary } = useI18n();
   const copy = dictionary.auth;
@@ -38,6 +39,7 @@ export function LoginForm({ returnTo }: Readonly<{ returnTo: Route }>) {
 
   return (
     <form className="stack-form" onSubmit={(event) => void submit(event)}>
+      {googleEnabled ? <GoogleSignIn callbackURL={returnTo} /> : null}
       <Field autoCapitalize="none" autoComplete="username" label={copy.security.identifier} name="identifier" required spellCheck={false} />
       <Field autoComplete="current-password" label={copy.common.password} minLength={10} name="password" required type="password" />
       {error === undefined ? null : <StatusRegion assertive>{error}</StatusRegion>}

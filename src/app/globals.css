@@ -1172,6 +1172,16 @@ h2 {
   padding-left: 1.4rem;
 }
 
+.export-guide li {
+  padding-left: 0.35rem;
+  line-height: 1.65;
+}
+
+.export-guide li::marker {
+  color: var(--accent);
+  font-weight: 800;
+}
+
 .review-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1405,6 +1415,43 @@ h2 {
   justify-content: space-between;
   gap: 0.75rem;
   font-size: 0.9rem;
+}
+
+.auth-social {
+  display: grid;
+  gap: 1rem;
+}
+
+.google-sign-in {
+  width: 100%;
+  min-height: 3.25rem;
+  border-color: color-mix(in srgb, var(--border-strong) 82%, transparent);
+  background: color-mix(in srgb, var(--card) 94%, white 6%);
+  color: var(--foreground);
+}
+
+.google-sign-in__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+}
+
+.auth-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  height: 1px;
+  background: var(--border);
+  content: "";
 }
 
 .password-strength {

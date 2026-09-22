@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { getAuthReadiness } from "@/features/auth/server/environment";
+import {
+  getAuthReadiness,
+  googleOAuthCredentials,
+} from "@/features/auth/server/environment";
 
 describe("getAuthReadiness", () => {
   it("reports every missing server-only dependency without values", () => {
@@ -27,5 +30,14 @@ describe("getAuthReadiness", () => {
     expect(readiness.authReady).toBe(true);
     expect(readiness.mailReady).toBe(false);
     expect(readiness.missing).toEqual(["SMTP_USER", "SMTP_PASSWORD"]);
+  });
+
+  it("enables Google OAuth only when both server-side credentials are present", () => {
+    expect(googleOAuthCredentials({ GOOGLE_CLIENT_ID: "client-id" })).toBeUndefined();
+    expect(googleOAuthCredentials({ GOOGLE_CLIENT_SECRET: "client-secret" })).toBeUndefined();
+    expect(googleOAuthCredentials({
+      GOOGLE_CLIENT_ID: "  client-id  ",
+      GOOGLE_CLIENT_SECRET: "  client-secret  ",
+    })).toEqual({ clientId: "client-id", clientSecret: "client-secret" });
   });
 });

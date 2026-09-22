@@ -21,7 +21,8 @@ Folmetry uses Better Auth with PostgreSQL for website accounts, verified email, 
 2. Generate a secret with `pnpm exec auth secret` and set `BETTER_AUTH_SECRET`.
 3. Configure a newly generated SMTP app password. Never reuse a password exposed in chat or commit it.
 4. Set `ADMIN_EMAIL` to the address that should become the bootstrap admin and `ADMIN_USERNAME` to its reserved username.
-5. Apply the schema and start the app. Re-run the migration after enabling username login:
+5. Optional Google sign-in: create a Google OAuth 2.0 Web client, set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and register `/api/auth/callback/google` for both local and production origins. Never expose the client secret through `NEXT_PUBLIC_*`.
+6. Apply the schema and start the app. Re-run the migration after enabling username login:
 
 ```bash
 pnpm auth:migrate
@@ -30,7 +31,9 @@ pnpm dev
 
 Register with the `ADMIN_EMAIL` address and a new, unshared password, then complete email verification to activate the first administrator. The configured admin username is applied automatically. Do not put an admin password in source code or `.env.example`; if a password was shared in chat, consider it compromised and choose a different one. Later role changes are performed from `/admin/users`. Production deployment must provide the same variables through the hosting platform's encrypted secret store.
 
-Passwords must contain 10–128 characters, at least one uppercase letter, one number, and one ASCII special character. The same server-side policy applies to registration, reset, profile password changes, and admin-set passwords. Users can sign in with either email or username.
+Passwords must contain 10-128 characters, at least one uppercase letter, one number, and one ASCII special character. The same server-side policy applies to registration, reset, profile password changes, and admin-set passwords. Users can sign in with either email or username.
+
+Google sign-in is enabled only when both Google variables are present. Local callback: `http://localhost:3000/api/auth/callback/google`. Production callback: `https://<your-domain>/api/auth/callback/google`. Configure the matching origin in `BETTER_AUTH_URL` and Google Cloud; a partial Google configuration is treated as disabled. Folmetry requests only `openid`, `email`, and `profile`; Better Auth encrypts OAuth token fields before database storage.
 
 ## Quality gates
 

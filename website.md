@@ -848,12 +848,16 @@ The guide should instruct the user to use Meta Accounts Center and request only 
 
 Recommended choices:
 
-- Instagram account;
-- followers/following or connections data category;
-- JSON format;
-- all-time range when offered;
-- download the resulting ZIP;
-- do not unzip unless using manual JSON import recovery mode.
+1. In Instagram, open the profile and choose **More (☰) → Settings**.
+2. Open **Accounts Center → Your information and permissions**.
+3. Choose **Export your information → Create export**.
+4. Select the correct Instagram account.
+5. Choose **Export to device**.
+6. In **Customize information**, deselect everything and keep only **Followers and following**.
+7. Set the date range to **All time**.
+8. Choose **JSON**, not HTML, then create the export.
+9. Explain that preparation commonly takes around 10–15 minutes but can take longer for larger accounts; do not guarantee a completion time.
+10. Download and import the original ZIP without extracting it, unless using manual JSON recovery mode.
 
 Do not claim the exact Meta menu wording will never change.
 

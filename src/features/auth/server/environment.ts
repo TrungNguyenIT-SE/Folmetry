@@ -17,6 +17,11 @@ export interface AuthReadiness {
   readonly missing: readonly string[];
 }
 
+export interface GoogleOAuthCredentials {
+  readonly clientId: string;
+  readonly clientSecret: string;
+}
+
 export function getAuthReadiness(
   environment: Readonly<Record<string, string | undefined>> = process.env,
 ): AuthReadiness {
@@ -38,6 +43,18 @@ export function authBaseUrl(): string {
 
 export function authSecret(): string {
   return process.env["BETTER_AUTH_SECRET"]?.trim() || DEVELOPMENT_AUTH_SECRET;
+}
+
+export function googleOAuthCredentials(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+): GoogleOAuthCredentials | undefined {
+  const clientId = environment["GOOGLE_CLIENT_ID"]?.trim();
+  const clientSecret = environment["GOOGLE_CLIENT_SECRET"]?.trim();
+  return clientId && clientSecret ? { clientId, clientSecret } : undefined;
+}
+
+export function isGoogleAuthReady(): boolean {
+  return googleOAuthCredentials() !== undefined;
 }
 
 export function databaseUrl(): string {

@@ -2794,6 +2794,7 @@ Mỗi implementation chunk khi bàn giao phải báo cáo:
 - [x] Generic response cho forgot-password để hạn chế email enumeration.
 - [x] Safe error mapping không trả exception/database detail cho UI.
 - [x] Rate limit riêng cho sign-in, sign-up, verify và password reset.
+- [x] Bổ sung Google OAuth qua Better Auth; chỉ bật khi có đủ server-only client ID/secret, dùng callback same-origin và rate limit social sign-in.
 
 ## 19A.3 Email
 
@@ -2827,6 +2828,9 @@ Mỗi implementation chunk khi bàn giao phải báo cáo:
 - [x] Responsive CSS cho auth forms và admin table.
 - [x] Có scripts `auth:migrate` và `auth:info` dùng cấu hình CLI tách biệt.
 - [x] Có E2E auth bypass chỉ trong non-production test server; production hard-disable bằng `NODE_ENV`.
+- [x] Login/register hiển thị nút Google có trạng thái pending/error và tự ẩn khi môi trường chưa cấu hình OAuth.
+- [x] Hướng dẫn ZIP trong analyzer mô tả đầy đủ đường dẫn Meta, chỉ chọn Followers and following, All time, JSON và thời gian chuẩn bị dự kiến 10–15 phút.
+- [!] Tạo Google OAuth Web client thật, thêm callback production và cấu hình `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` trong secret store.
 - [!] Cấp managed PostgreSQL `DATABASE_URL` và chạy `pnpm auth:migrate`.
 - [!] Đăng ký/verify bootstrap admin và smoke toàn bộ admin actions trên DB thật.
 - [!] Cấu hình `BETTER_AUTH_URL`, `SITE_URL`, trusted production origin và HTTPS.
