@@ -40,6 +40,7 @@ export const auth = betterAuth({
         "/sign-up/email",
         "/reset-password",
         "/change-password",
+        "/set-password",
         "/admin/set-user-password",
       ]);
       if (passwordPaths.has(context.path)) {

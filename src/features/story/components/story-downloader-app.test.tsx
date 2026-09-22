@@ -23,6 +23,16 @@ describe("StoryDownloaderApp", () => {
     fireEvent.submit(screen.getByRole("button", { name: "View public Stories" }).closest("form")!);
     expect(await screen.findByText("@public.name")).toBeTruthy();
     expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/story/lookup");
+    const preview = screen.getByRole("button", { name: "Open media viewer" });
+    preview.focus();
+    fireEvent.click(preview);
+    expect(screen.getByRole("dialog", { name: "Public Story media" })).toBeTruthy();
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Public Story media" })).toBeNull());
+    expect(document.activeElement).toBe(preview);
+    fireEvent.click(preview);
+    fireEvent.popState(window);
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Public Story media" })).toBeNull());
     fireEvent.click(screen.getByRole("tab", { name: "Highlights" }));
     fireEvent.click(screen.getByRole("button", { name: /Summer/ }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));

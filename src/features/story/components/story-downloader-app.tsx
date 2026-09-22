@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { RouteIntro } from "@/components/layout/route-intro";
-import { Button, EmptyState, Field, StatusRegion, Tabs } from "@/components/ui";
+import { Button, Dialog, EmptyState, Field, StatusRegion, Tabs } from "@/components/ui";
 import type { PublicHighlightCollection, PublicStoryItem, PublicStoryLookupResult, StoryApiResponse, StoryErrorCode } from "@/features/story/model";
 import { useI18n } from "@/i18n";
 
@@ -28,9 +28,29 @@ async function postJson<T>(path: string, body: unknown, signal: AbortSignal): Pr
   return payload.data;
 }
 
-function MediaCard({ item, downloadLabel, refreshLabel }: Readonly<{ item: PublicStoryItem; downloadLabel: string; refreshLabel: string }>) {
+function MediaCard({ item, copy }: Readonly<{ item: PublicStoryItem; copy: ReturnType<typeof useI18n>["dictionary"]["story"] }>) {
   const [expired, setExpired] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const preview = mediaUrl(item.previewRef);
+  const historyMarker = `folmetry-media-${item.id}`;
+
+  useEffect(() => {
+    const closeFromHistory = (): void => setViewerOpen(false);
+    window.addEventListener("popstate", closeFromHistory);
+    return () => window.removeEventListener("popstate", closeFromHistory);
+  }, []);
+
+  const openViewer = (): void => {
+    window.history.pushState({ folmetryMediaViewer: historyMarker }, "", window.location.href);
+    setViewerOpen(true);
+  };
+
+  const closeViewer = (): void => {
+    const state = window.history.state as { folmetryMediaViewer?: string } | null;
+    if (state?.folmetryMediaViewer === historyMarker) window.history.back();
+    else setViewerOpen(false);
+  };
+
   return (
     <article className="story-media-card">
       <div className="story-media-card__preview">
@@ -43,15 +63,28 @@ function MediaCard({ item, downloadLabel, refreshLabel }: Readonly<{ item: Publi
         )}
       </div>
       {item.takenAt ? <time dateTime={item.takenAt}>{new Date(item.takenAt).toLocaleString()}</time> : null}
-      {expired ? <p className="field__error">{refreshLabel}</p> : null}
-      <a className="button button--secondary" download href={mediaUrl(item.downloadRef, true)}>{downloadLabel}</a>
+      {expired ? <p className="field__error">{copy.refresh}</p> : null}
+      <div className="story-media-card__actions">
+        <Button onClick={openViewer} type="button" variant="quiet">{copy.preview}</Button>
+        <a className="button button--secondary" download href={mediaUrl(item.downloadRef, true)}>{copy.download}</a>
+      </div>
+      <Dialog closeLabel={copy.closeViewer} description={copy.viewerDescription} onClose={closeViewer} open={viewerOpen} title={copy.viewerTitle}>
+        <div className="story-media-viewer">
+          {item.mediaType === "video" ? (
+            <video controls playsInline preload="metadata"><source src={preview} /></video>
+          ) : (
+            <Image alt="" height={1080} src={preview} unoptimized width={810} />
+          )}
+          <a className="button button--primary" download href={mediaUrl(item.downloadRef, true)}>{copy.download}</a>
+        </div>
+      </Dialog>
     </article>
   );
 }
 
-function MediaGallery({ items, empty, download, refresh }: Readonly<{ items: readonly PublicStoryItem[]; empty: string; download: string; refresh: string }>) {
+function MediaGallery({ items, empty, copy }: Readonly<{ items: readonly PublicStoryItem[]; empty: string; copy: ReturnType<typeof useI18n>["dictionary"]["story"] }>) {
   if (items.length === 0) return <EmptyState description={empty} title={empty} />;
-  return <div className="story-gallery">{items.map((item) => <MediaCard downloadLabel={download} item={item} key={item.id} refreshLabel={refresh} />)}</div>;
+  return <div className="story-gallery">{items.map((item) => <MediaCard copy={copy} item={item} key={item.id} />)}</div>;
 }
 
 function errorMessage(code: StoryErrorCode | undefined, story: ReturnType<typeof useI18n>["dictionary"]["story"]): string {
@@ -66,7 +99,7 @@ function errorMessage(code: StoryErrorCode | undefined, story: ReturnType<typeof
   return story.providerUnavailable;
 }
 
-function Highlights({ collections, download, empty, loading, refresh }: Readonly<{ collections: readonly PublicHighlightCollection[]; download: string; empty: string; loading: string; refresh: string }>) {
+function Highlights({ collections, copy, empty, loading, refresh }: Readonly<{ collections: readonly PublicHighlightCollection[]; copy: ReturnType<typeof useI18n>["dictionary"]["story"]; empty: string; loading: string; refresh: string }>) {
   const [selected, setSelected] = useState<string>();
   const [items, setItems] = useState<Readonly<Record<string, readonly PublicStoryItem[]>>>({});
   const [error, setError] = useState(false);
@@ -117,7 +150,7 @@ function Highlights({ collections, download, empty, loading, refresh }: Readonly
       </div>
       {selected && !items[selected] && !error ? <StatusRegion>{loading}</StatusRegion> : null}
       {error ? <StatusRegion assertive>{refresh}</StatusRegion> : null}
-      {selected && items[selected] ? <MediaGallery download={download} empty={empty} items={items[selected]} refresh={refresh} /> : null}
+      {selected && items[selected] ? <MediaGallery copy={copy} empty={empty} items={items[selected]} /> : null}
     </div>
   );
 }
@@ -155,13 +188,13 @@ export function StoryDownloaderApp() {
   };
 
   const tabs = useMemo(() => result ? [
-    { id: "active-stories", label: story.storiesTab, content: <MediaGallery download={story.download} empty={story.empty} items={result.stories} refresh={story.refresh} /> },
-    { id: "highlights", label: story.highlightsTab, content: <Highlights collections={result.highlights} download={story.download} empty={story.highlightsEmpty} loading={story.loadingHighlights} refresh={story.refresh} /> },
+    { id: "active-stories", label: story.storiesTab, content: <MediaGallery copy={story} empty={story.empty} items={result.stories} /> },
+    { id: "highlights", label: story.highlightsTab, content: <Highlights collections={result.highlights} copy={story} empty={story.highlightsEmpty} loading={story.loadingHighlights} refresh={story.refresh} /> },
   ] : [], [result, story]);
 
   return (
     <RouteIntro description={page.description} eyebrow={page.eyebrow} title={page.title}>
-      <div className="story-app" data-state={state}>
+      <div className="story-app" data-error-code={errorCode} data-state={state}>
         <form aria-busy={state === "loading"} className="story-form" onSubmit={(event) => void submit(event)}>
           <Field autoComplete="off" description={story.hint} disabled={state === "loading"} label={story.label} name="handle" onChange={(event) => setHandle(event.target.value)} placeholder="@username" required spellCheck={false} value={handle} />
           <p className="privacy-note">{story.disclosure}</p>

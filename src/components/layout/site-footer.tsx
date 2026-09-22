@@ -19,10 +19,10 @@ export function SiteFooter() {
           <p className="site-footer__disclaimer">{dictionary.marketing.footerDisclaimer}</p>
         </div>
         <nav aria-label={dictionary.a11y.legalNavigation}>
-          <Link href="/how-it-works">{dictionary.nav.howItWorks}</Link>
-          <Link href="/faq">{dictionary.nav.faq}</Link>
-          <Link href="/privacy">{dictionary.nav.privacy}</Link>
-          <Link href="/terms">{dictionary.nav.terms}</Link>
+          <Link href="/how-it-works" transitionTypes={["nav-context"]}>{dictionary.nav.howItWorks}</Link>
+          <Link href="/faq" transitionTypes={["nav-context"]}>{dictionary.nav.faq}</Link>
+          <Link href="/privacy" transitionTypes={["nav-context"]}>{dictionary.nav.privacy}</Link>
+          <Link href="/terms" transitionTypes={["nav-context"]}>{dictionary.nav.terms}</Link>
         </nav>
       </div>
     </footer>

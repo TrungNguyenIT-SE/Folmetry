@@ -31,6 +31,7 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const realm = pathname === "/facebook" ? "facebook" : pathname === "/instagram" || pathname === "/app" || pathname === "/story-downloader" ? "instagram" : "global";
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -69,10 +70,10 @@ export function SiteHeader() {
   }, [menuOpen]);
 
   return (
-    <header className="site-header" data-menu-open={menuOpen ? "true" : "false"}>
+    <header className="site-header" data-menu-open={menuOpen ? "true" : "false"} data-realm={realm}>
       <div className="site-header__inner">
         <a className="skip-link" href="#main-content">{dictionary.a11y.skipToContent}</a>
-        <Link className="brand" href="/" aria-label={dictionary.nav.homeLabel} onClick={() => setMenuOpen(false)}>
+        <Link className="brand" href="/" aria-label={dictionary.nav.homeLabel} onClick={() => setMenuOpen(false)} transitionTypes={["nav-back"]}>
           <Image alt="" className="brand__logo" height={44} priority src={folmetryLogo} width={44} />
           <span className="brand__name">Folmetry</span>
           <span className="brand__signal" aria-hidden="true" />
@@ -100,6 +101,7 @@ export function SiteHeader() {
                   aria-current={isCurrentPlatform(pathname, item.href) ? "page" : undefined}
                   href={item.href as Route}
                   onClick={() => setMenuOpen(false)}
+                  transitionTypes={[item.href === "/instagram" || item.href === "/facebook" ? "nav-context" : "nav-forward"]}
                   >
                     {dictionary.nav[item.key]}
                   </Link>

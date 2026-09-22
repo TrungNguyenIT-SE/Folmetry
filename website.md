@@ -4,9 +4,19 @@
 > **Primary V1 platform:** Instagram  
 > **Future adapter:** Facebook  
 > **Document purpose:** Source-of-truth implementation specification for Codex / coding agents  
-> **Spec version:** 1.4
-> **Verified baseline date:** 2026-09-17
+> **Spec version:** 1.5
+> **Verified baseline date:** 2026-09-22
 > **Status:** Ready for implementation
+
+---
+
+## Revision 1.5 summary
+
+Version 1.5 introduces the `Kinetic Signal Atlas` presentation system. It evolves the existing Folmetry visual foundation into an editorial technical-instrument interface with a source-owned signal aperture, boundary rails, platform-specific dialects, state-linked motion, and progressive route/tab transitions. Instagram remains the active product area; Facebook remains an honest blueprint until its adapter is validated.
+
+This revision does not change parser behavior, authenticated ownership, raw-file handling, database contracts, Google/credential authentication, or the Story provider boundary. The experience must remain complete without View Transition support and under reduced motion, save-data, forced colors, keyboard-only use, and narrow/zoomed layouts. No remote font, animation framework, WebGL layer, tracking request, fabricated metric, or third-party visual asset is required.
+
+Production CSS is capped at 110 KB by the repository budget check. Field Core Web Vitals, physical iOS/Android validation, PostgreSQL/provider smoke tests, and production-preview approval remain deployment evidence rather than local implementation claims.
 
 ---
 

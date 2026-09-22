@@ -19,8 +19,8 @@ export function AccountNavigation() {
   if (session === null) {
     return (
       <div className="account-navigation">
-        <Link href="/login">{dictionary.nav.signIn}</Link>
-        <Link className="account-navigation__primary" href="/register">{dictionary.nav.register}</Link>
+        <Link href="/login" transitionTypes={["nav-forward"]}>{dictionary.nav.signIn}</Link>
+        <Link className="account-navigation__primary" href="/register" transitionTypes={["nav-forward"]}>{dictionary.nav.register}</Link>
       </div>
     );
   }
@@ -28,8 +28,8 @@ export function AccountNavigation() {
   const isAdmin = String(session.user.role ?? "user").split(",").includes("admin");
   return (
     <div className="account-navigation">
-      {isAdmin ? <Link href="/admin/users">{dictionary.nav.admin}</Link> : null}
-      <Link href="/account">{dictionary.nav.account}</Link>
+      {isAdmin ? <Link href="/admin/users" transitionTypes={["nav-forward"]}>{dictionary.nav.admin}</Link> : null}
+      <Link href="/account" transitionTypes={["nav-forward"]}>{dictionary.nav.account}</Link>
       <button
         onClick={() => void authClient.signOut({ fetchOptions: { onSuccess: () => { router.push("/"); router.refresh(); } } })}
         type="button"

@@ -52,7 +52,7 @@ export function AccountPanel({
   };
 
   return (
-    <Card heading={copy.account.title}>
+    <Card className="account-card" heading={copy.account.title}>
       <p>{copy.ux.accountIntro}</p>
       <p className="muted-copy">{copy.ux.accountPrivacy}</p>
       {accounts.length === 0 ? (

@@ -134,7 +134,7 @@ function SummaryCard({ label, value, delta = false }: SummaryCardProps) {
   const { formatNumber } = useI18n();
   const prefix = delta && value > 0 ? "+" : "";
   return (
-    <article className="summary-card">
+    <article className="summary-card" data-delta={delta ? (value > 0 ? "positive" : value < 0 ? "negative" : "neutral") : undefined}>
       <span>{label}</span>
       <strong>{prefix}{formatNumber(value)}</strong>
     </article>

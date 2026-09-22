@@ -33,11 +33,12 @@ export function ImportPanel({ disabled = false, error, onArchive, onManualFiles 
   };
 
   return (
-    <Card heading={copy.ux.importTitle}>
+    <Card className="import-card" heading={copy.ux.importTitle}>
       <p>{copy.ux.importIntro}</p>
       <div
         aria-describedby={errorId}
         className={`drop-zone${dragging ? " drop-zone--active" : ""}`}
+        data-dragging={dragging ? "true" : "false"}
         onDragEnter={(event) => { event.preventDefault(); setDragging(true); }}
         onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false); }}
         onDragOver={(event) => event.preventDefault()}

@@ -287,10 +287,10 @@ test("shell navigation exposes visible keyboard focus and active state", async (
   await expect(home).toBeFocused();
   const menuTrigger = page.getByRole("button", { name: "Open navigation menu" });
   if (await menuTrigger.isVisible()) await menuTrigger.click();
-  const analyzer = page.getByRole("link", { name: "Analyzer", exact: true });
-  await analyzer.focus();
-  await expect(analyzer).toBeFocused();
-  await expect(analyzer).toHaveAttribute("aria-current", "page");
+  const instagram = page.getByRole("link", { name: "Instagram", exact: true });
+  await instagram.focus();
+  await expect(instagram).toBeFocused();
+  await expect(instagram).toHaveAttribute("aria-current", "page");
   const faq = page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "FAQ" });
   await faq.focus();
   await page.keyboard.press("Enter");
@@ -298,7 +298,7 @@ test("shell navigation exposes visible keyboard focus and active state", async (
 });
 
 test("shell has no horizontal overflow at supported responsive widths", async ({ page }) => {
-  for (const width of [360, 390, 430, 768, 1024, 1440]) {
+  for (const width of [320, 360, 390, 430, 768, 1024, 1280, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     const dimensions = await page.evaluate(() => ({
@@ -313,13 +313,26 @@ test("shell has no horizontal overflow at supported responsive widths", async ({
   }
 });
 
+test("platform navigation preserves deep links and browser history", async ({ page }) => {
+  await page.goto("/instagram");
+  await expect(page.getByRole("link", { name: "Instagram", exact: true })).toHaveAttribute("aria-current", "page");
+  await page.getByRole("link", { name: "Open analyzer", exact: true }).click();
+  await expect(page).toHaveURL(/\/app$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/instagram$/);
+  await page.goForward();
+  await expect(page).toHaveURL(/\/app$/);
+  await page.goto("/facebook");
+  await expect(page.getByRole("link", { name: "Facebook", exact: true })).toHaveAttribute("aria-current", "page");
+});
+
 test("mobile navigation traps focus, closes with Escape, and restores its trigger", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const trigger = page.getByRole("button", { name: "Open navigation menu" });
   await trigger.click();
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Analyzer", exact: true })).toBeFocused();
+  await expect(page.getByRole("link", { name: "Instagram", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeHidden();
   await expect(trigger).toBeFocused();
@@ -351,7 +364,7 @@ test("shell survives 200 percent text sizing and forced colors", async ({ page, 
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
   const dimensions = await page.evaluate(() => ({ clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }));
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
-  await expect(page.getByRole("link", { name: "Analyzer", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Instagram", exact: true })).toBeVisible();
 });
 
 test("signature motion is removed when reduced motion is requested", async ({ page }) => {
@@ -361,10 +374,25 @@ test("signature motion is removed when reduced motion is requested", async ({ pa
   const orbit = page.locator(".signal-field__orbit").first();
   await expect(orbit).toBeVisible();
   expect(await orbit.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
+  const sweep = page.locator(".signal-field__sweep").first();
+  expect(await sweep.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
 
   const primaryAction = page.getByRole("link", { name: "Open analyzer" }).first();
   await primaryAction.hover({ force: true });
   expect(await primaryAction.evaluate((element) => getComputedStyle(element).transform)).toBe("none");
+});
+
+test("save-data disables ambient signal motion", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      value: { saveData: true, addEventListener() {}, removeEventListener() {} },
+    });
+  });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-save-data", "true");
+  const sweep = page.locator(".signal-field__sweep").first();
+  expect(await sweep.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
 });
 
 test("landing reserves layout and stays within the CLS laboratory budget", async ({ page }) => {
@@ -399,12 +427,13 @@ test("shell routes have no serious or critical accessibility violations", async 
 });
 
 test("analyzer completes two local imports, persists history, isolates accounts, and exports CSV", async ({ page }) => {
+  test.skip(!process.env["DATABASE_URL"], "Analyzer synchronization requires PostgreSQL.");
   test.slow();
   await page.goto("/app");
-  await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Local profile");
-  await page.getByLabel("Account label").fill("Personal archive");
+  await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Instagram profile");
+  await page.getByLabel("Profile label").fill("Personal archive");
   await page.getByLabel("Instagram username (optional)").fill("private.local");
-  await page.getByRole("button", { name: "Create account" }).click();
+  await page.getByRole("button", { name: "Create profile" }).click();
   await expect(page.getByRole("heading", { name: "Import an Instagram relationship export" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Analyzer workflow" }).locator('[aria-current="step"]')).toContainText("Import");
 
@@ -466,11 +495,11 @@ test("analyzer completes two local imports, persists history, isolates accounts,
   await page.getByRole("button", { name: "Compare snapshots" }).click();
   await expect(page.getByText("Comparison range", { exact: false })).toBeVisible();
 
-  await page.getByRole("button", { name: "Create another local account" }).click();
-  await page.getByLabel("Account label").fill("Work archive");
-  await page.getByRole("button", { name: "Create account" }).click();
+  await page.getByRole("button", { name: "Create another Instagram profile" }).click();
+  await page.getByLabel("Profile label").fill("Work archive");
+  await page.getByRole("button", { name: "Create profile" }).click();
   await expect(page.getByRole("heading", { name: "Relationship results" })).toHaveCount(0);
-  await page.getByLabel("Select account").selectOption({ label: "Personal archive (@private.local)" });
+  await page.getByLabel("Select profile").selectOption({ label: "Personal archive (@private.local)" });
   await expect(page.getByRole("heading", { name: "Relationship results" })).toBeVisible();
 });
 
@@ -483,7 +512,7 @@ test("analyzer first-use layout has no horizontal overflow at supported widths",
       scrollWidth: document.documentElement.scrollWidth,
     }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
-    await expect(page.getByLabel("Account label")).toBeVisible();
+    await expect(page.getByLabel("Profile label")).toBeVisible();
   }
 });
 
@@ -491,7 +520,7 @@ test("analyzer content and footer keep separate responsive layout regions", asyn
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/app");
-    await expect(page.getByLabel("Account label")).toBeVisible();
+    await expect(page.getByLabel("Profile label")).toBeVisible();
     const layout = await page.evaluate(() => {
       const main = document.querySelector<HTMLElement>(".page-shell--analyzer")?.getBoundingClientRect();
       const heading = document.querySelector<HTMLElement>(".analyzer-heading")?.getBoundingClientRect();

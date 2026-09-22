@@ -112,3 +112,45 @@ Field Core Web Vitals at p75, physical iOS/Android behavior, and production-prev
 ## Rollback
 
 M8UX changes are isolated to semantic tokens/global presentation, layout/visual components, translated presentation copy, and tests. Domain parsing, persistence, authentication, and Story provider contracts are unchanged. If a production metric regresses, revert the M8UX commit as one unit or first disable the bounded motion block and signal-field rendering; do not alter analyzer or provider data contracts as a visual rollback.
+
+## M8UX2 addendum — Kinetic Signal Atlas
+
+M8UX2 evolves the selected `Private Signal Observatory` into **Kinetic Signal Atlas**. The recognizable system is now a warm technical-paper canvas in light mode and layered graphite in dark mode, with a source-owned signal aperture, coordinate axes, boundary rails, data wells, and editorial metric typography. Instagram uses an active signal dialect; Facebook uses an explicitly incomplete blueprint dialect. Neither platform borrows Meta trade dress.
+
+The implementation stays code-native. Decorative imagery is inline SVG/CSS owned by this repository, all decorative SVG remains hidden from assistive technology, and no remote font, icon pack, stock image, generated raster image, animation runtime, WebGL layer, tracking request, or fabricated product data was added. The native system and monospace stacks remain the typography choice because they provide reliable Vietnamese coverage and avoid font-driven layout shift.
+
+### Transition and motion policy
+
+React View Transitions are enabled only as progressive enhancement for navigation direction/context and tab continuity. `nav-forward`, `nav-back`, and `nav-context` communicate spatial intent; the static DOM, focus order, URL behavior, and browser back/forward behavior do not depend on them. Motion is limited to compositor-friendly properties and meaningful states. Signal sweeps stop for reduced motion, save-data, hidden documents, or non-hover/coarse-pointer contexts where appropriate. Loading and parser treatments remain coupled to real application states.
+
+The maximum motion ranges are 90–160 ms for micro feedback, 180–260 ms for component changes, and 320–480 ms for route/spatial transitions. Content is never held behind an intro sequence. Reduced motion removes spatial transforms rather than merely accelerating them.
+
+### Motion inventory and stop conditions
+
+| Motion | Trigger | Stop/cancellation condition | Static/reduced fallback |
+| --- | --- | --- | --- |
+| Signal aperture sweep | Visible landing or Instagram instrument | Reduced motion, save-data, hidden document, coarse pointer, or unmount | Complete aperture and coordinates remain visible |
+| Pipeline trace | Visible semantic export pipeline | Same capability gates as the aperture | Ordered stages, arrows, labels, and boundary text remain visible |
+| Header condensation | Root document scroll on desktop | Scroll returns to top, reduced motion, unsupported scroll timeline, or unmount | Full-size sticky navigation instrument |
+| Route handoff | A Link explicitly declares `nav-forward`, `nav-back`, or `nav-context` | Transition completes, navigation is interrupted, browser lacks support, or reduced motion | Native navigation with unchanged URL/focus semantics |
+| Result tab handoff | User selects or keyboard-navigates to a real tab | Transition completes, another tab is chosen, unmount, or reduced motion | Immediate tab-panel replacement |
+| Import scan | Analyzer state machine is validating/parsing | Success, error, cancel, hidden document, save-data, or reduced motion | Live status text and determinate progress where available |
+| Story request trace | A real same-origin Story request is pending | Response, error, cancel, abort, hidden document, save-data, or reduced motion | `aria-live` request status and enabled cancel control |
+| Focus/interaction trace | Keyboard focus or supported hover on an interactive control | Blur, pointer leave, disabled state, coarse pointer, or reduced motion | Persistent focus ring, border, text, and semantic state |
+| Dialog entry/exit | A real dialog opens or closes | Close, Escape, browser Back, unmount, or reduced motion | Immediate modal visibility with focus trap/restore |
+
+No animation starts a provider request, uploads a raw archive, changes ownership, invents progress, or scales with the number of relationship rows.
+
+### Layout and accessibility evidence
+
+The analyzer now uses a wide-data workspace with a full-width introduction, real state-machine workflow rail, profile/import task columns, full-width insight/history output, and a separate danger zone. At narrow widths it becomes a single task-first column. Landing and platform hubs use editorial sections and semantic pipeline/boundary visuals instead of uniform dashboard cards. Auth uses a restrained secure-access frame; account and admin prioritize scanability.
+
+The automated matrix covers keyboard focus, mobile-menu trapping/Escape/restore, responsive overflow, 200% text, forced colors, reduced motion, accessibility scans, route rendering, analyzer geometry, and Chromium/mobile Chromium/Firefox/WebKit. Database-backed analyzer scenarios are explicitly conditional on `DATABASE_URL`; unit/component fixtures continue to exercise local parsing and workflow behavior without production data.
+
+The CSS gate is tightened to 110 KB total production CSS, while static JavaScript remains capped at 1.5 MB total and 300 KB for the largest chunk. These are regression budgets, not claims about production Core Web Vitals. Field p75 measurements, physical iOS/Android checks, real PostgreSQL/provider smoke tests, and production-preview sign-off remain deployment gates.
+
+Final local acceptance on 2026-09-22 passed strict type checking, zero-warning lint, 45 unit/component files with 242 tests, and a production build of 23 pages/routes. The measured production output was 108,564 B CSS, 1,141,519 B total static JavaScript, and a 228,919 B largest JavaScript chunk. Playwright passed 106 available cases across Chromium, mobile Chromium, Firefox, and WebKit; 14 cases were intentionally skipped because Google OAuth/PostgreSQL credentials were absent or the browser engine does not expose forced-colors emulation. The production dependency audit reported no known vulnerabilities at the high threshold.
+
+### M8UX2 rollback
+
+The V3 presentation layer can be rolled back independently from parser, persistence, ownership, authentication, and provider contracts. If production performance or motion comfort regresses, disable the View Transition/motion block first while retaining the static token and layout system. Compatibility aliases remain in the token layer so the interface can fall back without a domain migration.

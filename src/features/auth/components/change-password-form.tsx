@@ -9,13 +9,14 @@ import { PasswordStrength } from "@/features/auth/components/password-strength";
 import { isPasswordPolicySatisfied, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/features/auth/password-policy";
 import { useI18n } from "@/i18n";
 
-export function ChangePasswordForm() {
+export function ChangePasswordForm({ hasPassword }: Readonly<{ hasPassword: boolean }>) {
   const { dictionary } = useI18n();
   const copy = dictionary.auth;
   const [newPassword, setNewPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
-  const [complete, setComplete] = useState(false);
+  const [passwordEstablished, setPasswordEstablished] = useState(hasPassword);
+  const [complete, setComplete] = useState<"set" | "changed">();
 
   const submit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -33,12 +34,23 @@ export function ChangePasswordForm() {
 
     setPending(true);
     setError(undefined);
-    setComplete(false);
-    const result = await authClient.changePassword({
-      currentPassword: String(form.get("currentPassword") ?? ""),
-      newPassword,
-      revokeOtherSessions: true,
-    });
+    setComplete(undefined);
+
+    const result = passwordEstablished
+      ? await authClient.changePassword({
+          currentPassword: String(form.get("currentPassword") ?? ""),
+          newPassword,
+          revokeOtherSessions: true,
+        })
+      : await fetch("/api/account/password", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ newPassword }),
+        }).then(async (response) => {
+          if (response.ok) return { error: null };
+          const body = await response.json().catch(() => ({})) as { code?: string };
+          return { error: { code: body.code } };
+        }).catch(() => ({ error: { code: undefined } }));
     setPending(false);
     if (result.error !== null) {
       setError(authErrorMessage(result.error.code, copy.errors, copy.common.genericError));
@@ -46,12 +58,19 @@ export function ChangePasswordForm() {
     }
     formElement.reset();
     setNewPassword("");
-    setComplete(true);
+    if (!passwordEstablished) {
+      setPasswordEstablished(true);
+      setComplete("set");
+    } else {
+      setComplete("changed");
+    }
   };
 
   return (
     <form className="stack-form" onSubmit={(event) => void submit(event)}>
-      <Field autoComplete="current-password" label={copy.security.currentPassword} name="currentPassword" required type="password" />
+      {passwordEstablished
+        ? <Field autoComplete="current-password" label={copy.security.currentPassword} name="currentPassword" required type="password" />
+        : null}
       <Field
         autoComplete="new-password"
         label={copy.security.newPassword}
@@ -66,9 +85,11 @@ export function ChangePasswordForm() {
       <PasswordStrength copy={copy.security.passwordStrength} password={newPassword} />
       <Field autoComplete="new-password" label={copy.security.confirmPassword} maxLength={PASSWORD_MAX_LENGTH} minLength={PASSWORD_MIN_LENGTH} name="passwordConfirmation" required type="password" />
       {error === undefined ? null : <StatusRegion assertive>{error}</StatusRegion>}
-      {complete ? <StatusRegion>{copy.security.passwordChanged}</StatusRegion> : null}
+      {complete === undefined ? null : <StatusRegion>{complete === "set" ? copy.security.passwordSet : copy.security.passwordChanged}</StatusRegion>}
       <Button disabled={pending || !isPasswordPolicySatisfied(newPassword)} type="submit">
-        {pending ? copy.security.changingPassword : copy.security.changePassword}
+        {pending
+          ? (passwordEstablished ? copy.security.changingPassword : copy.security.settingPassword)
+          : (passwordEstablished ? copy.security.changePassword : copy.security.setPassword)}
       </Button>
     </form>
   );

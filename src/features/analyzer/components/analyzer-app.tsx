@@ -10,6 +10,7 @@ import {
   ProgressStatus,
   StatusRegion,
 } from "@/components/ui";
+import { PageTransition } from "@/components/layout/page-transition";
 import { ImportDomainError } from "@/features/analyzer/model/errors";
 import type { LocalAccount, LocalSnapshot } from "@/features/analyzer/model/types";
 import {
@@ -58,7 +59,7 @@ function WorkflowRail({ workflow }: Readonly<{ workflow: AnalyzerWorkflowState }
         : 1;
   const labels = [copy.workflowAccount, copy.workflowImport, copy.workflowReview, copy.workflowResults];
   return (
-    <nav aria-label={copy.workflowLabel} className="workflow-rail" tabIndex={0}>
+    <nav aria-label={copy.workflowLabel} className="workflow-rail" data-active-step={active + 1} tabIndex={0}>
       <ol>
         {labels.map((label, index) => (
           <li aria-current={index === active ? "step" : undefined} className={index < active ? "is-complete" : ""} key={label}>
@@ -399,14 +400,17 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
 
   if (loading) {
     return (
-      <main className="page-shell page-shell--analyzer" id="main-content">
-        <StatusRegion>{copy.ux.loading}</StatusRegion>
-      </main>
+      <PageTransition>
+        <main className="page-shell page-shell--analyzer" data-workflow-state="loading" id="main-content">
+          <StatusRegion>{copy.ux.loading}</StatusRegion>
+        </main>
+      </PageTransition>
     );
   }
 
   return (
-    <main className="page-shell page-shell--analyzer" id="main-content">
+    <PageTransition>
+    <main className="page-shell page-shell--analyzer" data-workflow-state={workflow.status.toLowerCase().replaceAll("_", "-")} id="main-content">
       <div className="analyzer-app">
       <header className="analyzer-heading">
         <span className="eyebrow">{dictionary.pages.analyzer.eyebrow}</span>
@@ -434,7 +438,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
           ) : null}
 
           {workflow.status === "VALIDATING" || workflow.status === "PARSING" ? (
-            <Card heading={copy.ux.processing}>
+            <Card className="processing-card" heading={copy.ux.processing}>
               <ProgressStatus
                 label={getImportProgressMessage(dictionary, workflow.stage)}
                 max={workflow.total}
@@ -446,7 +450,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
           ) : null}
 
           {workflow.status === "REVIEW_IMPORT" || workflow.status === "SAVING" ? (
-            <Card heading={copy.review.title}>
+            <Card className="review-card" heading={copy.review.title}>
               <dl className="review-grid">
                 <div><dt>{copy.ux.reviewAccount}</dt><dd>{accounts.find((account) => account.id === selectedAccountId)?.label}</dd></div>
                 <div><dt>{copy.ux.source}</dt><dd>{workflow.draft.source.name}</dd></div>
@@ -499,7 +503,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
           ) : null}
 
           {workflow.status === "ERROR" ? (
-            <Card heading={copy.ux.errorTitle}>
+            <Card className="error-card" heading={copy.ux.errorTitle}>
               <h3>{copy.ux.errorCause}</h3>
               <StatusRegion assertive>{errorMessage(workflow.error)}</StatusRegion>
               <h3>{copy.ux.errorAction}</h3>
@@ -558,5 +562,6 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
       </Dialog>
       </div>
     </main>
+    </PageTransition>
   );
 }
