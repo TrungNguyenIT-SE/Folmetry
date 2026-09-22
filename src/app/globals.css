@@ -374,6 +374,91 @@ textarea {
   padding-block: clamp(2.5rem, 5vw, 4.5rem);
 }
 
+.platform-hub {
+  display: grid;
+  align-content: start;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.platform-hub__heading {
+  max-width: 56rem;
+}
+
+.platform-hub__heading > p {
+  max-width: 46rem;
+  color: var(--muted-foreground);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.75;
+}
+
+.platform-hub__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.platform-card {
+  position: relative;
+  display: flex;
+  min-height: 19rem;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+
+.platform-card::before {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 6rem;
+  height: 2px;
+  background: var(--accent);
+  content: "";
+}
+
+.platform-card--primary {
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 45%),
+    var(--card);
+}
+
+.platform-card--pending {
+  max-width: 56rem;
+  min-height: 16rem;
+}
+
+.platform-card__index {
+  margin-bottom: auto;
+  color: var(--muted-foreground);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+}
+
+.platform-card h2 {
+  margin-top: 2rem;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+.platform-card p {
+  max-width: 38rem;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+
+.platform-card .button {
+  margin-top: 1rem;
+}
+
+@media (max-width: 48rem) {
+  .platform-hub__grid { grid-template-columns: 1fr; }
+  .platform-card { min-height: 16rem; }
+}
+
 .hero,
 .route-intro {
   max-width: var(--text-width);

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -11,11 +12,18 @@ import { PreferenceControls } from "@/components/layout/preference-controls";
 import { useI18n } from "@/i18n";
 
 const navigation = [
-  { href: "/app", key: "analyzer" },
-  { href: "/story-downloader", key: "stories" },
+  { href: "/instagram", key: "instagram" },
+  { href: "/facebook", key: "facebook" },
   { href: "/how-it-works", key: "howItWorks" },
   { href: "/faq", key: "faq" },
 ] as const;
+
+function isCurrentPlatform(pathname: string, href: string): boolean {
+  if (href === "/instagram") {
+    return pathname === "/instagram" || pathname === "/app" || pathname === "/story-downloader";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -89,8 +97,8 @@ export function SiteHeader() {
               {navigation.map((item) => (
                 <li key={item.href}>
                   <Link
-                  aria-current={pathname === item.href ? "page" : undefined}
-                  href={item.href}
+                  aria-current={isCurrentPlatform(pathname, item.href) ? "page" : undefined}
+                  href={item.href as Route}
                   onClick={() => setMenuOpen(false)}
                   >
                     {dictionary.nav[item.key]}

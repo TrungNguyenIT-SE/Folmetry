@@ -1,6 +1,6 @@
 # Analyzer workflow (M6)
 
-The `/app` route is a browser-only relationship analyzer. It never submits an Instagram credential or uploads an export. The interactive boundary owns the Web Worker and IndexedDB services; domain comparison, normalization, CSV generation, and persistence remain framework-independent.
+The `/app` route parses Instagram exports locally and synchronizes confirmed normalized snapshots through an authenticated API. It never submits an Instagram credential or uploads the raw export. The interactive boundary owns the Web Worker; domain comparison, normalization, and CSV generation remain client-side, while persistent profile/history operations are owner-scoped in PostgreSQL.
 
 ## State and data lifecycle
 
@@ -8,7 +8,7 @@ The reducer in `src/features/analyzer/components/state-machine.ts` models these 
 
 ZIP or manual JSON `File` objects are passed directly to the import worker. The review state retains only normalized results, a SHA-256 fingerprint, safe diagnostics, and display-only source metadata. Saving persists normalized relationship records and snapshot metadata; raw ZIP/JSON bytes and source filenames are not stored.
 
-If IndexedDB rejects a snapshot write, the normalized analysis remains available in memory and can still be exported to CSV. Reloading naturally clears that unsaved fallback.
+If server synchronization rejects a snapshot write or the network is unavailable, the normalized analysis remains available in memory and can still be exported to CSV. Reloading naturally clears that unsaved fallback.
 
 ## Results and history
 

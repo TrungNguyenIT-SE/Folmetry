@@ -46,7 +46,7 @@ describe("AppPreferencesProvider", () => {
   it("keeps the extended Vietnamese analyzer copy valid UTF-8", () => {
     render(<AppPreferencesProvider><ControlsProbe /></AppPreferencesProvider>);
     fireEvent.click(screen.getByRole("button", { name: "vi" }));
-    expect(screen.getByTestId("analyzer-loading").textContent).toBe("\u0110ang t\u1ea3i c\u00f4ng c\u1ee5 ph\u00e2n t\u00edch c\u1ee5c b\u1ed9...");
+    expect(screen.getByTestId("analyzer-loading").textContent).toBe("\u0110ang t\u1ea3i d\u1eef li\u1ec7u ph\u00e2n t\u00edch \u0111\u00e3 \u0111\u1ed3ng b\u1ed9...");
     expect(document.body.textContent).not.toContain("\uFFFD");
   });
 });

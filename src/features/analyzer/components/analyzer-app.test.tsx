@@ -116,9 +116,9 @@ function renderAnalyzer(services: AnalyzerServices) {
 }
 
 async function createAccount(): Promise<void> {
-  await screen.findByText("No local accounts yet.");
-  fireEvent.change(screen.getByLabelText("Account label"), { target: { value: "Personal" } });
-  fireEvent.click(screen.getByRole("button", { name: "Create account" }));
+  await screen.findByText("No Instagram profiles yet.");
+  fireEvent.change(screen.getByLabelText("Profile label"), { target: { value: "Personal" } });
+  fireEvent.click(screen.getByRole("button", { name: "Create profile" }));
   await screen.findByRole("heading", { name: "Import an Instagram relationship export" });
 }
 
@@ -129,8 +129,8 @@ describe("AnalyzerApp", () => {
     expect(screen.getByText("Open Accounts Center, then Your information and permissions.")).toBeTruthy();
     expect(screen.getByText(/10–15 minutes/)).toBeTruthy();
     expect(screen.getByText(/keep only Followers and following selected/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Edit account" }));
-    fireEvent.change(screen.getByLabelText("Account label"), { target: { value: "Personal archive" } });
+    fireEvent.click(screen.getByRole("button", { name: "Edit profile" }));
+    fireEvent.change(screen.getByLabelText("Profile label"), { target: { value: "Personal archive" } });
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
     await screen.findByRole("option", { name: "Personal archive" });
     const input = container.querySelector<HTMLInputElement>('input[accept^=".zip"]');
@@ -188,7 +188,7 @@ describe("AnalyzerApp", () => {
     expect(screen.getByText("Drop one Instagram export ZIP here").closest("div")?.getAttribute("aria-describedby")).toBe("import-file-error");
   });
 
-  it("keeps results in memory when local storage cannot save", async () => {
+  it("keeps results in memory when server synchronization cannot save", async () => {
     const { container } = renderAnalyzer(createFakeServices({ saveFailure: true }));
     await createAccount();
     const input = container.querySelector<HTMLInputElement>('input[accept^=".zip"]');
@@ -201,15 +201,15 @@ describe("AnalyzerApp", () => {
     expect(screen.getByText("These results are available in memory", { exact: false })).toBeTruthy();
   });
 
-  it("requires confirmation before deleting a local account", async () => {
+  it("requires confirmation before deleting a synchronized profile", async () => {
     renderAnalyzer(createFakeServices());
     await createAccount();
-    fireEvent.click(screen.getByRole("button", { name: "Delete account and history" }));
-    expect(await screen.findByRole("alertdialog", { name: "Delete local account?" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Delete profile and history" }));
+    expect(await screen.findByRole("alertdialog", { name: "Delete Instagram profile?" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Keep data" }));
-    expect(screen.getByLabelText("Select account")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Delete account and history" }));
+    expect(screen.getByLabelText("Select profile")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Delete profile and history" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-    await screen.findByText("No local accounts yet.");
+    await screen.findByText("No Instagram profiles yet.");
   });
 });

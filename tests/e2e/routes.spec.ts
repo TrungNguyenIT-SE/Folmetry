@@ -8,7 +8,9 @@ const instagramFixtures = fileURLToPath(new URL("../fixtures/instagram", import.
 
 const routes = [
   { path: "/", heading: /Understand relationship changes/ },
-  { path: "/app", heading: /Your export stays on your device/ },
+  { path: "/instagram", heading: /Instagram tools/ },
+  { path: "/facebook", heading: /Facebook is a separate product area/ },
+  { path: "/app", heading: /One relationship history across your devices/ },
   { path: "/story-downloader", heading: /View public Stories/ },
   { path: "/how-it-works", heading: /Official export in/ },
   { path: "/privacy", heading: /Two features, two explicit data boundaries/ },
@@ -42,6 +44,10 @@ test("protected tools require a real website session", async ({ browser }) => {
     });
     expect(response.status()).toBe(401);
     expect(await response.json()).toMatchObject({ code: "UNAUTHORIZED" });
+
+    const analyzerResponse = await context.request.get("/api/analyzer?resource=accounts");
+    expect(analyzerResponse.status()).toBe(401);
+    expect(await analyzerResponse.json()).toMatchObject({ code: "UNAUTHORIZED" });
   } finally {
     await context.close();
   }
@@ -78,29 +84,30 @@ test("configured Google sign-in starts the official OAuth flow", async ({ browse
   }
 });
 
-test("local analyzer data is isolated between website accounts in one browser", async ({ browser }) => {
+test("synchronized analyzer data is isolated between website accounts", async ({ browser }) => {
+  test.skip(!process.env["DATABASE_URL"], "Analyzer synchronization requires PostgreSQL.");
   const context = await browser.newContext({
     extraHTTPHeaders: { "x-folmetry-e2e-auth": "playwright-local-only:admin" },
   });
   try {
     const page = await context.newPage();
     await page.goto("/app");
-    await page.getByLabel("Account label").fill("Admin private archive");
-    await page.getByRole("button", { name: "Create account" }).click();
-    await expect(page.getByLabel("Select account")).toContainText("Admin private archive");
+    await page.getByLabel("Profile label").fill("Admin private archive");
+    await page.getByRole("button", { name: "Create profile" }).click();
+    await expect(page.getByLabel("Select profile")).toContainText("Admin private archive");
 
     await context.setExtraHTTPHeaders({
       "x-folmetry-e2e-auth": "playwright-local-only:regular-user",
     });
     await page.goto("/app");
-    await expect(page.getByText("No local accounts yet.")).toBeVisible();
+    await expect(page.getByText("No Instagram profiles yet.")).toBeVisible();
     await expect(page.getByText("Admin private archive")).toHaveCount(0);
 
     await context.setExtraHTTPHeaders({
       "x-folmetry-e2e-auth": "playwright-local-only:admin",
     });
     await page.goto("/app");
-    await expect(page.getByLabel("Select account")).toContainText("Admin private archive");
+    await expect(page.getByLabel("Select profile")).toContainText("Admin private archive");
   } finally {
     await context.close();
   }

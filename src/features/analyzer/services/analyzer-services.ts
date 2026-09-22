@@ -1,11 +1,6 @@
 import type { LocalAccount, LocalSnapshot } from "@/features/analyzer/model/types";
 import {
-  AccountRepository,
-  analyzerDatabaseNameForOwner,
-  createAnalyzerDatabase,
-  LocalDataRepository,
-  saveSnapshotWithMemoryFallback,
-  SnapshotRepository,
+  PersistenceDomainError,
   type CreateAccountInput,
   type SaveSnapshotInput,
   type SnapshotSaveWithFallbackResult,
@@ -35,36 +30,99 @@ export interface AnalyzerServices {
   close(): void;
 }
 
-export function createBrowserAnalyzerServices(ownerId: string): AnalyzerServices {
-  const database = createAnalyzerDatabase({
-    name: analyzerDatabaseNameForOwner(ownerId),
-  });
-  const accounts = new AccountRepository(database);
-  const snapshots = new SnapshotRepository(database);
-  const localData = new LocalDataRepository(database);
+interface ApiErrorBody {
+  readonly code?: unknown;
+}
+
+async function requestJson<T>(
+  url: string,
+  init: RequestInit = {},
+): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      cache: "no-store",
+      credentials: "same-origin",
+      headers: {
+        ...(init.body === undefined ? {} : { "content-type": "application/json" }),
+        ...init.headers,
+      },
+    });
+  } catch {
+    throw new PersistenceDomainError("SYNC_UNAVAILABLE");
+  }
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({})) as ApiErrorBody;
+    const code = typeof body.code === "string" ? body.code : "SYNC_UNAVAILABLE";
+    const allowed = new Set([
+      "SYNC_UNAVAILABLE", "SYNC_PAYLOAD_TOO_LARGE", "ACCOUNT_NOT_FOUND",
+      "SNAPSHOT_NOT_FOUND", "SNAPSHOT_TIMESTAMP_CONFLICT", "INVALID_ACCOUNT_LABEL",
+      "INVALID_ACCOUNT_USERNAME", "INVALID_SNAPSHOT",
+    ]);
+    throw new PersistenceDomainError(
+      (allowed.has(code) ? code : "SYNC_UNAVAILABLE") as ConstructorParameters<typeof PersistenceDomainError>[0],
+    );
+  }
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+}
+
+function actionRequest<T>(method: "POST" | "PATCH" | "DELETE", body: unknown): Promise<T> {
+  return requestJson<T>("/api/analyzer", { method, body: JSON.stringify(body) });
+}
+
+/**
+ * Files are still parsed locally by the worker. Only the normalized, confirmed
+ * account/snapshot model crosses this client boundary and is stored by user ID.
+ */
+export function createCloudAnalyzerServices(): AnalyzerServices {
   const worker = new ImportWorkerClient();
 
   return {
-    listAccounts: () => accounts.list(),
-    createAccount: (input) => accounts.create(input),
-    updateAccount: (id, input) => accounts.update(id, input),
-    deleteAccount: (id) =>
-      accounts.delete(id, { confirmed: true, cascadeAcknowledged: true }),
-    listSnapshots: (accountId) => snapshots.listByAccount(accountId),
-    getSnapshot: (id) => snapshots.getById(id),
-    findPrior: (accountId, snapshotAt) => snapshots.findNearestPrior(accountId, snapshotAt),
-    findDuplicate: (accountId, fingerprint) =>
-      snapshots.findByFingerprint(accountId, fingerprint),
-    saveSnapshot: (input) => saveSnapshotWithMemoryFallback(snapshots, input),
-    deleteSnapshot: (accountId, snapshotId) =>
-      snapshots.delete(accountId, snapshotId, { confirmed: true }),
-    deleteAll: () => localData.deleteAll({ confirmed: true, scope: "all-local-data" }),
+    listAccounts: async () => (await requestJson<{ accounts: readonly LocalAccount[] }>(
+      "/api/analyzer?resource=accounts",
+    )).accounts,
+    createAccount: async (input) => (await actionRequest<{ account: LocalAccount }>(
+      "POST", { action: "createAccount", input },
+    )).account,
+    updateAccount: async (id, input) => (await actionRequest<{ account: LocalAccount }>(
+      "PATCH", { action: "updateAccount", id, input },
+    )).account,
+    deleteAccount: (id) => actionRequest<void>("DELETE", { action: "deleteAccount", id }),
+    listSnapshots: async (accountId) => (await requestJson<{ snapshots: readonly LocalSnapshot[] }>(
+      `/api/analyzer?resource=snapshots&accountId=${encodeURIComponent(accountId)}`,
+    )).snapshots,
+    getSnapshot: async (id) => {
+      const result = await requestJson<{ snapshot: LocalSnapshot | null }>(
+        `/api/analyzer?resource=snapshot&id=${encodeURIComponent(id)}`,
+      );
+      return result.snapshot ?? undefined;
+    },
+    findPrior: async (accountId, snapshotAt) => {
+      const snapshots = await requestJson<{ snapshots: readonly LocalSnapshot[] }>(
+        `/api/analyzer?resource=snapshots&accountId=${encodeURIComponent(accountId)}`,
+      );
+      return snapshots.snapshots.find((snapshot) => snapshot.snapshotAt < snapshotAt);
+    },
+    findDuplicate: async (accountId, fingerprint) => {
+      const snapshots = await requestJson<{ snapshots: readonly LocalSnapshot[] }>(
+        `/api/analyzer?resource=snapshots&accountId=${encodeURIComponent(accountId)}`,
+      );
+      return snapshots.snapshots.find((snapshot) => snapshot.fingerprint === fingerprint);
+    },
+    saveSnapshot: async (input) => (await actionRequest<{ result: SnapshotSaveWithFallbackResult }>(
+      "POST", { action: "saveSnapshot", input },
+    )).result,
+    deleteSnapshot: (accountId, snapshotId) => actionRequest<void>(
+      "DELETE", { action: "deleteSnapshot", accountId, snapshotId },
+    ),
+    deleteAll: () => actionRequest<void>("DELETE", { action: "deleteAll" }),
     parseArchive: (file, jobId, onProgress) => worker.parseArchive(jobId, file, onProgress),
     parseFiles: (files, jobId, onProgress) => worker.parseFiles(jobId, files, onProgress),
     cancelImport: () => worker.cancel(),
     close: () => {
       worker.dispose();
-      database.close();
     },
   };
 }

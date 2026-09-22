@@ -4,9 +4,21 @@
 > **Primary V1 platform:** Instagram  
 > **Future adapter:** Facebook  
 > **Document purpose:** Source-of-truth implementation specification for Codex / coding agents  
-> **Spec version:** 1.3
+> **Spec version:** 1.4
 > **Verified baseline date:** 2026-09-17
 > **Status:** Ready for implementation
+
+---
+
+## Revision 1.4 summary
+
+Version 1.4 changes analyzer persistence from browser-only IndexedDB to authenticated PostgreSQL synchronization. Raw ZIP/JSON files are still parsed transiently in the browser worker and are never uploaded. After explicit confirmation, normalized relationship records, profile labels, and snapshot metadata are sent to the Folmetry server and stored under the authenticated Folmetry user ID so the same account can access its history on multiple devices.
+
+All analyzer API reads and writes derive `owner_id` from the server-verified session. The browser must never submit or choose an owner ID. Account, snapshot, duplicate, comparison, and deletion queries must enforce ownership in the data-access layer. The admin user-management interface does not expose relationship records, while infrastructure/database operators may necessarily have technical database access and must be covered by operational access controls.
+
+Version 1.4 also creates two explicit top-level product areas: **Instagram** and **Facebook**. Instagram contains the production relationship analyzer and the separately networked public Story/Highlights utility. Facebook has a dedicated route and product boundary but remains unavailable for import until current export formats are validated against synthetic fixtures and a real `FacebookExportAdapter` is implemented.
+
+This revision supersedes every older statement that normalized relationship data, profile labels, or snapshots must remain in IndexedDB or that cloud snapshot synchronization is prohibited. It does not supersede the prohibition on uploading or persisting raw ZIP/JSON files, requesting social credentials, direct scraping, or claiming unvalidated Facebook support.
 
 ---
 
@@ -44,8 +56,8 @@ Treat this file as the product and engineering source of truth.
 
 ### Non-negotiable rules
 
-1. Build the relationship-analysis portion of V1 as **local-first and privacy-first**. The Story/Highlights feature is a separate, explicitly networked subsystem with a minimal server-side gateway.
-2. The user's Instagram export file and parsed relationship data **must never be uploaded to our server** in V1. Story/Highlights lookups must be architecturally isolated from the relationship analyzer.
+1. Build relationship-file parsing as **local-first** and confirmed snapshot persistence as authenticated, owner-scoped server synchronization. The Story/Highlights provider remains a separate network subsystem.
+2. The user's raw Instagram ZIP/JSON file must never be uploaded or persisted. Only normalized relationship records and snapshot metadata may be sent after explicit save confirmation.
 3. Do **not** ask for an Instagram/Facebook password, session cookie, 2FA code, access token, or browser cookie.
 4. Do **not** implement scraping of Instagram/Facebook pages in our application infrastructure.
 5. Do **not** call unofficial/private Instagram or Facebook APIs directly. Public Story/Highlights data may be obtained only through a separately reviewed third-party provider adapter whose credentials remain server-side. There must be no direct-scraping fallback.
@@ -58,7 +70,7 @@ Treat this file as the product and engineering source of truth.
 12. All fixtures must be synthetic/anonymized.
 13. The UI must never state with absolute certainty that a person intentionally “unfollowed” the user when the data only proves the account disappeared from a later follower snapshot.
 14. Prefer wording such as **“Lost follower”** / **“No longer in your followers since the previous snapshot”** and explain the limitation.
-15. V1 may include backend routes for account authentication/administration and public Story/Highlights delivery. Do not use that backend for relationship imports, cloud snapshot sync, payments, analytics, or tracking.
+15. Backend routes may support authentication, owner-scoped normalized snapshot synchronization, administration, and public Story/Highlights delivery. They must not accept raw relationship exports or add tracking.
 16. Do not add dependencies merely for convenience. Prefer browser/platform APIs and small, well-maintained libraries.
 17. TypeScript strict mode is mandatory. Avoid `any`.
 18. Every core parser and diff rule must have automated tests before considering the feature complete.
@@ -97,15 +109,13 @@ The product must answer these questions without requiring Instagram credentials:
 
 ## 1.2 The core value proposition
 
-> Analyze your Instagram followers privately. No Instagram password. Your export stays on your device.
+> Analyze your Instagram followers privately. No Instagram password. Raw exports stay on your device; confirmed snapshots synchronize across yours.
 
 For the separate Story/Highlights tool:
 
 > View currently available public Instagram Stories and Highlights without providing Instagram credentials. The submitted public username is processed through our server and configured data provider.
 
-The privacy model is not marketing decoration; it is an architectural requirement.
-
-The two privacy boundaries must never be blurred: relationship export data remains local-only, while Story/Highlights queries are networked and must be disclosed as such before submission.
+The privacy model is not marketing decoration; it is an architectural requirement. Raw relationship files remain local, normalized saved snapshots are owner-scoped server data, and Story/Highlights requests follow a separate provider path.
 
 ## 1.3 What the product is NOT
 

@@ -3297,6 +3297,56 @@ Một thiết kế/effect bị loại nếu có một trong các điều kiện:
 
 ---
 
+# 19C. M8SYNC — Đồng bộ đa thiết bị và phân vùng Instagram/Facebook
+
+**Trạng thái:** Đã triển khai code ngày 2026-09-22; còn production smoke test sau deploy.
+
+## 19C.1 Kiến trúc dữ liệu
+
+- [x] ZIP/JSON thô tiếp tục được đọc trong Web Worker trên thiết bị và không upload.
+- [x] Chỉ dữ liệu quan hệ đã chuẩn hóa, fingerprint, cảnh báo và metadata snapshot được gửi sau khi user xác nhận lưu.
+- [x] Thay analyzer persistence mặc định từ IndexedDB sang PostgreSQL server.
+- [x] Tạo bảng `folmetry_analyzer_account` và `folmetry_analyzer_snapshot` với foreign key cascade.
+- [x] Unique constraint cho fingerprint và `snapshotAt` trong cùng hồ sơ.
+- [x] Giới hạn request đồng bộ 4 MiB và trả mã lỗi an toàn, không lộ chi tiết database.
+- [x] Khi đồng bộ lỗi, kết quả hiện tại vẫn ở memory để user có thể xuất CSV.
+- [-] Không tự động upload dữ liệu IndexedDB cũ: thay đổi kỳ vọng riêng tư và ownership của database legacy không đủ chắc chắn; user re-import bản xuất gốc.
+
+## 19C.2 Authorization và isolation
+
+- [x] Mọi route `/api/analyzer` bắt buộc Better Auth session.
+- [x] `owner_id` chỉ lấy từ session server; client không truyền owner ID.
+- [x] Mọi query account/snapshot/delete đều lọc theo `owner_id`.
+- [x] Snapshot write khóa và kiểm tra account thuộc đúng owner/platform trong transaction.
+- [x] Xóa Folmetry user cascade toàn bộ analyzer data của chính user đó.
+- [x] Admin UI không có endpoint đọc relationship records của user.
+- [x] Validate lại label, username, relationship records, warning codes, fingerprint và metadata ở server.
+- [x] Raw exception/database detail không trả về client.
+
+## 19C.3 UX đa nền tảng
+
+- [x] Header có hai khu vực cấp cao rõ ràng: Instagram và Facebook.
+- [x] `/instagram` là hub cho phân tích quan hệ và tiện ích Story/Highlights.
+- [x] `/facebook` có route, định vị và trạng thái chưa hỗ trợ trung thực.
+- [x] Không bật tạo profile/import Facebook trước khi có fixtures và adapter đã xác minh.
+- [x] Analyzer copy EN/VI giải thích file thô cục bộ và snapshot chuẩn hóa đồng bộ server.
+- [x] Các thao tác xóa nói rõ ảnh hưởng trên mọi thiết bị.
+- [x] Footer đổi từ `LOCAL / PRIVATE` sang `SYNC / PRIVATE`.
+
+## 19C.4 Tài liệu và nghiệm thu
+
+- [x] `website.md` revision 1.4 supersede các cấm cloud sync cũ.
+- [x] README mô tả đúng ranh giới dữ liệu mới.
+- [x] Thêm `docs/cloud-sync.md` và cập nhật analyzer workflow.
+- [x] TypeScript strict và ESLint pass.
+- [x] Unit/component tests cập nhật theo IA/copy mới.
+- [ ] Production smoke: tạo snapshot ở thiết bị A, đăng nhập cùng account ở thiết bị B và xem đúng dữ liệu.
+- [ ] Production isolation: account B không đọc/sửa/xóa được ID của account A.
+- [ ] Production deletion: xóa profile/snapshot/user và kiểm tra cascade thật trên PostgreSQL.
+- [ ] Xác minh payload của các account lớn hơn giới hạn hosting; thiết kế chunking trước khi nâng giới hạn parser production.
+
+---
+
 # 20. Definition of Done toàn dự án
 
 V1 chỉ hoàn thành khi đồng thời thỏa mãn:

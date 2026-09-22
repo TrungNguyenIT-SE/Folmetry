@@ -69,7 +69,7 @@ export function renderAuthEmail(input: AuthEmailTemplateInput): AuthEmailTemplat
     "This link expires in 60 minutes. If you did not request this action, ignore this email; no change will be made.",
     "Liên kết hết hạn sau 60 phút. Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email; tài khoản sẽ không thay đổi.",
     "",
-    "Your relationship exports stay on your device. Folmetry will never ask for your Instagram password by email.",
+    "Raw relationship exports stay on your device. Folmetry will never ask for your Instagram password by email.",
   ].join("\n");
 
   const html = `<!doctype html>
@@ -154,8 +154,8 @@ export function renderAuthEmail(input: AuthEmailTemplateInput): AuthEmailTemplat
               <p style="margin:0 0 9px;color:#e5eaf2;font-size:13px;line-height:21px;font-weight:700;">Didn’t request this? You can safely ignore this email.</p>
               <p style="margin:0 0 18px;color:#8d9bb1;font-size:12px;line-height:20px;">Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email. Tài khoản sẽ không thay đổi.</p>
               <div style="height:1px;background:#263247;margin-bottom:18px;"></div>
-              <p style="margin:0;color:#8d9bb1;font-size:11px;line-height:18px;">Your relationship exports stay on your device. ${siteName} never asks for your Instagram password by email.</p>
-              <p style="margin:6px 0 0;color:#66758d;font-size:11px;line-height:18px;">Dữ liệu quan hệ được giữ trên thiết bị. ${siteName} không bao giờ yêu cầu mật khẩu Instagram qua email.</p>
+              <p style="margin:0;color:#8d9bb1;font-size:11px;line-height:18px;">Raw relationship exports stay on your device. Confirmed normalized snapshots may synchronize to your account. ${siteName} never asks for your Instagram password by email.</p>
+              <p style="margin:6px 0 0;color:#66758d;font-size:11px;line-height:18px;">Bản xuất quan hệ thô ở lại thiết bị; snapshot đã xác nhận có thể đồng bộ vào tài khoản. ${siteName} không bao giờ yêu cầu mật khẩu Instagram qua email.</p>
             </td>
           </tr>
         </table>

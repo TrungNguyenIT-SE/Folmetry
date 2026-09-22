@@ -16,10 +16,8 @@ describe("SiteHeader", () => {
     render(<AppPreferencesProvider><SiteHeader /></AppPreferencesProvider>);
 
     expect(screen.getByRole("navigation", { name: "Primary navigation" })).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Analyzer" }).getAttribute("href")).toBe("/app");
-    expect(screen.getByRole("link", { name: "Stories" }).getAttribute("href")).toBe(
-      "/story-downloader",
-    );
+    expect(screen.getByRole("link", { name: "Instagram" }).getAttribute("href")).toBe("/instagram");
+    expect(screen.getByRole("link", { name: "Facebook" }).getAttribute("href")).toBe("/facebook");
   });
 
   it("manages mobile menu focus, Escape, and scroll locking", async () => {
@@ -27,7 +25,7 @@ describe("SiteHeader", () => {
     const trigger = screen.getByRole("button", { name: "Open navigation menu" });
     fireEvent.click(trigger);
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
-    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("link", { name: "Analyzer" })));
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("link", { name: "Instagram" })));
     expect(document.body.style.overflow).toBe("hidden");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");

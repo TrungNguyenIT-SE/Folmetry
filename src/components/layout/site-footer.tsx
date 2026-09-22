@@ -12,7 +12,7 @@ export function SiteFooter() {
         <div className="site-footer__summary">
           <div className="site-footer__brand-line">
             <strong className="site-footer__brand">Folmetry</strong>
-            <span className="site-footer__status" aria-hidden="true">LOCAL / PRIVATE</span>
+            <span className="site-footer__status" aria-hidden="true">SYNC / PRIVATE</span>
           </div>
           <p>{dictionary.footer.localBoundary}</p>
           <p>{dictionary.footer.storyBoundary}</p>

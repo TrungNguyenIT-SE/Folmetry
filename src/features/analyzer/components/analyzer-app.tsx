@@ -17,7 +17,7 @@ import {
   type SaveSnapshotInput,
 } from "@/features/analyzer/persistence";
 import {
-  createBrowserAnalyzerServices,
+  createCloudAnalyzerServices,
   type AnalyzerServices,
 } from "@/features/analyzer/services/analyzer-services";
 import {
@@ -42,8 +42,6 @@ import {
 
 export interface AnalyzerAppProps {
   readonly services?: AnalyzerServices;
-  /** Stable authenticated Folmetry user ID used only to scope browser storage. */
-  readonly storageScope?: string;
 }
 
 type DeleteMode = "account" | "all";
@@ -92,7 +90,7 @@ function inMemorySnapshot(input: SaveSnapshotInput): LocalSnapshot {
   };
 }
 
-export function AnalyzerApp({ services: providedServices, storageScope }: AnalyzerAppProps) {
+export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
   const { dictionary, formatNumber } = useI18n();
   const copy = dictionary.analyzer;
   const [workflow, dispatch] = useReducer(analyzerWorkflowReducer, INITIAL_ANALYZER_STATE);
@@ -137,10 +135,7 @@ export function AnalyzerApp({ services: providedServices, storageScope }: Analyz
       if (providedServices !== undefined) {
         api = providedServices;
       } else {
-        if (storageScope === undefined) {
-          throw new Error("Authenticated analyzer storage scope is required.");
-        }
-        api = createBrowserAnalyzerServices(storageScope);
+        api = createCloudAnalyzerServices();
       }
       servicesRef.current = api;
     } catch {
@@ -172,7 +167,7 @@ export function AnalyzerApp({ services: providedServices, storageScope }: Analyz
       api.close();
       servicesRef.current = undefined;
     };
-  }, [providedServices, storageScope]);
+  }, [providedServices]);
 
   const refreshAccounts = async (api: AnalyzerServices): Promise<readonly LocalAccount[]> => {
     const loaded = await api.listAccounts();
@@ -323,6 +318,8 @@ export function AnalyzerApp({ services: providedServices, storageScope }: Analyz
       followers: payload.followers,
       following: payload.following,
       warnings: payload.warnings,
+      sourceFileName: draft.source.name,
+      sourceFileSize: draft.source.size,
     };
     const result = await api.saveSnapshot(input);
     if (result.status === "duplicate") {

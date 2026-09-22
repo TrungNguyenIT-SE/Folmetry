@@ -1,6 +1,6 @@
 # Folmetry
 
-Privacy-first Instagram relationship analysis with a separately disclosed public Story/Highlights utility.
+Privacy-first, cross-device Instagram relationship analysis with separate Instagram and Facebook product areas.
 
 ## Local development
 
@@ -15,7 +15,7 @@ Open `http://localhost:3000`.
 
 ## Website accounts (M8A)
 
-Folmetry uses Better Auth with PostgreSQL for website accounts, verified email, password recovery, database-backed sessions, and `user`/`admin` roles. The account database does not receive Instagram ZIP files or normalized relationship snapshots; those remain in browser IndexedDB.
+Folmetry uses Better Auth with PostgreSQL for website accounts, verified email, password recovery, database-backed sessions, and `user`/`admin` roles. Raw Instagram ZIP/JSON files are parsed in a browser worker and never uploaded. Confirmed normalized relationship snapshots are stored in PostgreSQL under the authenticated Folmetry user so history synchronizes across devices.
 
 1. Copy the account variables from `.env.example` into `.env.local` and use a real PostgreSQL `DATABASE_URL`.
 2. Generate a secret with `pnpm exec auth secret` and set `BETTER_AUTH_SECRET`.
@@ -52,7 +52,7 @@ The network Story utility is isolated from the local relationship analyzer and i
 
 Production activation requires a reviewed provider contract and privacy approval. See [the provider due-diligence record](docs/story-provider-due-diligence.md) and copy `.env.example` into a local ignored environment file only after approval. Never prefix provider or media-token secrets with `NEXT_PUBLIC_`.
 
-Relationship imports will remain browser-local. Story/Highlights is a separate server-assisted feature and is disabled until its provider release gate is approved. Never add Instagram credentials, session cookies, real exports, or provider secrets to this repository.
+Relationship file parsing remains browser-local; confirmed normalized snapshots use the owner-scoped analyzer API. Story/Highlights is a separate server-assisted feature and is disabled until its provider release gate is approved. Never add Instagram credentials, session cookies, real exports, or provider secrets to this repository.
 
 ## Analyzer domain and worker pipeline
 
@@ -60,11 +60,11 @@ The M2 parser core is framework-independent and exported from `src/features/anal
 
 M3 adds a dedicated typed module worker, selective ZIP extraction through the CSP-friendly native zip.js entry point, real progress stages, hard cancellation by worker termination, manual multi-file JSON recovery, sanitized diagnostics, and worker-side SHA-256 fingerprinting. Raw ZIP/JSON data is neither uploaded nor persisted by this pipeline.
 
-M4 adds the versioned Dexie/IndexedDB repository for local accounts, normalized snapshots, deterministic duplicate/baseline lookup, typed settings, confirmed cascade/delete-all operations, and explicit storage-failure fallback. See [`docs/local-persistence.md`](./docs/local-persistence.md).
+M4 supplied the original IndexedDB persistence layer. M8SYNC replaces analyzer domain persistence with authenticated PostgreSQL synchronization while IndexedDB remains only for small UI preferences. Existing browser-only analyzer records are not silently assigned or uploaded; re-import the original export to create a synchronized snapshot. See [`docs/cloud-sync.md`](./docs/cloud-sync.md).
 
 M5 adds typed English/Vietnamese localization, persisted system/light/dark themes, a responsive accessible shell, and source-owned UI primitives. See [`docs/ui-foundations.md`](./docs/ui-foundations.md).
 
-M6 connects the complete local analyzer workflow: separate account profiles, worker-backed ZIP/JSON import, review and duplicate handling, IndexedDB save with in-memory fallback, localized results/history/manual comparison, safe paginated lists, local CSV export, and confirmed deletion flows. See [`docs/analyzer-workflow.md`](./docs/analyzer-workflow.md).
+M6 connects the analyzer workflow. M8SYNC now saves confirmed normalized snapshots through the authenticated server API, while ZIP/JSON parsing, CSV generation, and unsaved fallback results remain local. See [`docs/analyzer-workflow.md`](./docs/analyzer-workflow.md).
 
 All committed fixtures are synthetic. Regenerate the mechanical archive fixtures with:
 
