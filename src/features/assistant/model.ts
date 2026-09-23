@@ -2,7 +2,8 @@ export const ASSISTANT_MODES = ["auto", "folmetry", "general", "web"] as const;
 
 export type AssistantMode = (typeof ASSISTANT_MODES)[number];
 export type ResolvedAssistantMode = Exclude<AssistantMode, "auto">;
-export type AssistantProviderName = "groq" | "google";
+export type AssistantProviderName = "groq" | "cloudflare";
+export type AssistantStoredProviderName = AssistantProviderName | "google";
 
 export interface AssistantCitation {
   readonly title: string;
@@ -14,7 +15,7 @@ export interface AssistantMessage {
   readonly role: "user" | "assistant";
   readonly content: string;
   readonly createdAt: number;
-  readonly provider?: AssistantProviderName;
+  readonly provider?: AssistantStoredProviderName;
   readonly model?: string;
   readonly citations: readonly AssistantCitation[];
 }

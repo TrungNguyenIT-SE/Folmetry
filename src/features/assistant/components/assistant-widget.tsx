@@ -24,6 +24,12 @@ import { useI18n } from "@/i18n";
 
 const subscribeToHydration = (): (() => void) => () => undefined;
 
+function providerLabel(provider: NonNullable<AssistantMessage["provider"]>): string {
+  if (provider === "cloudflare") return "Cloudflare";
+  if (provider === "google") return "Google";
+  return "Groq";
+}
+
 interface AssistantStatus {
   readonly configured: boolean;
   readonly providers: readonly string[];
@@ -300,7 +306,7 @@ export function AssistantWidget() {
                             {message.citations.map((citation) => <li key={citation.url}><a href={citation.url} rel="noopener noreferrer" target="_blank">{citation.title}</a></li>)}
                           </ol>
                         )}
-                        {message.provider === undefined ? null : <small>{copy.via} {message.provider === "google" ? "Google" : "Groq"}</small>}
+                        {message.provider === undefined ? null : <small>{copy.via} {providerLabel(message.provider)}</small>}
                       </article>
                     ))}
                   </div>

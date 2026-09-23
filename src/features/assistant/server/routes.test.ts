@@ -30,8 +30,8 @@ describe("assistant routes", () => {
     mocks.getRequestSession.mockResolvedValue({ user: { id: "user-1" } });
     mocks.listConversations.mockResolvedValue([]);
     mocks.readConfig.mockReturnValue({
-      providers: new Map([["groq", { apiKey: "hidden", model: "model" }]]),
-      googleSearchEnabled: false,
+      providers: new Map([["groq", { provider: "groq", apiKey: "hidden", model: "model" }]]),
+      liveWebEnabled: false,
     });
     mocks.beginTurn.mockResolvedValue({
       conversationId: "conversation-1",
@@ -63,9 +63,9 @@ describe("assistant routes", () => {
       async *stream() { throw new Error("upstream detail must not leak"); },
     };
     const working = {
-      name: "google",
+      name: "cloudflare",
       model: "working-model",
-      grounded: true,
+      grounded: false,
       async *stream() {
         yield { type: "delta" as const, text: "Safe answer" };
         yield { type: "citations" as const, citations: [{ title: "Source", url: "https://example.com" }] };
@@ -79,14 +79,14 @@ describe("assistant routes", () => {
     }));
     expect(response.status).toBe(200);
     const body = await response.text();
-    expect(body).toContain('"provider":"google"');
+    expect(body).toContain('"provider":"cloudflare"');
     expect(body).toContain('"text":"Safe answer"');
     expect(body).not.toContain("upstream detail");
     expect(mocks.completeTurn).toHaveBeenCalledWith(
       expect.any(String),
       "conversation-1",
       "Safe answer",
-      "google",
+      "cloudflare",
       "working-model",
       [{ title: "Source", url: "https://example.com" }],
     );
@@ -112,7 +112,7 @@ describe("assistant routes", () => {
     expect(mocks.beginTurn).not.toHaveBeenCalled();
   });
 
-  it("does not pretend to browse when Google Search grounding is disabled", async () => {
+  it("does not pretend to browse when live web grounding is unavailable", async () => {
     const response = await handleAssistantPost(new Request("https://folmetry.test/api/assistant", {
       method: "POST",
       headers: { "content-type": "application/json", origin: "https://folmetry.test" },
@@ -121,5 +121,27 @@ describe("assistant routes", () => {
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toMatchObject({ code: "ASSISTANT_NOT_CONFIGURED" });
     expect(mocks.beginTurn).not.toHaveBeenCalled();
+  });
+
+  it("degrades auto-detected live questions to ungrounded general guidance", async () => {
+    const working = {
+      name: "cloudflare",
+      model: "working-model",
+      grounded: false,
+      async *stream() { yield { type: "delta" as const, text: "Live verification is unavailable." }; },
+    };
+    mocks.providerCandidates.mockReturnValue([working]);
+    const response = await handleAssistantPost(new Request("https://folmetry.test/api/assistant", {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "https://folmetry.test" },
+      body: JSON.stringify({ message: "What happened today?", mode: "auto" }),
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('"mode":"general"');
+    expect(mocks.providerCandidates).toHaveBeenCalledWith(
+      expect.anything(),
+      "general",
+      "conversation-1",
+    );
   });
 });

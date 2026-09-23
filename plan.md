@@ -3720,9 +3720,9 @@ Hoàn thiện Facebook như một workspace độc lập nhưng dùng chung các
 
 ## 19F.2. Backend, provider và độ bền
 
-- [x] Tích hợp Groq và Google AI Studio bằng adapter server-side, không lộ API key ra client.
+- [x] Tích hợp Groq và Cloudflare Workers AI bằng adapter server-side, không lộ API token ra client; giữ metadata Google cũ chỉ để đọc lịch sử.
 - [x] Phân phối hội thoại ổn định giữa hai provider và fallback chỉ trước khi bắt đầu phát nội dung.
-- [x] Live Web ưu tiên Gemini Google Search grounding và chuẩn hóa citation HTTPS.
+- [x] Khóa Live Web cho đến khi có search provider riêng được rà soát; Workers AI không bị mô tả sai là nguồn web thời gian thực.
 - [x] Stream SSE cùng các event meta, delta, citations, done và error đã chuẩn hóa.
 - [x] Fail-closed bằng hai release gate; hỗ trợ kill switch tức thời bằng biến môi trường.
 - [x] Giới hạn body/input/history/output/timeout, quota theo tài khoản và không rò lỗi upstream.
@@ -3735,7 +3735,7 @@ Hoàn thiện Facebook như một workspace độc lập nhưng dùng chung các
 - [x] Hiển thị provider/model đã trả lời và thông báo không gửi dữ liệu nhạy cảm.
 - [x] Bổ sung `.env.example`, README và tài liệu kiến trúc/vận hành `docs/ai-assistant.md`.
 - [x] Unit test cho config, prompt, provider parser và route auth/fallback/error/CSRF.
-- [ ] Trước production: phê duyệt điều khoản/quyền riêng tư và hạn mức chi phí hiện hành của Groq/Google.
+- [ ] Trước production: phê duyệt điều khoản/quyền riêng tư, gateway logging và hạn mức hiện hành của Groq/Cloudflare.
 - [ ] Trước production: cấu hình key mới trong secret store và smoke-test thật từng provider cùng fallback.
 
 # 20. Definition of Done toàn dự án

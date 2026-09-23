@@ -6,13 +6,13 @@ import type { AssistantProviderName, ResolvedAssistantMode } from "@/features/as
 
 import type { AssistantServerConfig } from "./config";
 import {
-  GoogleAssistantProvider,
+  CloudflareAssistantProvider,
   GroqAssistantProvider,
   type AssistantProvider,
 } from "./providers";
 
 function affinity(seed: string): AssistantProviderName {
-  return (createHash("sha256").update(seed).digest()[0] ?? 0) % 2 === 0 ? "groq" : "google";
+  return (createHash("sha256").update(seed).digest()[0] ?? 0) % 2 === 0 ? "groq" : "cloudflare";
 }
 
 export function providerCandidates(
@@ -21,23 +21,23 @@ export function providerCandidates(
   conversationId: string,
   fetcher: typeof fetch = fetch,
 ): readonly AssistantProvider[] {
-  const preferred: AssistantProviderName = mode === "web" && config.providers.has("google")
-    ? "google"
-    : affinity(conversationId);
+  const preferred = affinity(conversationId);
   const order: readonly AssistantProviderName[] = preferred === "groq"
-    ? ["groq", "google"]
-    : ["google", "groq"];
+    ? ["groq", "cloudflare"]
+    : ["cloudflare", "groq"];
 
   return order.flatMap((name): AssistantProvider[] => {
     const provider = config.providers.get(name);
     if (provider === undefined) return [];
-    return name === "groq"
-      ? [new GroqAssistantProvider(provider.model, provider.apiKey, fetcher)]
-      : [new GoogleAssistantProvider(
-          provider.model,
-          provider.apiKey,
-          config.googleSearchEnabled && mode === "web",
-          fetcher,
-        )];
+    if (provider.provider === "groq") {
+      return [new GroqAssistantProvider(provider.model, provider.apiKey, fetcher)];
+    }
+    return [new CloudflareAssistantProvider(
+      provider.model,
+      provider.accountId,
+      provider.apiToken,
+      provider.gatewayId,
+      fetcher,
+    )];
   });
 }

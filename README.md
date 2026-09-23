@@ -48,9 +48,9 @@ pnpm audit --prod --audit-level high
 
 ## Folmetry Assistant (M9AI)
 
-The authenticated assistant answers both Folmetry questions and general questions. `Auto` detects the request type, `Folmetry` stays focused on product guidance, `General` uses model knowledge, and `Live Web` can use Google Search grounding with source links. Conversations are owner-scoped in PostgreSQL and synchronize across devices; relationship ZIP files, raw exports, and synchronized follower lists are never attached automatically.
+The authenticated assistant answers both Folmetry questions and general questions. `Auto` detects the request type, `Folmetry` stays focused on product guidance, and `General` uses model knowledge. `Live Web` remains disabled until a separately reviewed search provider is configured. Conversations are owner-scoped in PostgreSQL and synchronize across devices; relationship ZIP files, raw exports, and synchronized follower lists are never attached automatically.
 
-The feature fails closed. Set both `AI_ASSISTANT_ENABLED=true` and `AI_PROVIDER_APPROVED=true`, then provide at least one server-only key. With both `GROQ_API_KEY` and `GOOGLE_AI_API_KEY` configured, new conversations are distributed deterministically and fall back to the other provider if the preferred provider fails before output starts. Enable `AI_GOOGLE_SEARCH_ENABLED=true` only after approving Google Search grounding and its data terms. Never use `NEXT_PUBLIC_` for an AI key.
+The feature fails closed. Set both `AI_ASSISTANT_ENABLED=true` and `AI_PROVIDER_APPROVED=true`, then configure Groq and/or Cloudflare Workers AI. Cloudflare requires `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_API_TOKEN`, and an `@cf/...` model; the gateway ID defaults to `default`. With both providers configured, new conversations are distributed deterministically and fall back to the other provider if the preferred provider fails before output starts. Never use `NEXT_PUBLIC_` for an AI token.
 
 The assistant tables are created idempotently on first use. Requests require a Folmetry session, enforce owner-scoped queries and database-backed quotas, and expose only normalized error codes. Review [the assistant architecture and production checklist](docs/ai-assistant.md) before enabling it.
 

@@ -160,7 +160,7 @@ export async function handleAssistantGet(request: Request): Promise<Response> {
         return Response.json({
           configured: true,
           providers: [...config.providers.keys()],
-          liveWeb: config.googleSearchEnabled,
+          liveWeb: config.liveWebEnabled,
         }, { headers: { "Cache-Control": "no-store" } });
       } catch {
         return Response.json({ configured: false, providers: [], liveWeb: false }, {
@@ -226,10 +226,13 @@ export async function handleAssistantPost(request: Request): Promise<Response> {
       (conversationId !== undefined && !isConversationId(conversationId))
     ) throw new AssistantError("ASSISTANT_INVALID_REQUEST");
 
-    const resolvedMode = resolveAssistantMode(mode, message);
-    if (resolvedMode === "web" && !config.googleSearchEnabled) {
+    const detectedMode = resolveAssistantMode(mode, message);
+    if (mode === "web" && !config.liveWebEnabled) {
       throw new AssistantError("ASSISTANT_NOT_CONFIGURED");
     }
+    const resolvedMode = detectedMode === "web" && !config.liveWebEnabled
+      ? "general"
+      : detectedMode;
     const turn = await repository.beginTurn(conversationId, mode, message);
     const providers = providerCandidates(config, resolvedMode, turn.conversationId);
     const timeoutSignal = AbortSignal.timeout(ASSISTANT_POLICY.providerTimeoutMs);
