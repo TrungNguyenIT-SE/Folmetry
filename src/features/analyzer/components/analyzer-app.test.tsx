@@ -146,10 +146,10 @@ describe("AnalyzerApp", () => {
       target: { files: [new File(["zip"], "facebook.zip", { type: "application/zip", lastModified: 10 })] },
     });
     await screen.findByRole("heading", { name: "Review import" });
-    expect(screen.getByText("Detected friends")).toBeTruthy();
+    expect(screen.getByText("Friend rows detected in export")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Save snapshot" }));
     await screen.findByRole("heading", { name: "Relationship results" });
-    expect(screen.getByRole("tab", { name: "Friends" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Friends in export" })).toBeTruthy();
     expect(screen.queryByRole("tab", { name: "Mutuals" })).toBeNull();
   });
 

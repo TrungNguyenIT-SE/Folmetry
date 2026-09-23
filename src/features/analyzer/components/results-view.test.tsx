@@ -72,7 +72,7 @@ describe("ResultsView", () => {
       </AppPreferencesProvider>,
     );
 
-    expect(screen.getByRole("tab", { name: "Friends" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Friends in export" })).toBeTruthy();
     expect(screen.queryByRole("tab", { name: "Mutuals" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Open Instagram profile" })).toBeNull();
     fireEvent.click(screen.getByRole("tab", { name: "Possible follower name changes" }));
@@ -105,7 +105,7 @@ describe("ResultsView", () => {
       </AppPreferencesProvider>,
     );
 
-    fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Friends in export" }));
     expect(screen.getAllByText("Same Name")).toHaveLength(2);
   });
 });

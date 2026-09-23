@@ -32,4 +32,16 @@ describe("SiteHeader", () => {
     expect(document.activeElement).toBe(trigger);
     expect(document.body.style.overflow).toBe("");
   });
+
+  it("closes the mobile menu after choosing a navigation destination", async () => {
+    render(<AppPreferencesProvider><SiteHeader /></AppPreferencesProvider>);
+    const trigger = screen.getByRole("button", { name: "Open navigation menu" });
+
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.click(screen.getByRole("link", { name: "Facebook" }));
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    await waitFor(() => expect(document.body.style.overflow).toBe(""));
+  });
 });

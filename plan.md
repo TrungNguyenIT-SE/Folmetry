@@ -3695,6 +3695,7 @@ Hoàn thiện Facebook như một workspace độc lập nhưng dùng chung các
 - [x] Có tab danh sách Bạn bè, Đang theo dõi, kết nối mất/mới, đổi tên có thể và lịch sử.
 - [x] Chỉ suy luận đổi tên khi timestamp kết nối trùng duy nhất giữa hai snapshot; luôn ghi rõ không phải bằng chứng định danh.
 - [x] Giữ nguyên mọi dòng Bạn bè trùng tên trong bản xuất Facebook; dùng timestamp để phân biệt khi có và không coi tên hiển thị là mã định danh duy nhất.
+- [x] Thêm hồi quy theo cấu trúc ZIP thật 424 dòng/410 tên duy nhất; xác nhận parser giữ đủ 424 dòng và không trộn file đã xóa, lời mời, gợi ý hoặc follower để bù số Facebook UI.
 - [x] Đồng bộ snapshot đã chuẩn hóa theo authenticated owner; kiểm tra platform snapshot khớp platform hồ sơ.
 - [x] Lọc danh sách hồ sơ và xóa toàn bộ theo platform để không tác động dữ liệu Instagram.
 - [x] CSV Facebook dùng cột Name và tên file riêng, không áp dụng URL hồ sơ Instagram.

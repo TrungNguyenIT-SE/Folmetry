@@ -94,6 +94,26 @@ describe("facebookAdapter", () => {
     expect(result.following.map((record) => record.handle)).toEqual(["Following One"]);
   });
 
+  it("preserves all 424 friend rows when only 410 exported names are distinct", async () => {
+    const friends = Array.from({ length: 424 }, (_, index) => ({
+      name: `Synthetic Friend ${index % 410}`,
+      timestamp: 1_700_000_000 + (index === 423 ? 422 : index),
+    }));
+    const input: AdapterInput = {
+      mode: "archive",
+      manifest: { entries: [{ name: "connections/friends/your_friends.json" }] },
+      files: [{
+        path: "connections/friends/your_friends.json",
+        content: { friends_v2: friends },
+      }],
+    };
+
+    const result = await facebookAdapter.parse(input, {});
+
+    expect(result.friends).toHaveLength(424);
+    expect(new Set(result.friends?.map((record) => record.normalizedHandle)).size).toBe(410);
+  });
+
   it("rejects HTML-only and unrecognized Facebook shapes", async () => {
     await expect(facebookAdapter.parse({
       mode: "archive",

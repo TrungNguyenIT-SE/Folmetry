@@ -31,7 +31,8 @@ function isCurrentPlatform(pathname: string, href: string): boolean {
 export function SiteHeader() {
   const pathname = usePathname();
   const { dictionary } = useI18n();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpenedAtPath, setMenuOpenedAtPath] = useState<string | null>(null);
+  const menuOpen = menuOpenedAtPath === pathname;
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const realm = pathname === "/facebook" || pathname.startsWith("/facebook/") ? "facebook" : pathname === "/instagram" || pathname === "/app" || pathname === "/story-downloader" ? "instagram" : "global";
@@ -47,7 +48,7 @@ export function SiteHeader() {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === "Escape") {
         event.preventDefault();
-        setMenuOpen(false);
+        setMenuOpenedAtPath(null);
         menuButtonRef.current?.focus();
         return;
       }
@@ -76,7 +77,7 @@ export function SiteHeader() {
     <header className="site-header" data-menu-open={menuOpen ? "true" : "false"} data-realm={realm}>
       <div className="site-header__inner">
         <a className="skip-link" href="#main-content">{dictionary.a11y.skipToContent}</a>
-        <Link className="brand" href="/" aria-label={dictionary.nav.homeLabel} onClick={() => setMenuOpen(false)} transitionTypes={["nav-back"]}>
+        <Link className="brand" href="/" aria-label={dictionary.nav.homeLabel} onClick={() => setMenuOpenedAtPath(null)} transitionTypes={["nav-back"]}>
           <Image alt="" className="brand__logo" height={44} priority src={folmetryLogo} width={44} />
           <span className="brand__name">Folmetry</span>
           <span className="brand__signal" aria-hidden="true" />
@@ -86,7 +87,7 @@ export function SiteHeader() {
           aria-expanded={menuOpen}
           aria-label={menuOpen ? dictionary.a11y.closeMenu : dictionary.a11y.openMenu}
           className="site-menu-button"
-          onClick={() => setMenuOpen((open) => !open)}
+          onClick={() => setMenuOpenedAtPath((openedAtPath) => openedAtPath === pathname ? null : pathname)}
           ref={menuButtonRef}
           type="button"
         >
@@ -94,8 +95,17 @@ export function SiteHeader() {
           <span />
           <span />
         </button>
-        <button aria-label={dictionary.a11y.closeMenu} className="site-menu-backdrop" onClick={() => setMenuOpen(false)} tabIndex={-1} type="button" />
-        <div className="site-header__panel" id="site-navigation-panel" ref={panelRef}>
+        <button aria-label={dictionary.a11y.closeMenu} className="site-menu-backdrop" onClick={() => setMenuOpenedAtPath(null)} tabIndex={-1} type="button" />
+        <div
+          className="site-header__panel"
+          id="site-navigation-panel"
+          onClickCapture={(event) => {
+            if (event.target instanceof Element && event.target.closest("a[href]")) {
+              setMenuOpenedAtPath(null);
+            }
+          }}
+          ref={panelRef}
+        >
           <nav aria-label={dictionary.a11y.primaryNavigation}>
             <ul className="nav-list">
               {navigation.map((item) => (
@@ -103,7 +113,7 @@ export function SiteHeader() {
                   <Link
                   aria-current={isCurrentPlatform(pathname, item.href) ? "page" : undefined}
                   href={item.href as Route}
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => setMenuOpenedAtPath(null)}
                   transitionTypes={[item.href === "/instagram" || item.href === "/facebook" ? "nav-context" : "nav-forward"]}
                   >
                     {dictionary.nav[item.key]}
