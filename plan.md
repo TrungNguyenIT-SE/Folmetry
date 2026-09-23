@@ -3707,6 +3707,36 @@ Hoàn thiện Facebook như một workspace độc lập nhưng dùng chung các
 
 ---
 
+# 19F. M9AI — Folmetry Assistant đa nhà cung cấp
+
+## 19F.1. Phạm vi và nguyên tắc
+
+- [x] Hỗ trợ câu hỏi về Folmetry và câu hỏi kiến thức tổng quát.
+- [x] Có bốn chế độ Auto, Folmetry, General và Live Web; Auto phân loại ý định ở server.
+- [x] Không tự động đưa ZIP/JSON thô, snapshot hoặc danh sách follower vào prompt.
+- [x] Bắt buộc đăng nhập; toàn bộ hội thoại được phân vùng theo owner lấy từ session server.
+- [x] Công khai ranh giới dữ liệu, nhà cung cấp, hạn chế AI và quyền xóa trong Privacy/Terms/FAQ.
+
+## 19F.2. Backend, provider và độ bền
+
+- [x] Tích hợp Groq và Google AI Studio bằng adapter server-side, không lộ API key ra client.
+- [x] Phân phối hội thoại ổn định giữa hai provider và fallback chỉ trước khi bắt đầu phát nội dung.
+- [x] Live Web ưu tiên Gemini Google Search grounding và chuẩn hóa citation HTTPS.
+- [x] Stream SSE cùng các event meta, delta, citations, done và error đã chuẩn hóa.
+- [x] Fail-closed bằng hai release gate; hỗ trợ kill switch tức thời bằng biến môi trường.
+- [x] Giới hạn body/input/history/output/timeout, quota theo tài khoản và không rò lỗi upstream.
+- [x] Lưu PostgreSQL theo owner, đồng bộ đa thiết bị, xóa hội thoại và giới hạn 200 message mới nhất.
+
+## 19F.3. Trải nghiệm và tài liệu
+
+- [x] Widget responsive toàn website, lịch sử, tạo mới, mở/xóa hội thoại và trạng thái streaming.
+- [x] Giao diện song ngữ, hỗ trợ keyboard, reduced motion, forced colors và nguồn trích dẫn.
+- [x] Hiển thị provider/model đã trả lời và thông báo không gửi dữ liệu nhạy cảm.
+- [x] Bổ sung `.env.example`, README và tài liệu kiến trúc/vận hành `docs/ai-assistant.md`.
+- [x] Unit test cho config, prompt, provider parser và route auth/fallback/error/CSRF.
+- [ ] Trước production: phê duyệt điều khoản/quyền riêng tư và hạn mức chi phí hiện hành của Groq/Google.
+- [ ] Trước production: cấu hình key mới trong secret store và smoke-test thật từng provider cùng fallback.
+
 # 20. Definition of Done toàn dự án
 
 V1 chỉ hoàn thành khi đồng thời thỏa mãn:

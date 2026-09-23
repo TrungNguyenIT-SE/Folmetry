@@ -9,7 +9,7 @@ const instagramFixtures = fileURLToPath(new URL("../fixtures/instagram", import.
 const routes = [
   { path: "/", heading: /Understand relationship changes/ },
   { path: "/instagram", heading: /Instagram tools/ },
-  { path: "/facebook", heading: /Facebook connections, tracked from your official export/ },
+  { path: "/facebook", heading: /Facebook connections, clearly mapped/ },
   { path: "/app", heading: /One relationship history across your devices/ },
   { path: "/story-downloader", heading: /View public Stories/ },
   { path: "/how-it-works", heading: /Official export in/ },
@@ -140,12 +140,12 @@ test("public metadata endpoints and page SEO are available", async ({ page, requ
   expect(await (await request.get("/sitemap.xml")).text()).not.toContain("/api/");
 });
 
-test("FAQ exposes fifteen accessible questions and valid structured data", async ({ page }) => {
+test("FAQ exposes sixteen accessible questions and valid structured data", async ({ page }) => {
   await page.goto("/faq");
-  await expect(page.locator(".faq-list details")).toHaveCount(15);
+  await expect(page.locator(".faq-list details")).toHaveCount(16);
   const schema = await page.locator('script[type="application/ld+json"]').allTextContents();
   const faq = schema.map((value) => JSON.parse(value) as { "@type"?: string; mainEntity?: unknown[] }).find((value) => value["@type"] === "FAQPage");
-  expect(faq?.mainEntity).toHaveLength(15);
+  expect(faq?.mainEntity).toHaveLength(16);
 });
 
 test("Story utility discloses its boundary and remains safely disabled without approval", async ({ page }) => {

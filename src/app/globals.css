@@ -2840,6 +2840,254 @@ body::before {
   }
 }
 
+/* Folmetry Assistant: a compact signal console shared by every route. */
+.assistant-widget {
+  position: fixed;
+  right: clamp(1rem, 2.5vw, 2rem);
+  bottom: clamp(1rem, 2.5vw, 2rem);
+  z-index: 80;
+  display: grid;
+  justify-items: end;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.assistant-launcher,
+.assistant-panel { pointer-events: auto; }
+
+.assistant-launcher {
+  display: inline-flex;
+  min-height: 3.5rem;
+  padding: 0.45rem 1rem 0.45rem 0.45rem;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card-elevated) 94%, transparent);
+  box-shadow: var(--shadow-float);
+  color: var(--foreground);
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+}
+
+.assistant-launcher > span {
+  display: grid;
+  width: 2.55rem;
+  height: 2.55rem;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--signal) 0 7%, transparent 8% 28%, color-mix(in srgb, var(--accent) 68%, transparent) 29% 31%, transparent 32%),
+    var(--foreground);
+  color: var(--background);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.assistant-launcher:hover { transform: translateY(-2px); }
+.assistant-launcher:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+
+.assistant-panel {
+  display: flex;
+  width: min(29rem, calc(100vw - 2rem));
+  height: min(44rem, calc(100vh - 7rem));
+  min-height: 28rem;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--border-strong);
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 18%, transparent) 1px, transparent 1px),
+    var(--card-elevated);
+  background-size: 3rem 100%;
+  box-shadow: 0 28px 90px rgb(5 10 25 / 0.28);
+  animation: assistant-enter 220ms var(--ease-enter) both;
+}
+
+@keyframes assistant-enter {
+  from { opacity: 0; transform: translateY(0.8rem) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.assistant-panel__header {
+  display: flex;
+  min-height: 4.5rem;
+  padding: 0.85rem 0.9rem;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card-elevated) 94%, transparent);
+}
+
+.assistant-panel__header > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assistant-panel__header strong,
+.assistant-panel__header small { display: block; }
+.assistant-panel__header small { overflow: hidden; color: var(--muted); font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
+
+.assistant-panel__signal {
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: 0 0 auto;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--signal) 0 12%, transparent 13% 42%, color-mix(in srgb, var(--accent) 45%, transparent) 43% 46%, transparent 47%);
+  box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.assistant-toolbar {
+  display: flex;
+  min-height: 2.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.assistant-toolbar button {
+  padding: 0.65rem 0.85rem;
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.assistant-toolbar button:hover,
+.assistant-toolbar button[aria-expanded="true"] { background: var(--muted-surface); color: var(--foreground); }
+
+.assistant-messages,
+.assistant-history {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.assistant-messages { padding: 1rem; }
+
+.assistant-welcome {
+  display: grid;
+  min-height: 100%;
+  padding: clamp(1rem, 5vw, 2rem);
+  align-content: center;
+}
+
+.assistant-welcome > span {
+  color: var(--signal);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+}
+
+.assistant-welcome h2 { max-width: 12ch; margin-block: 0.8rem; font-size: clamp(2rem, 7vw, 3rem); line-height: 0.98; letter-spacing: -0.05em; }
+.assistant-welcome p { color: var(--muted); }
+
+.assistant-message {
+  width: min(88%, 34rem);
+  margin-bottom: 1rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.assistant-message--user {
+  margin-left: auto;
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--card));
+}
+
+.assistant-message > span,
+.assistant-message > small {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.assistant-message p { margin-block: 0.35rem 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.assistant-message > small { display: block; margin-top: 0.7rem; }
+
+.assistant-citations { margin: 0.8rem 0 0; padding-left: 1.25rem; font-size: 0.78rem; }
+.assistant-citations a { color: var(--accent-strong); overflow-wrap: anywhere; }
+
+.assistant-history { padding: 0.65rem; }
+.assistant-history > p { padding: 1rem; color: var(--muted); }
+.assistant-history button {
+  display: grid;
+  width: 100%;
+  padding: 0.8rem;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+}
+.assistant-history button:hover,
+.assistant-history button[aria-current="page"] { background: var(--muted-surface); }
+.assistant-history button span { overflow: hidden; color: var(--muted); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+
+.assistant-panel__state {
+  display: grid;
+  min-height: 0;
+  padding: 2rem;
+  flex: 1;
+  align-content: center;
+  justify-items: start;
+}
+.assistant-panel__state h2 { max-width: 13ch; font-size: 2rem; line-height: 1; }
+.assistant-panel__state p { color: var(--muted); }
+
+.assistant-privacy,
+.assistant-notice,
+.assistant-error { margin: 0; padding: 0.55rem 0.85rem; border-top: 1px solid var(--border); font-size: 0.7rem; line-height: 1.45; }
+.assistant-privacy { color: var(--muted); }
+.assistant-notice { border-left: 3px solid var(--warning-border); background: var(--warning-surface); }
+.assistant-error { border-left: 3px solid var(--destructive); background: var(--destructive-surface); color: var(--destructive); }
+
+.assistant-composer {
+  display: grid;
+  padding: 0.7rem;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border-strong);
+  grid-template-columns: minmax(0, 1fr) auto;
+  background: var(--card-elevated);
+}
+
+.assistant-composer label { grid-column: 1 / -1; }
+.assistant-composer select,
+.assistant-composer textarea,
+.assistant-composer button { border: 1px solid var(--border); background: var(--card); color: var(--foreground); }
+.assistant-composer select { width: 100%; min-height: 2.15rem; padding-inline: 0.55rem; font-size: 0.75rem; }
+.assistant-composer textarea { min-height: 3.4rem; resize: none; padding: 0.65rem; }
+.assistant-composer button { min-width: 4.5rem; padding: 0.55rem 0.8rem; border-color: var(--accent); background: var(--accent); color: var(--accent-contrast); cursor: pointer; font-weight: 800; }
+.assistant-composer button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+@media (max-width: 36rem) {
+  .assistant-widget { right: 0.65rem; bottom: 0.65rem; }
+  .assistant-widget[data-open="true"] { inset: 0; align-content: end; justify-items: stretch; }
+  .assistant-widget[data-open="true"] .assistant-launcher { display: none; }
+  .assistant-panel { width: 100%; height: min(46rem, 100dvh); max-height: 100dvh; border-radius: 1rem 1rem 0 0; }
+  .assistant-welcome h2 { font-size: 2.35rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-panel { animation: none; }
+  .assistant-launcher:hover { transform: none; }
+}
+
+@media (forced-colors: active) {
+  .assistant-panel,
+  .assistant-launcher { background: Canvas; }
+}
+
 /* M8UX2 / Kinetic Signal Atlas ------------------------------------------- */
 
 :root {

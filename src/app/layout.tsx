@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import folmetryLogo from "../../folmetry.png";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { AssistantWidget } from "@/features/assistant/components";
 import { AppPreferencesProvider } from "@/i18n";
 import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, serializeJsonLd } from "@/lib/site-metadata";
 
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <AppPreferencesProvider>
           <SiteHeader />
           {children}
+          <AssistantWidget />
           <SiteFooter />
         </AppPreferencesProvider>
       </body>

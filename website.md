@@ -3067,3 +3067,11 @@ The separate Story/Highlights promise is:
 > **Public Stories and Highlights can be looked up without Instagram credentials, but the submitted handle is sent to our server and configured provider. Results are ephemeral in our application and private content is never supported.**
 
 Any implementation that sends relationship data into the Story/server boundary, hides the Story network disclosure, exposes provider secrets, or bypasses public-access limits should be treated as a product architecture regression, not a minor engineering choice.
+
+## 51. Folmetry Assistant đa nhà cung cấp
+
+Folmetry có trợ lý AI dành cho người dùng đã đăng nhập, hỗ trợ cả hướng dẫn sử dụng website lẫn câu hỏi kiến thức tổng quát. Người dùng chọn Auto, Folmetry, General hoặc Live Web. Chế độ Live Web có thể dùng Google Search grounding để trả nguồn; các chế độ còn lại không được mô tả như đang truy cập Internet trực tiếp.
+
+Mọi provider call đi qua route server và chỉ hoạt động khi cả `AI_ASSISTANT_ENABLED` lẫn `AI_PROVIDER_APPROVED` được bật. Groq và Google AI Studio được cô lập qua adapter, phân phối ổn định theo hội thoại và chỉ fallback trước token đầu tiên. API key tuyệt đối không xuất hiện trong bundle client.
+
+Hội thoại lưu trong PostgreSQL theo user ID lấy từ session, cho phép đồng bộ nhiều thiết bị và xóa theo chủ sở hữu. AI chỉ nhận nội dung người dùng chủ động gửi cùng lịch sử hội thoại có giới hạn; ZIP/JSON thô, snapshot, danh sách follower/following và kết quả Tin không được tự động đính kèm. Chi tiết vận hành nằm tại `docs/ai-assistant.md`.

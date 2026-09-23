@@ -1,0 +1,15 @@
+export const ASSISTANT_POLICY = {
+  maxRequestBodyBytes: 24 * 1024,
+  maxMessageCharacters: 4_000,
+  maxHistoryMessages: 24,
+  maxHistoryCharacters: 24_000,
+  maxOutputCharacters: 12_000,
+  providerTimeoutMs: 45_000,
+  providerResponseBytes: 2 * 1024 * 1024,
+  requestsPerMinute: 8,
+  requestsPerDay: 100,
+  maxConversationsPerUser: 50,
+  maxStoredMessagesPerConversation: 200,
+  conversationTitleCharacters: 72,
+  listLimit: 30,
+} as const;
