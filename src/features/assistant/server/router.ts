@@ -2,7 +2,10 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import type { AssistantProviderName, ResolvedAssistantMode } from "@/features/assistant/model";
+import type {
+  AssistantProviderName,
+  AssistantProviderPreference,
+} from "@/features/assistant/model";
 
 import type { AssistantServerConfig } from "./config";
 import {
@@ -17,14 +20,16 @@ function affinity(seed: string): AssistantProviderName {
 
 export function providerCandidates(
   config: AssistantServerConfig,
-  mode: ResolvedAssistantMode,
+  preference: AssistantProviderPreference,
   conversationId: string,
   fetcher: typeof fetch = fetch,
 ): readonly AssistantProvider[] {
-  const preferred = affinity(conversationId);
-  const order: readonly AssistantProviderName[] = preferred === "groq"
-    ? ["groq", "cloudflare"]
-    : ["cloudflare", "groq"];
+  const preferred = preference === "auto" ? affinity(conversationId) : preference;
+  const order: readonly AssistantProviderName[] = preference !== "auto"
+    ? [preference]
+    : preferred === "groq"
+      ? ["groq", "cloudflare"]
+      : ["cloudflare", "groq"];
 
   return order.flatMap((name): AssistantProvider[] => {
     const provider = config.providers.get(name);

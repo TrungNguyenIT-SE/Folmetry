@@ -3,6 +3,8 @@ export const ASSISTANT_MODES = ["auto", "folmetry", "general", "web"] as const;
 export type AssistantMode = (typeof ASSISTANT_MODES)[number];
 export type ResolvedAssistantMode = Exclude<AssistantMode, "auto">;
 export type AssistantProviderName = "groq" | "cloudflare";
+export const ASSISTANT_PROVIDER_PREFERENCES = ["auto", "groq", "cloudflare"] as const;
+export type AssistantProviderPreference = (typeof ASSISTANT_PROVIDER_PREFERENCES)[number];
 export type AssistantStoredProviderName = AssistantProviderName | "google";
 
 export interface AssistantCitation {
@@ -88,4 +90,9 @@ export class AssistantError extends Error {
 
 export function isAssistantMode(value: unknown): value is AssistantMode {
   return typeof value === "string" && (ASSISTANT_MODES as readonly string[]).includes(value);
+}
+
+export function isAssistantProviderPreference(value: unknown): value is AssistantProviderPreference {
+  return typeof value === "string" &&
+    (ASSISTANT_PROVIDER_PREFERENCES as readonly string[]).includes(value);
 }

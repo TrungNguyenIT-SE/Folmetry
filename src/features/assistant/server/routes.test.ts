@@ -140,8 +140,51 @@ describe("assistant routes", () => {
     expect(await response.text()).toContain('"mode":"general"');
     expect(mocks.providerCandidates).toHaveBeenCalledWith(
       expect.anything(),
-      "general",
+      "auto",
       "conversation-1",
     );
+  });
+
+  it("forwards an explicit Cloudflare selection to the router", async () => {
+    const working = {
+      name: "cloudflare",
+      model: "working-model",
+      grounded: false,
+      async *stream() { yield { type: "delta" as const, text: "Cloudflare answer" }; },
+    };
+    mocks.readConfig.mockReturnValue({
+      providers: new Map([["cloudflare", {
+        provider: "cloudflare",
+        accountId: "0123456789abcdef0123456789abcdef",
+        apiToken: "hidden",
+        gatewayId: "default",
+        model: "working-model",
+      }]]),
+      liveWebEnabled: false,
+    });
+    mocks.providerCandidates.mockReturnValue([working]);
+    const response = await handleAssistantPost(new Request("https://folmetry.test/api/assistant", {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "https://folmetry.test" },
+      body: JSON.stringify({ message: "Hello", mode: "general", provider: "cloudflare" }),
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('"provider":"cloudflare"');
+    expect(mocks.providerCandidates).toHaveBeenCalledWith(
+      expect.anything(),
+      "cloudflare",
+      "conversation-1",
+    );
+  });
+
+  it("rejects an explicit provider that is not configured before reserving quota", async () => {
+    const response = await handleAssistantPost(new Request("https://folmetry.test/api/assistant", {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "https://folmetry.test" },
+      body: JSON.stringify({ message: "Hello", mode: "general", provider: "cloudflare" }),
+    }));
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ code: "ASSISTANT_NOT_CONFIGURED" });
+    expect(mocks.beginTurn).not.toHaveBeenCalled();
   });
 });

@@ -16,6 +16,7 @@ import {
   type AssistantConversationSummary,
   type AssistantMessage,
   type AssistantMode,
+  type AssistantProviderPreference,
   type AssistantStreamEvent,
 } from "@/features/assistant/model";
 import { ASSISTANT_POLICY } from "@/features/assistant/policy";
@@ -88,6 +89,7 @@ export function AssistantWidget() {
   const [conversationId, setConversationId] = useState<string>();
   const [messages, setMessages] = useState<readonly AssistantMessage[]>([]);
   const [mode, setMode] = useState<AssistantMode>("auto");
+  const [providerPreference, setProviderPreference] = useState<AssistantProviderPreference>("auto");
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -219,7 +221,14 @@ export function AssistantWidget() {
       const response = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId, message: content, mode, locale, pathname }),
+        body: JSON.stringify({
+          conversationId,
+          message: content,
+          mode,
+          provider: providerPreference,
+          locale,
+          pathname,
+        }),
         signal: controller.signal,
       });
       for await (const streamEvent of assistantEvents(response)) {
@@ -314,13 +323,25 @@ export function AssistantWidget() {
                   <p className="assistant-privacy">{copy.privacy}</p>
                   {error === undefined ? null : <p className="assistant-error" role="alert">{error}</p>}
                   <form className="assistant-composer" onSubmit={(event) => void submit(event)}>
-                    <label>
+                    <label className="assistant-composer__select">
                       <span className="visually-hidden">{copy.mode}</span>
                       <select disabled={busy} onChange={(event) => setMode(event.currentTarget.value as AssistantMode)} value={mode}>
                         <option value="auto">{copy.modes.auto}</option>
                         <option value="folmetry">{copy.modes.folmetry}</option>
                         <option value="general">{copy.modes.general}</option>
                         <option disabled={status?.configured === true && !status.liveWeb} value="web">{copy.modes.web}</option>
+                      </select>
+                    </label>
+                    <label className="assistant-composer__select">
+                      <span className="visually-hidden">{copy.provider}</span>
+                      <select
+                        disabled={busy}
+                        onChange={(event) => setProviderPreference(event.currentTarget.value as AssistantProviderPreference)}
+                        value={providerPreference}
+                      >
+                        <option value="auto">{copy.providers.auto}</option>
+                        <option disabled={status !== undefined && !status.providers.includes("groq")} value="groq">{copy.providers.groq}</option>
+                        <option disabled={status !== undefined && !status.providers.includes("cloudflare")} value="cloudflare">{copy.providers.cloudflare}</option>
                       </select>
                     </label>
                     <textarea disabled={busy || status?.configured === false} maxLength={ASSISTANT_POLICY.maxMessageCharacters} onChange={(event) => setInput(event.currentTarget.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={copy.placeholder} ref={inputRef} rows={2} value={input} />

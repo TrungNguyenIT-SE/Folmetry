@@ -3,6 +3,7 @@ import "server-only";
 import {
   AssistantError,
   isAssistantMode,
+  isAssistantProviderPreference,
   type AssistantCitation,
   type AssistantStreamEvent,
 } from "@/features/assistant/model";
@@ -213,6 +214,7 @@ export async function handleAssistantPost(request: Request): Promise<Response> {
     const body = await readBody(request);
     const message = typeof body["message"] === "string" ? body["message"].trim() : "";
     const mode = body["mode"];
+    const providerPreference = body["provider"] ?? "auto";
     const conversationId = body["conversationId"];
     const locale = body["locale"] === "vi" ? "vi" : "en";
     const pathname = typeof body["pathname"] === "string" &&
@@ -223,8 +225,13 @@ export async function handleAssistantPost(request: Request): Promise<Response> {
       message.length === 0 ||
       message.length > ASSISTANT_POLICY.maxMessageCharacters ||
       !isAssistantMode(mode) ||
+      !isAssistantProviderPreference(providerPreference) ||
       (conversationId !== undefined && !isConversationId(conversationId))
     ) throw new AssistantError("ASSISTANT_INVALID_REQUEST");
+
+    if (providerPreference !== "auto" && !config.providers.has(providerPreference)) {
+      throw new AssistantError("ASSISTANT_NOT_CONFIGURED");
+    }
 
     const detectedMode = resolveAssistantMode(mode, message);
     if (mode === "web" && !config.liveWebEnabled) {
@@ -234,7 +241,7 @@ export async function handleAssistantPost(request: Request): Promise<Response> {
       ? "general"
       : detectedMode;
     const turn = await repository.beginTurn(conversationId, mode, message);
-    const providers = providerCandidates(config, resolvedMode, turn.conversationId);
+    const providers = providerCandidates(config, providerPreference, turn.conversationId);
     const timeoutSignal = AbortSignal.timeout(ASSISTANT_POLICY.providerTimeoutMs);
     const signal = AbortSignal.any([request.signal, timeoutSignal]);
     const selection = await selectProvider(providers, (provider) => ({

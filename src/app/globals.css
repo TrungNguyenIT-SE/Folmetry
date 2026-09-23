@@ -3061,7 +3061,9 @@ body::before {
   background: var(--card-elevated);
 }
 
-.assistant-composer label { grid-column: 1 / -1; }
+.assistant-composer__select { min-width: 0; }
+.assistant-composer__select:first-of-type { grid-column: 1; }
+.assistant-composer__select:nth-of-type(2) { grid-column: 2; }
 .assistant-composer select,
 .assistant-composer textarea,
 .assistant-composer button { border: 1px solid var(--border); background: var(--card); color: var(--foreground); }
@@ -3076,6 +3078,8 @@ body::before {
   .assistant-widget[data-open="true"] .assistant-launcher { display: none; }
   .assistant-panel { width: 100%; height: min(46rem, 100dvh); max-height: 100dvh; border-radius: 1rem 1rem 0 0; }
   .assistant-welcome h2 { font-size: 2.35rem; }
+  .assistant-composer__select:first-of-type,
+  .assistant-composer__select:nth-of-type(2) { grid-column: 1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
