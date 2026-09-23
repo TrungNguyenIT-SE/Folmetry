@@ -86,7 +86,7 @@ export function ImportPanel({ disabled = false, error, onArchive, onManualFiles,
       <p className="privacy-note">{copy.import.privacy}</p>
       {error === undefined ? null : <StatusRegion assertive><span id={errorId}>{error}</span></StatusRegion>}
 
-      <details className="export-guide">
+      <details className="export-guide" id={`${platform}-export-guide`}>
         <summary>{copy.ux.exportGuide}</summary>
         <ol>
           <li>{platform === "facebook" ? copy.facebook.guideMenu : copy.ux.guideMenu}</li>

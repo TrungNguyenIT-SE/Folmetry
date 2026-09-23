@@ -16,6 +16,9 @@ function workerResult(platform: "instagram" | "facebook" = "instagram"): ImportW
     fingerprint: "a".repeat(64),
     payload: {
       platform,
+      ...(platform === "facebook"
+        ? { friends: [{ handle: "Friend", normalizedHandle: "friend" }] }
+        : {}),
       followers: [
         { handle: "Alice", normalizedHandle: "alice" },
         { handle: "Bob", normalizedHandle: "bob" },
@@ -43,6 +46,9 @@ function storedSnapshot(input: SaveSnapshotInput, id = "snapshot-1"): LocalSnaps
     ...input,
     id,
     importedAt: 20,
+    ...(input.platform === "facebook"
+      ? { friends: [...(input.friends ?? [])], friendCount: input.friends?.length ?? 0 }
+      : {}),
     followers: [...input.followers],
     following: [...input.following],
     warnings: [...input.warnings],

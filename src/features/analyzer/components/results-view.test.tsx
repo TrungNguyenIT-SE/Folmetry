@@ -75,9 +75,37 @@ describe("ResultsView", () => {
     expect(screen.getByRole("tab", { name: "Friends" })).toBeTruthy();
     expect(screen.queryByRole("tab", { name: "Mutuals" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Open Instagram profile" })).toBeNull();
-    fireEvent.click(screen.getByRole("tab", { name: "Possible name changes" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Possible follower name changes" }));
     expect(screen.getByText("Nguyễn An")).toBeTruthy();
     expect(screen.getByText("Nguyễn Anh")).toBeTruthy();
     expect(screen.getByText(/not identity proof/i)).toBeTruthy();
+  });
+
+  it("renders every Facebook friend row when exported names are identical", () => {
+    const current: LocalSnapshot = {
+      ...snapshot("facebook-current", "Follower", 1_710_000_000_000),
+      platform: "facebook",
+      friends: [
+        { handle: "Same Name", normalizedHandle: "same name", connectedAt: 10 },
+        { handle: "Same Name", normalizedHandle: "same name", connectedAt: 20 },
+      ],
+      friendCount: 2,
+    };
+
+    render(
+      <AppPreferencesProvider>
+        <ResultsView
+          current={current}
+          onDeleteSnapshot={vi.fn(async () => undefined)}
+          onSelectSnapshot={vi.fn()}
+          platform="facebook"
+          saved
+          snapshots={[current]}
+        />
+      </AppPreferencesProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Friends" }));
+    expect(screen.getAllByText("Same Name")).toHaveLength(2);
   });
 });

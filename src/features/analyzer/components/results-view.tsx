@@ -84,8 +84,8 @@ function RelationshipList({ records, label, platform }: RelationshipListProps) {
         <EmptyState description={copy.emptyList} title={label} />
       ) : (
         <ul className="relationship-list">
-          {model.items.map((record) => (
-            <li key={record.normalizedHandle}>
+          {model.items.map((record, index) => (
+            <li key={`${record.normalizedHandle}-${record.connectedAt ?? "unknown"}-${index}`}>
               <div>
                 <strong>{platform === "instagram" ? `@${record.handle}` : record.handle}</strong>
                 <span className="muted-copy">
@@ -195,9 +195,9 @@ function HistoryView({ snapshots, current, onSelect, onDelete, platform }: Histo
     ? {
         followers: dictionary.analyzer.facebook.followers,
         following: dictionary.analyzer.facebook.following,
-        lost: dictionary.analyzer.facebook.lostConnections,
-        added: dictionary.analyzer.facebook.newConnections,
-        renamed: dictionary.analyzer.facebook.possibleNameChanges,
+        lost: dictionary.analyzer.facebook.lostFollowers,
+        added: dictionary.analyzer.facebook.newFollowers,
+        renamed: dictionary.analyzer.facebook.possibleFollowerNameChanges,
         net: dictionary.analyzer.facebook.netChange,
       }
     : {
@@ -285,7 +285,7 @@ function HistoryView({ snapshots, current, onSelect, onDelete, platform }: Histo
                 <SummaryCard label={resultCopy.renamed} value={comparison.diff.possibleFollowerRenames.length} />
                 <SummaryCard delta label={resultCopy.net} value={comparison.diff.netFollowerChange} />
               </div>
-              <p className="privacy-note">{platform === "facebook" ? dictionary.analyzer.facebook.lostCaveat : copy.lostCaveat}</p>
+              <p className="privacy-note">{platform === "facebook" ? dictionary.analyzer.facebook.followerCaveat : copy.lostCaveat}</p>
               {comparison.diff.possibleFollowerRenames.length === 0 ? null : <p className="privacy-note">{platform === "facebook" ? dictionary.analyzer.facebook.renameCaveat : copy.renameCaveat}</p>}
             </div>
           )}
@@ -320,9 +320,9 @@ export function ResultsView({
     ? {
         followers: copy.facebook.followers,
         following: copy.facebook.following,
-        lost: copy.facebook.lostConnections,
-        added: copy.facebook.newConnections,
-        renamed: copy.facebook.possibleNameChanges,
+        lost: copy.facebook.lostFollowers,
+        added: copy.facebook.newFollowers,
+        renamed: copy.facebook.possibleFollowerNameChanges,
         net: copy.facebook.netChange,
       }
     : {
@@ -340,6 +340,19 @@ export function ResultsView({
   const historical = useMemo(
     () => computeHistoricalDiff(baseline, current),
     [baseline, current],
+  );
+  const friendHistorical = useMemo(
+    () => platform === "facebook"
+      ? computeHistoricalDiff(
+          baseline === undefined
+            ? undefined
+            : { followers: baseline.friends ?? [], following: [] },
+          { followers: current.friends ?? [], following: [] },
+          "handle-asc",
+          true,
+        )
+      : undefined,
+    [baseline, current.friends, platform],
   );
   const [activeTab, setActiveTab] = useState("overview");
   const [deleteTarget, setDeleteTarget] = useState<LocalSnapshot>();
@@ -396,6 +409,11 @@ export function ResultsView({
           <SummaryCard label={copy.results.notFollowingBack} value={currentAnalysis.notFollowingBack.length} />
           <SummaryCard label={copy.results.notFollowedByMe} value={currentAnalysis.notFollowedByMe.length} />
         </>}
+        {friendHistorical === undefined ? null : <>
+          <SummaryCard label={copy.facebook.lostFriends} value={friendHistorical.lostFollowers.length} />
+          <SummaryCard label={copy.facebook.newFriends} value={friendHistorical.newFollowers.length} />
+          <SummaryCard label={copy.facebook.possibleFriendNameChanges} value={friendHistorical.possibleFollowerRenames.length} />
+        </>}
         {historical === undefined ? null : (
           <>
             <SummaryCard label={resultCopy.lost} value={historical.lostFollowers.length} />
@@ -405,10 +423,12 @@ export function ResultsView({
           </>
         )}
       </div>
+      {platform === "facebook" ? <p className="privacy-note">{copy.facebook.duplicateNameCaveat}</p> : null}
       {historical === undefined ? <p className="privacy-note">{copy.ux.firstSnapshot}</p> : (
         <>
-          <p className="privacy-note">{platform === "facebook" ? copy.facebook.lostCaveat : copy.ux.lostCaveat}</p>
+          <p className="privacy-note">{platform === "facebook" ? copy.facebook.followerCaveat : copy.ux.lostCaveat}</p>
           {historical.possibleFollowerRenames.length === 0 ? null : <p className="privacy-note">{platform === "facebook" ? copy.facebook.renameCaveat : copy.ux.renameCaveat}</p>}
+          {friendHistorical === undefined ? null : <p className="privacy-note">{copy.facebook.lostCaveat}</p>}
         </>
       )}
       {current.warnings.length === 0 ? null : (
@@ -423,6 +443,11 @@ export function ResultsView({
 
   const tabs = [
     { id: "overview", label: copy.ux.overview, content: overview },
+    ...(friendHistorical === undefined ? [] : [
+      { id: "lost-friends", label: copy.facebook.lostFriends, content: <RelationshipList label={copy.facebook.lostFriends} platform={platform} records={friendHistorical.lostFollowers} /> },
+      { id: "new-friends", label: copy.facebook.newFriends, content: <RelationshipList label={copy.facebook.newFriends} platform={platform} records={friendHistorical.newFollowers} /> },
+      { id: "possible-friend-renames", label: copy.facebook.possibleFriendNameChanges, content: <PossibleRenameList label={copy.facebook.possibleFriendNameChanges} platform={platform} records={friendHistorical.possibleFollowerRenames} /> },
+    ]),
     ...(historical === undefined ? [] : [
       { id: "lost", label: resultCopy.lost, content: <RelationshipList label={resultCopy.lost} platform={platform} records={historical.lostFollowers} /> },
       { id: "new", label: resultCopy.added, content: <RelationshipList label={resultCopy.added} platform={platform} records={historical.newFollowers} /> },

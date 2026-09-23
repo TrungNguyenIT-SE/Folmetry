@@ -3511,41 +3511,6 @@ body::before {
 .platform-card--primary { background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 8%, var(--card)), var(--card) 48%); }
 .platform-card--pending { min-height: 22rem; margin-top: 5rem; border: 1px dashed var(--border-strong); }
 
-.blueprint-instrument {
-  position: relative;
-  display: grid;
-  min-height: 24rem;
-  padding: 2rem;
-  overflow: hidden;
-  align-content: space-between;
-  border: 1px dashed var(--border-strong);
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--signal) 12%, transparent) 1px, transparent 1px),
-    linear-gradient(color-mix(in srgb, var(--signal) 12%, transparent) 1px, transparent 1px),
-    var(--card);
-  background-size: 2rem 2rem;
-  color: var(--signal);
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
-}
-
-.blueprint-instrument i {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60%;
-  aspect-ratio: 1;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  opacity: 0.36;
-  transform: translate(-50%, -50%);
-}
-
-.blueprint-instrument i:nth-of-type(2) { width: 38%; border-style: dashed; }
-.blueprint-instrument i:nth-of-type(3) { width: 1px; height: 78%; border: 0; border-left: 1px solid currentColor; border-radius: 0; }
-.blueprint-instrument strong { align-self: end; justify-self: end; }
-
 .route-intro {
   position: relative;
   max-width: 72rem;
@@ -4346,8 +4311,6 @@ body::before {
   .platform-card { min-height: auto; padding: 2rem 1.4rem; }
   .platform-card + .platform-card { border-top: 1px solid var(--border); }
   .platform-card__trace { margin-block: 1.25rem 2rem; }
-  .blueprint-instrument { min-height: 18rem; }
-
   .route-intro {
     padding-bottom: 3rem;
     grid-template-columns: 1fr;
@@ -4467,7 +4430,6 @@ body::before {
 
   .signal-field,
   .analyzer-heading,
-  .blueprint-instrument,
   .story-form,
   .drop-zone { background: Canvas; }
 

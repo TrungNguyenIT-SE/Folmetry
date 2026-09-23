@@ -10,12 +10,32 @@ import { createImportWarning } from "@/features/analyzer/model/warnings";
 
 function canonicalRecordMap(
   records: readonly RelationshipRecord[],
+  preserveDuplicates = false,
 ): ReadonlyMap<string, RelationshipRecord> {
+  const normalizedHandleCounts = new Map<string, number>();
+  if (preserveDuplicates) {
+    for (const record of records) {
+      normalizedHandleCounts.set(
+        record.normalizedHandle,
+        (normalizedHandleCounts.get(record.normalizedHandle) ?? 0) + 1,
+      );
+    }
+  }
+
   const map = new Map<string, RelationshipRecord>();
+  const duplicateOccurrences = new Map<string, number>();
   for (const record of records) {
-    const existing = map.get(record.normalizedHandle);
+    let key = record.normalizedHandle;
+    if ((normalizedHandleCounts.get(record.normalizedHandle) ?? 0) > 1) {
+      const baseKey = `${record.normalizedHandle}\u0000${record.connectedAt ?? "unknown"}`;
+      const occurrence = duplicateOccurrences.get(baseKey) ?? 0;
+      duplicateOccurrences.set(baseKey, occurrence + 1);
+      key = `${baseKey}\u0000${occurrence}`;
+    }
+
+    const existing = map.get(key);
     if (existing === undefined) {
-      map.set(record.normalizedHandle, record);
+      map.set(key, record);
       continue;
     }
 
@@ -33,7 +53,7 @@ function canonicalRecordMap(
           : existing.handle < record.handle
             ? existing.handle
             : record.handle;
-    map.set(record.normalizedHandle, {
+    map.set(key, {
       handle,
       normalizedHandle: record.normalizedHandle,
       ...(connectedAt === undefined ? {} : { connectedAt }),
@@ -100,11 +120,11 @@ function reconcilePossibleRenames(
 ): ReconciledChanges {
   const removed = difference(previous, current);
   const added = difference(current, previous);
-  const addedHandles = new Set(added.map((record) => record.normalizedHandle));
+  const addedRecords = new Set(added);
   const uniquePreviousDates = recordsByUniqueConnectedAt(previous);
   const uniqueCurrentDates = recordsByUniqueConnectedAt(current);
-  const renamedPreviousHandles = new Set<string>();
-  const renamedCurrentHandles = new Set<string>();
+  const renamedPreviousRecords = new Set<RelationshipRecord>();
+  const renamedCurrentRecords = new Set<RelationshipRecord>();
   const possibleRenames: PossibleHandleRename[] = [];
 
   for (const previousRecord of removed) {
@@ -114,13 +134,13 @@ function reconcilePossibleRenames(
     const currentRecord = uniqueCurrentDates.get(previousRecord.connectedAt);
     if (
       currentRecord === undefined ||
-      !addedHandles.has(currentRecord.normalizedHandle)
+      !addedRecords.has(currentRecord)
     ) {
       continue;
     }
 
-    renamedPreviousHandles.add(previousRecord.normalizedHandle);
-    renamedCurrentHandles.add(currentRecord.normalizedHandle);
+    renamedPreviousRecords.add(previousRecord);
+    renamedCurrentRecords.add(currentRecord);
     possibleRenames.push({
       previous: previousRecord,
       current: currentRecord,
@@ -132,15 +152,15 @@ function reconcilePossibleRenames(
     possibleRenames.map((rename) => rename.current),
     sort,
   );
-  const renameByCurrentHandle = new Map(
-    possibleRenames.map((rename) => [rename.current.normalizedHandle, rename]),
+  const renameByCurrentRecord = new Map(
+    possibleRenames.map((rename) => [rename.current, rename]),
   );
 
   return {
-    removed: removed.filter((record) => !renamedPreviousHandles.has(record.normalizedHandle)),
-    added: added.filter((record) => !renamedCurrentHandles.has(record.normalizedHandle)),
+    removed: removed.filter((record) => !renamedPreviousRecords.has(record)),
+    added: added.filter((record) => !renamedCurrentRecords.has(record)),
     possibleRenames: sortedCurrentRecords.flatMap((record) => {
-      const rename = renameByCurrentHandle.get(record.normalizedHandle);
+      const rename = renameByCurrentRecord.get(record);
       return rename === undefined ? [] : [rename];
     }),
   };
@@ -175,15 +195,16 @@ export function computeHistoricalDiff(
     readonly following: readonly RelationshipRecord[];
   },
   sort: RelationshipSort = "handle-asc",
+  preserveDuplicates = false,
 ): HistoricalDiffResult | undefined {
   if (previous === undefined) {
     return undefined;
   }
 
-  const previousFollowers = canonicalRecordMap(previous.followers);
-  const currentFollowers = canonicalRecordMap(current.followers);
-  const previousFollowing = canonicalRecordMap(previous.following);
-  const currentFollowing = canonicalRecordMap(current.following);
+  const previousFollowers = canonicalRecordMap(previous.followers, preserveDuplicates);
+  const currentFollowers = canonicalRecordMap(current.followers, preserveDuplicates);
+  const previousFollowing = canonicalRecordMap(previous.following, preserveDuplicates);
+  const currentFollowing = canonicalRecordMap(current.following, preserveDuplicates);
 
   const followerChanges = reconcilePossibleRenames(
     previousFollowers,

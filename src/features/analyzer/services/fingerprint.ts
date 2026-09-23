@@ -23,14 +23,22 @@ function concatenate(parts: readonly Uint8Array[]): Uint8Array {
   return result;
 }
 
-function canonicalHandles(handles: readonly string[]): readonly string[] {
-  return [...new Set(handles)].sort((left, right) =>
+function canonicalHandles(
+  handles: readonly string[],
+  preserveDuplicates = false,
+): readonly string[] {
+  const values = preserveDuplicates ? [...handles] : [...new Set(handles)];
+  return values.sort((left, right) =>
     left < right ? -1 : left > right ? 1 : 0,
   );
 }
 
-function encodeList(name: "friends" | "followers" | "following", handles: readonly string[]): Uint8Array[] {
-  const canonical = canonicalHandles(handles);
+function encodeList(
+  name: "friends" | "followers" | "following",
+  handles: readonly string[],
+  preserveDuplicates = false,
+): Uint8Array[] {
+  const canonical = canonicalHandles(handles, preserveDuplicates);
   return [
     encodeField(name),
     encodeField(String(canonical.length)),
@@ -46,7 +54,11 @@ export function encodeCanonicalFingerprintPayload(
     encodeField(payload.platform),
     ...(payload.friends === undefined
       ? []
-      : encodeList("friends", payload.friends.map((record) => record.normalizedHandle))),
+      : encodeList(
+          "friends",
+          payload.friends.map((record) => record.normalizedHandle),
+          true,
+        )),
     ...encodeList(
       "followers",
       payload.followers.map((record) => record.normalizedHandle),

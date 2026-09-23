@@ -3393,7 +3393,7 @@ Tên hệ thống V3: **Kinetic Signal Atlas** — “bản đồ tín hiệu ch
 - [x] **Metric typography:** số liệu dùng nhịp tabular, baseline và dấu delta riêng; số là nội dung chính chứ không phải vật trang trí.
 - [x] **Signal trace:** đường viền sáng ngắn chạy đúng lúc focus, upload, hoàn tất hoặc chọn snapshot; không chạy nền vô hạn.
 - [x] **Material hierarchy:** canvas, paper, instrument và data-well có chất liệu khác nhau bằng màu/viền/noise local rất nhẹ; không phủ glassmorphism toàn site.
-- [x] **Instagram/Facebook dialect:** cùng design system nhưng Instagram dùng tín hiệu đang hoạt động; Facebook dùng trạng thái blueprint/under-construction trung thực, không giả tính năng.
+- [x] **Instagram/Facebook dialect:** cùng design system, cấu trúc hero/tool grid và responsive; nội dung, URL và ngữ nghĩa dữ liệu vẫn phân biệt rõ từng nền tảng.
 
 ### Anti-template manifesto
 
@@ -3493,7 +3493,7 @@ Mỗi chuyển động phải trả lời được ba câu hỏi: vật gì thay
 - [x] Pipeline `ZIP → worker local → review → private sync → insight` là visual semantic tương tác nhẹ và đúng kiến trúc M8SYNC.
 - [x] Hover/focus từng stage chỉ làm nổi phần liên quan; mobile không phụ thuộc hover.
 - [x] Feature section dùng editorial sequence thay cho lưới card đều nhau.
-- [x] Instagram/Facebook là hai workspace rõ ràng; Facebook không được trình bày như tính năng đã hoàn tất.
+- [x] Instagram/Facebook là hai workspace rõ ràng và cùng mức độ hoàn thiện giao diện; trạng thái chức năng phải phản ánh đúng implementation hiện tại.
 - [x] Story utility nằm trong vùng network riêng, có nhịp khác analyzer nhưng vẫn thuộc Folmetry.
 - [x] Final CTA ngắn, mạnh và gắn đúng hành động; section lặp thông điệp đã được loại bỏ.
 
@@ -3501,7 +3501,7 @@ Mỗi chuyển động phải trả lời được ba câu hỏi: vật gì thay
 
 - [x] `/instagram` có tool map trực quan: Analyzer là tác vụ dữ liệu riêng tư, Story/Highlights là tiện ích network; ranh giới không thể bị hiểu nhầm.
 - [x] Card/tool entry có preview trạng thái và action rõ, không dùng glass card chung chung.
-- [x] `/facebook` dùng blueprint language, roadmap/status và giải thích khác biệt export; không tạo nút import giả.
+- [x] `/facebook` dùng chung hero Signal Atlas và lưới hai tool entry với `/instagram`; CTA Analyzer và hướng dẫn xuất đều dẫn tới chức năng thật.
 - [x] Platform switch trên mobile không làm mất context hoặc đẩy action chính xuống quá sâu.
 - [x] URL, metadata, heading và active navigation tiếp tục phân biệt hai platform bằng semantic HTML, không chỉ bằng màu.
 
@@ -3694,6 +3694,7 @@ Hoàn thiện Facebook như một workspace độc lập nhưng dùng chung các
 - [x] Hiển thị đúng ngữ nghĩa Bạn bè/Đang theo dõi; không tạo `@handle` hoặc link Instagram giả.
 - [x] Có tab danh sách Bạn bè, Đang theo dõi, kết nối mất/mới, đổi tên có thể và lịch sử.
 - [x] Chỉ suy luận đổi tên khi timestamp kết nối trùng duy nhất giữa hai snapshot; luôn ghi rõ không phải bằng chứng định danh.
+- [x] Giữ nguyên mọi dòng Bạn bè trùng tên trong bản xuất Facebook; dùng timestamp để phân biệt khi có và không coi tên hiển thị là mã định danh duy nhất.
 - [x] Đồng bộ snapshot đã chuẩn hóa theo authenticated owner; kiểm tra platform snapshot khớp platform hồ sơ.
 - [x] Lọc danh sách hồ sơ và xóa toàn bộ theo platform để không tác động dữ liệu Instagram.
 - [x] CSV Facebook dùng cột Name và tên file riêng, không áp dụng URL hồ sơ Instagram.

@@ -147,6 +147,25 @@ describe("historical diff", () => {
     expect(result?.possibleFollowerRenames).toEqual([]);
   });
 
+  it("can preserve same-name Facebook friend rows by connection date", () => {
+    const result = computeHistoricalDiff(
+      {
+        followers: [record("same-name", 10), record("same-name", 20)],
+        following: [],
+      },
+      {
+        followers: [record("same-name", 10), record("same-name", 20), record("same-name", 30)],
+        following: [],
+      },
+      "handle-asc",
+      true,
+    );
+
+    expect(result?.lostFollowers).toEqual([]);
+    expect(result?.newFollowers).toEqual([record("same-name", 30)]);
+    expect(result?.followerCountDelta).toBe(1);
+  });
+
   it.each([
     [{ followers: [], following: [] }, { followers: [], following: [] }],
     [

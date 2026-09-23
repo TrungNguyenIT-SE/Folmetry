@@ -60,4 +60,37 @@ describe("snapshot fingerprint", () => {
     });
     expect(swapped).not.toBe(first);
   });
+
+  it("includes Facebook friends as a third independent namespace", async () => {
+    const first = await computeSnapshotFingerprint({
+      platform: "facebook",
+      friends: [record("friend-a")],
+      followers: [record("follower-a")],
+      following: [record("following-a")],
+    });
+    const changedFriend = await computeSnapshotFingerprint({
+      platform: "facebook",
+      friends: [record("friend-b")],
+      followers: [record("follower-a")],
+      following: [record("following-a")],
+    });
+    expect(changedFriend).not.toBe(first);
+  });
+
+  it("preserves duplicate Facebook friend rows in the fingerprint", async () => {
+    const oneFriend = await computeSnapshotFingerprint({
+      platform: "facebook",
+      friends: [record("same-name")],
+      followers: [],
+      following: [],
+    });
+    const twoFriends = await computeSnapshotFingerprint({
+      platform: "facebook",
+      friends: [record("same-name"), record("same-name")],
+      followers: [],
+      following: [],
+    });
+
+    expect(twoFriends).not.toBe(oneFriend);
+  });
 });

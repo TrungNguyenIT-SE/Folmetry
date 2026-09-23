@@ -77,13 +77,19 @@ describe("facebookAdapter", () => {
         { name: "connections/followers/who_you've_followed.json" },
       ] },
       files: [
-        { path: "connections/friends/your_friends.json", content: { friends_v2: [{ name: "Friend One", timestamp: 1 }] } },
+        { path: "connections/friends/your_friends.json", content: { friends_v2: [
+          { name: "Friend One", timestamp: 1_700_000_001 },
+          { name: "Friend One", timestamp: 1_700_000_002 },
+        ] } },
         { path: "connections/followers/people_who_followed_you.json", content: { followers_v3: [{ name: "Follower One" }] } },
         { path: "connections/followers/who_you've_followed.json", content: { following_v3: [{ name: "Following One", timestamp: 2 }] } },
       ],
     };
     const result = await facebookAdapter.parse(base, {});
-    expect(result.friends?.map((record) => record.handle)).toEqual(["Friend One"]);
+    expect(result.friends?.map((record) => [record.handle, record.connectedAt])).toEqual([
+      ["Friend One", 1_700_000_001_000],
+      ["Friend One", 1_700_000_002_000],
+    ]);
     expect(result.followers.map((record) => record.handle)).toEqual(["Follower One"]);
     expect(result.following.map((record) => record.handle)).toEqual(["Following One"]);
   });

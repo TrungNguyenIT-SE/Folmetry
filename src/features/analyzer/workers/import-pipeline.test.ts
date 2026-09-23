@@ -85,7 +85,7 @@ describe("secure import pipeline", () => {
     const { result } = await run({ type: "PARSE_FILES", platform: "facebook", jobId: "facebook", files });
 
     expect(result.payload.platform).toBe("facebook");
-    expect(result.payload.parserVersion).toBe("facebook-json@2");
+    expect(result.payload.parserVersion).toBe("facebook-json@3");
     expect(result.payload.friends).toEqual([
       { handle: "Nguyễn An", normalizedHandle: "nguyễn an", connectedAt: 1_700_000_000_000 },
     ]);

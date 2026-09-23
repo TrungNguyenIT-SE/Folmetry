@@ -20,7 +20,7 @@ import { IMPORT_POLICY } from "@/features/analyzer/model/policy";
 import type { NormalizedSnapshotPayload } from "@/features/analyzer/model/types";
 import { createImportWarning, mergeImportWarnings } from "@/features/analyzer/model/warnings";
 
-export const FACEBOOK_PARSER_VERSION = "facebook-json@2";
+export const FACEBOOK_PARSER_VERSION = "facebook-json@3";
 
 function fileMap(files: readonly AdapterFile[]): ReadonlyMap<string, unknown> {
   const result = new Map<string, unknown>();
@@ -100,14 +100,12 @@ async function parseFacebook(
     maxRecords: IMPORT_POLICY.maxRelationshipsPerKind,
     signal: context.signal,
   }, "following");
-  const friends = deduplicateRelationships(friendsExtracted.records, "followers");
   const followers = deduplicateRelationships(followersExtracted.records, "followers");
   const following = deduplicateRelationships(followingExtracted.records, "following");
   const warnings = [
     ...friendsExtracted.warnings,
     ...followersExtracted.warnings,
     ...followingExtracted.warnings,
-    ...friends.warnings,
     ...followers.warnings,
     ...following.warnings,
     ...(detected.ignoredEntryCount > 0
@@ -119,7 +117,7 @@ async function parseFacebook(
   ];
   return {
     platform: "facebook",
-    friends: friends.records,
+    friends: friendsExtracted.records,
     followers: followers.records,
     following: following.records,
     parserVersion: FACEBOOK_PARSER_VERSION,

@@ -162,7 +162,7 @@ function validateRelationships(
     if (
       !normalized.ok ||
       record["normalizedHandle"] !== normalized.normalizedHandle ||
-      seen.has(normalized.normalizedHandle)
+      (platform === "instagram" && seen.has(normalized.normalizedHandle))
     ) {
       throw new PersistenceDomainError("INVALID_SNAPSHOT");
     }
