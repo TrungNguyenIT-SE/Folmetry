@@ -22,6 +22,9 @@ function isCurrentPlatform(pathname: string, href: string): boolean {
   if (href === "/instagram") {
     return pathname === "/instagram" || pathname === "/app" || pathname === "/story-downloader";
   }
+  if (href === "/facebook") {
+    return pathname === "/facebook" || pathname.startsWith("/facebook/");
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -31,7 +34,7 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const realm = pathname === "/facebook" ? "facebook" : pathname === "/instagram" || pathname === "/app" || pathname === "/story-downloader" ? "instagram" : "global";
+  const realm = pathname === "/facebook" || pathname.startsWith("/facebook/") ? "facebook" : pathname === "/instagram" || pathname === "/app" || pathname === "/story-downloader" ? "instagram" : "global";
 
   useEffect(() => {
     if (!menuOpen) return;

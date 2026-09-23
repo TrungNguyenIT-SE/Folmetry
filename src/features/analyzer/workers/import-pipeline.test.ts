@@ -20,6 +20,10 @@ import type {
 } from "@/features/analyzer/workers/protocol";
 import { handleWorkerRequest } from "@/features/analyzer/workers/worker-handler";
 
+type TestWorkerRequest = WorkerRequest
+  | Omit<Extract<WorkerRequest, { type: "PARSE_ARCHIVE" }>, "platform">
+  | Omit<Extract<WorkerRequest, { type: "PARSE_FILES" }>, "platform">;
+
 const followers = JSON.stringify([
   { string_list_data: [{ value: "Alice", timestamp: 1_700_000_000 }] },
 ]);
@@ -45,13 +49,16 @@ async function zipFile(
 }
 
 async function run(
-  request: WorkerRequest,
+  request: TestWorkerRequest,
   options: Parameters<typeof runImportPipeline>[3] = {},
   controller = new AbortController(),
 ) {
   const stages: ImportProgressStage[] = [];
+  const platformRequest = "platform" in request
+    ? request
+    : { ...request, platform: "instagram" as const };
   const result = await runImportPipeline(
-    request,
+    platformRequest,
     controller.signal,
     (event) => stages.push(event.stage),
     options,
@@ -69,6 +76,26 @@ async function errorCode(promise: Promise<unknown>): Promise<string | undefined>
 }
 
 describe("secure import pipeline", () => {
+  it("parses Facebook Friends and Following JSON through the dedicated platform adapter", async () => {
+    const files = [
+      new File([JSON.stringify({ friends_v2: [{ name: "Nguyễn An", timestamp: 1_700_000_000 }] })], "your_friends.json"),
+      new File([JSON.stringify({ followers_v3: [{ name: "Người Theo Dõi" }] })], "people_who_followed_you.json"),
+      new File([JSON.stringify({ following_v3: [{ name: "Tổ chức Mở", timestamp: 1_700_000_001 }] })], "who_you've_followed.json"),
+    ];
+    const { result } = await run({ type: "PARSE_FILES", platform: "facebook", jobId: "facebook", files });
+
+    expect(result.payload.platform).toBe("facebook");
+    expect(result.payload.parserVersion).toBe("facebook-json@2");
+    expect(result.payload.friends).toEqual([
+      { handle: "Nguyễn An", normalizedHandle: "nguyễn an", connectedAt: 1_700_000_000_000 },
+    ]);
+    expect(result.payload.followers[0]?.handle).toBe("Người Theo Dõi");
+    expect(result.payload.following[0]?.handle).toBe("Tổ chức Mở");
+    expect(result.diagnostics.matchedRelevantFilenames).toEqual(
+      expect.arrayContaining(["your_friends.json", "people_who_followed_you.json", "who_you've_followed.json"]),
+    );
+  });
+
   it("parses a valid ZIP, fingerprints in the pipeline, and reports real stages", async () => {
     const file = await zipFile([
       ["connections/followers_and_following/followers_1.json", followers],
@@ -284,7 +311,7 @@ describe("secure import pipeline", () => {
     const normalize = new AbortController();
     const files = [new File([followers], "followers_1.json"), new File([following], "following.json")];
     await expect(runImportPipeline(
-      { type: "PARSE_FILES", jobId: "normalize", files },
+      { type: "PARSE_FILES", platform: "instagram", jobId: "normalize", files },
       normalize.signal,
       (event) => { if (event.stage === "normalizing") normalize.abort(); },
     )).rejects.toMatchObject({ code: "IMPORT_CANCELLED" });
@@ -309,6 +336,7 @@ describe("secure import pipeline", () => {
     await handleWorkerRequest(
       {
         type: "PARSE_FILES",
+        platform: "instagram",
         jobId: "safe-error",
         files: [new File(["{private-value"], "followers_1.json"), new File([following], "following.json")],
       },

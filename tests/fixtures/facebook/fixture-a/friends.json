@@ -1,0 +1,7 @@
+{
+  "friends_v2": [
+    { "name": "Alice Nguyễn", "timestamp": 1700000100 },
+    { "name": "Bình Trần", "timestamp": 1700000200 },
+    { "name": "Charlie Example", "timestamp": 1700000300 }
+  ]
+}

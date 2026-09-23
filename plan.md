@@ -3674,6 +3674,38 @@ M8UX2 chỉ được đánh dấu hoàn thành khi đồng thời đạt:
 
 ---
 
+# 19E. M8FB — Facebook relationship analyzer
+
+## Mục tiêu
+
+Hoàn thiện Facebook như một workspace độc lập nhưng dùng chung các primitive an toàn đã kiểm chứng của Instagram: xử lý file thô cục bộ, xác nhận trước khi đồng bộ, lịch sử đa thiết bị theo owner và so sánh snapshot thận trọng.
+
+## Checklist triển khai
+
+- [x] Tạo route được bảo vệ `/facebook/analyzer` và CTA thật từ Facebook hub.
+- [x] Truyền `platform` bắt buộc xuyên suốt UI → worker → payload → API → PostgreSQL.
+- [x] Tạo `FacebookExportAdapter` riêng; không dùng normalization/path/schema Instagram.
+- [x] Nhận schema ZIP thật: `connections/friends/your_friends.json`, `connections/followers/people_who_followed_you.json` và `who_you've_followed.json`.
+- [x] Giữ riêng ba tập Bạn bè, Người theo dõi và Đang theo dõi trong parser, fingerprint, snapshot và PostgreSQL.
+- [x] Sửa bảo thủ chuỗi UTF-8 bị Meta biểu diễn dưới dạng Latin-1; không làm hỏng Unicode hợp lệ.
+- [x] Hỗ trợ manual recovery bằng `friends.json` và `following.json`.
+- [x] Fail closed với HTML, JSON lỗi, wrapper lạ, path không an toàn, duplicate path, ZIP đáng ngờ và giới hạn tài nguyên.
+- [x] Chuẩn hóa tên Unicode bằng NFC, khoảng trắng ổn định, giới hạn độ dài và loại control/bidi override nguy hiểm.
+- [x] Hiển thị đúng ngữ nghĩa Bạn bè/Đang theo dõi; không tạo `@handle` hoặc link Instagram giả.
+- [x] Có tab danh sách Bạn bè, Đang theo dõi, kết nối mất/mới, đổi tên có thể và lịch sử.
+- [x] Chỉ suy luận đổi tên khi timestamp kết nối trùng duy nhất giữa hai snapshot; luôn ghi rõ không phải bằng chứng định danh.
+- [x] Đồng bộ snapshot đã chuẩn hóa theo authenticated owner; kiểm tra platform snapshot khớp platform hồ sơ.
+- [x] Lọc danh sách hồ sơ và xóa toàn bộ theo platform để không tác động dữ liệu Instagram.
+- [x] CSV Facebook dùng cột Name và tên file riêng, không áp dụng URL hồ sơ Instagram.
+- [x] Bổ sung hướng dẫn xuất JSON EN/VI và thông báo giới hạn độ chính xác.
+- [x] Dùng fixture tổng hợp, không đưa dữ liệu Facebook thật vào repository.
+- [x] Bổ sung test adapter, worker protocol/pipeline, UI semantics, API platform filter/delete và auth return path.
+- [x] Cập nhật source-of-truth và tài liệu kiến trúc cho trạng thái Facebook production-capable.
+- [ ] Smoke test bằng một bản xuất Facebook thật đã ẩn danh trên production preview.
+- [ ] Xác minh PostgreSQL production, responsive/keyboard/axe và telemetry lỗi không chứa tên quan hệ trước release chính thức.
+
+---
+
 # 20. Definition of Done toàn dự án
 
 V1 chỉ hoàn thành khi đồng thời thỏa mãn:

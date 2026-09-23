@@ -7,12 +7,12 @@ Public exports của analyzer nằm tại `src/features/analyzer/index.ts`. Các
 ```text
 unknown archive metadata / parsed JSON
   -> path and manifest detection
-  -> Instagram-only tolerant extractors
+  -> platform adapter (Instagram handles or Facebook connection names)
   -> normalized platform-neutral records
   -> deterministic set analysis / historical diff / fingerprint
 ```
 
-Instagram wrapper keys và `string_list_data` dừng ở adapter. UI, persistence và diff chỉ nhận `RelationshipRecord`.
+Instagram/Facebook wrapper keys và `string_list_data` dừng ở adapter. UI, persistence và diff chỉ nhận `RelationshipRecord`; `platform` luôn đi cùng payload/snapshot để ngăn trộn dữ liệu.
 
 ## Handle contract
 

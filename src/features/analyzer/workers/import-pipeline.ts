@@ -1,11 +1,19 @@
 import type { AdapterFile, ArchiveManifest } from "@/features/analyzer/adapters";
 import {
+  detectFacebookManifest,
+  facebookAdapter,
+  FACEBOOK_PARSER_VERSION,
+  isFacebookRelationshipPath,
+} from "@/features/analyzer/adapters/facebook";
+import {
   detectInstagramManifest,
   instagramAdapter,
+  INSTAGRAM_PARSER_VERSION,
   isFollowerPath,
   isFollowingPath,
 } from "@/features/analyzer/adapters/instagram";
 import { normalizeArchivePath } from "@/features/analyzer/adapters/archive-path";
+import type { SocialPlatform } from "@/features/analyzer/model/types";
 import { ImportDomainError } from "@/features/analyzer/model/errors";
 import { IMPORT_POLICY } from "@/features/analyzer/model/policy";
 import {
@@ -68,7 +76,7 @@ function parseJson(text: string, state: MutableDiagnosticState): unknown {
   return content;
 }
 
-function safeManualPath(name: string): string {
+function safeManualPath(name: string, platform: SocialPlatform): string {
   const normalized = normalizeArchivePath(name);
   if (!normalized.safe) {
     throw new ImportDomainError("ARCHIVE_UNSAFE_PATH", { reason: normalized.reason });
@@ -77,22 +85,44 @@ function safeManualPath(name: string): string {
   if (!basename.toLowerCase().endsWith(".json")) {
     throw new ImportDomainError("UNSUPPORTED_FILE_TYPE");
   }
-  if (/^followers_\d+\.json$/i.test(basename) || /^following\.json$/i.test(basename)) {
+  if (platform === "instagram" && (/^followers_\d+\.json$/i.test(basename) || /^following\.json$/i.test(basename))) {
     return `followers_and_following/${basename}`;
   }
+  if (platform === "facebook" && /^(?:friends|following)\.json$/i.test(basename)) {
+    return `friends_and_followers/${basename}`;
+  }
+  if (platform === "facebook" && /^your_friends\.json$/i.test(basename)) {
+    return `connections/friends/${basename}`;
+  }
+  if (platform === "facebook" && /^(?:people_who_followed_you|who_you've_followed)\.json$/i.test(basename)) {
+    return `connections/followers/${basename}`;
+  }
   return normalized.path;
+}
+
+function relevantPaths(platform: SocialPlatform, manifest: ArchiveManifest): readonly string[] {
+  if (platform === "facebook") {
+    const detected = detectFacebookManifest(manifest);
+    return [
+      detected.friends.normalizedPath,
+      ...(detected.followers === undefined ? [] : [detected.followers.normalizedPath]),
+      ...(detected.following === undefined ? [] : [detected.following.normalizedPath]),
+    ];
+  }
+  const detected = detectInstagramManifest(manifest);
+  return [
+    ...detected.followerParts.map((part) => part.normalizedPath),
+    detected.following.normalizedPath,
+  ];
 }
 
 function relevantEntries(
   entries: readonly ImportArchiveEntry[],
   manifest: ArchiveManifest,
+  platform: SocialPlatform,
   state: MutableDiagnosticState,
 ): readonly ImportArchiveEntry[] {
-  const detected = detectInstagramManifest(manifest);
-  const paths = new Set([
-    ...detected.followerParts.map((part) => part.normalizedPath.toLowerCase()),
-    detected.following.normalizedPath.toLowerCase(),
-  ]);
+  const paths = new Set(relevantPaths(platform, manifest).map((path) => path.toLowerCase()));
   const selected = entries.filter((entry) => {
     const normalized = normalizeArchivePath(entry.metadata.name);
     return normalized.safe && paths.has(normalized.path.toLowerCase());
@@ -137,10 +167,12 @@ async function readArchiveFiles(
     throwIfCancelled(signal);
     state.archiveFileCount = entries.filter((entry) => entry.metadata.directory !== true).length;
     const manifest: ArchiveManifest = { entries: entries.map((entry) => entry.metadata) };
-    const detectedEntries = relevantEntries(entries, manifest, state);
+    const detectedEntries = relevantEntries(entries, manifest, request.platform, state);
     const resourceWarnings = validateManifestResourceLimits(
       manifest,
-      (path) => isFollowerPath(path) || isFollowingPath(path),
+      (path) => request.platform === "facebook"
+        ? isFacebookRelationshipPath(path)
+        : isFollowerPath(path) || isFollowingPath(path),
     );
 
     const files: AdapterFile[] = [];
@@ -174,10 +206,14 @@ async function readManualFiles(
   emit: EmitProgress,
   state: MutableDiagnosticState,
 ): Promise<{ files: readonly AdapterFile[]; manifest: ArchiveManifest; warnings: readonly [] }> {
-  if (request.files.length === 0) throw new ImportDomainError("FOLLOWERS_FILE_NOT_FOUND");
+  if (request.files.length === 0) {
+    throw new ImportDomainError(
+      request.platform === "facebook" ? "FRIENDS_FILE_NOT_FOUND" : "FOLLOWERS_FILE_NOT_FOUND",
+    );
+  }
   let totalSize = 0;
   const mapped = request.files.map((file) => {
-    const path = safeManualPath(file.name);
+    const path = safeManualPath(file.name, request.platform);
     if (!Number.isSafeInteger(file.size) || file.size < 0) {
       throw new ImportDomainError("RELEVANT_DATA_TOO_LARGE", { reason: "invalid-file-size" });
     }
@@ -204,18 +240,14 @@ async function readManualFiles(
     })),
   };
   state.archiveFileCount = mapped.length;
-  const detection = detectInstagramManifest(manifest);
+  const detectedPaths = relevantPaths(request.platform, manifest);
   state.matchedRelevantFilenames.push(
-    ...detection.followerParts.map((part) => part.normalizedPath.split("/").at(-1) ?? ""),
-    detection.following.normalizedPath.split("/").at(-1) ?? "",
+    ...detectedPaths.map((path) => path.split("/").at(-1) ?? ""),
   );
-  const relevantPaths = new Set([
-    ...detection.followerParts.map((part) => part.normalizedPath.toLowerCase()),
-    detection.following.normalizedPath.toLowerCase(),
-  ]);
+  const selectedPaths = new Set(detectedPaths.map((path) => path.toLowerCase()));
   const files: AdapterFile[] = [];
   for (const [index, item] of mapped.entries()) {
-    if (!relevantPaths.has(item.path.toLowerCase())) continue;
+    if (!selectedPaths.has(item.path.toLowerCase())) continue;
     throwIfCancelled(signal);
     progress(emit, request.jobId, "reading_relationship_files", index, mapped.length);
     const text = await item.file.text();
@@ -232,7 +264,10 @@ export async function runImportPipeline(
   emit: EmitProgress,
   dependencies: ImportPipelineDependencies = {},
 ): Promise<ImportWorkerResult> {
-  const state = dependencies.diagnosticState ?? createDiagnosticState();
+  const state = dependencies.diagnosticState ?? createDiagnosticState(request.platform);
+  state.parserVersion = request.platform === "facebook"
+    ? FACEBOOK_PARSER_VERSION
+    : INSTAGRAM_PARSER_VERSION;
   progress(emit, request.jobId, "validating");
   throwIfCancelled(signal);
 
@@ -252,7 +287,8 @@ export async function runImportPipeline(
 
   throwIfCancelled(signal);
   progress(emit, request.jobId, "normalizing");
-  const payload = await instagramAdapter.parse(
+  const adapter = request.platform === "facebook" ? facebookAdapter : instagramAdapter;
+  const payload = await adapter.parse(
     {
       mode: request.type === "PARSE_ARCHIVE" ? "archive" : "manual",
       manifest: source.manifest,

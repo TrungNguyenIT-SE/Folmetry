@@ -30,7 +30,7 @@ After listing central-directory metadata, the pipeline applies this order:
 
 1. entry-count limit;
 2. path normalization and traversal/absolute/drive/UNC/control-character rejection for every entry;
-3. exact Instagram JSON/HTML detection;
+3. exact platform-specific JSON/HTML detection;
 4. encrypted-entry rejection;
 5. conservative metadata validation;
 6. per-entry, total relevant-byte, and compression-ratio limits;
@@ -44,6 +44,10 @@ Nested archives, media, messages, and unrelated JSON are ignored and never recur
 ## Shared Instagram path
 
 ZIP and manual recovery inputs create the same `ArchiveManifest` and `AdapterFile` contracts and then call the same Instagram adapter. Manual mode accepts multiple `.json` files, matches safe basenames, requires followers plus following, validates contiguous multipart numbering, and emits the manual-completeness warning.
+
+## Facebook path
+
+The worker receives an explicit `facebook` platform and selects only the Facebook adapter. ZIP mode recognizes `connections/friends/your_friends.json`, `connections/followers/people_who_followed_you.json`, and `connections/followers/who_you've_followed.json`, while retaining the older synthetic compatibility paths. Manual recovery accepts the corresponding basenames. HTML exports, duplicate relevant paths, unsafe paths, unknown wrappers, oversized inputs, and malformed JSON fail closed. Friends, Followers, and Following remain distinct sets and never use Instagram username rules.
 
 All `followers_N.json` parts are ordered numerically, merged, and deduplicated. Relationship limits are enforced while records are extracted, not only after an entire export is built.
 

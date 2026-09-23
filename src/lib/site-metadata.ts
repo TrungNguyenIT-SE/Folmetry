@@ -6,7 +6,7 @@ export const SITE_NAME = "Folmetry";
 export const SITE_DESCRIPTION = "Parse Instagram relationship exports locally, synchronize confirmed private snapshots across devices, and use a clearly separated public Stories utility.";
 
 export const PUBLIC_ROUTES = ["/", "/instagram", "/facebook", "/how-it-works", "/privacy", "/terms", "/faq"] as const;
-export const SITE_ROUTES = [...PUBLIC_ROUTES, "/app", "/story-downloader"] as const;
+export const SITE_ROUTES = [...PUBLIC_ROUTES, "/app", "/facebook/analyzer", "/story-downloader"] as const;
 
 export function getSiteUrl(environment: Readonly<Record<string, string | undefined>> = process.env): URL {
   const configured = environment["SITE_URL"] ?? environment["VERCEL_PROJECT_PRODUCTION_URL"];

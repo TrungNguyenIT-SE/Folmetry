@@ -3,12 +3,16 @@ import "server-only";
 import type { PoolClient, QueryResultRow } from "pg";
 
 import { authDatabase } from "@/features/auth/server/database";
-import { normalizeInstagramHandle } from "@/features/analyzer/model/normalize-handle";
+import {
+  normalizeFacebookName,
+  normalizeInstagramHandle,
+} from "@/features/analyzer/model/normalize-handle";
 import { IMPORT_POLICY } from "@/features/analyzer/model/policy";
 import type {
   LocalAccount,
   LocalSnapshot,
   RelationshipRecord,
+  SocialPlatform,
 } from "@/features/analyzer/model/types";
 import {
   IMPORT_WARNING_CODES,
@@ -66,11 +70,13 @@ async function ensureSchema(): Promise<void> {
       source_file_size BIGINT,
       fingerprint CHAR(64) NOT NULL,
       parser_version TEXT NOT NULL,
+      friends JSONB NOT NULL DEFAULT '[]'::jsonb,
       followers JSONB NOT NULL,
       following JSONB NOT NULL,
       warnings JSONB NOT NULL,
       follower_count INTEGER NOT NULL,
       following_count INTEGER NOT NULL,
+      friend_count INTEGER NOT NULL DEFAULT 0,
       CONSTRAINT folmetry_analyzer_snapshot_owner_time_unique
         UNIQUE(owner_id, account_id, snapshot_at),
       CONSTRAINT folmetry_analyzer_snapshot_owner_fingerprint_unique
@@ -78,6 +84,10 @@ async function ensureSchema(): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS folmetry_analyzer_snapshot_owner_account_time_idx
       ON folmetry_analyzer_snapshot(owner_id, account_id, snapshot_at DESC);
+    ALTER TABLE folmetry_analyzer_snapshot
+      ADD COLUMN IF NOT EXISTS friends JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE folmetry_analyzer_snapshot
+      ADD COLUMN IF NOT EXISTS friend_count INTEGER NOT NULL DEFAULT 0;
     `);
   }).catch((error: unknown) => {
     schemaPromise = undefined;
@@ -106,12 +116,14 @@ function mapAccount(row: QueryResultRow): LocalAccount {
 }
 
 function mapSnapshot(row: QueryResultRow): LocalSnapshot {
-  const followers = validateRelationships(row["followers"]);
-  const following = validateRelationships(row["following"]);
+  const platform: SocialPlatform = row["platform"] === "facebook" ? "facebook" : "instagram";
+  const friends = validateRelationships(row["friends"] ?? [], platform);
+  const followers = validateRelationships(row["followers"], platform);
+  const following = validateRelationships(row["following"], platform);
   return {
     id: String(row["id"]),
     accountId: String(row["account_id"]),
-    platform: row["platform"] === "facebook" ? "facebook" : "instagram",
+    platform,
     snapshotAt: asTimestamp(row["snapshot_at"]),
     importedAt: asTimestamp(row["imported_at"]),
     ...(row["source_file_name"] === null
@@ -122,6 +134,7 @@ function mapSnapshot(row: QueryResultRow): LocalSnapshot {
       : { sourceFileSize: asTimestamp(row["source_file_size"]) }),
     fingerprint: String(row["fingerprint"]),
     parserVersion: String(row["parser_version"]),
+    ...(platform === "facebook" ? { friends, friendCount: Number(row["friend_count"] ?? friends.length) } : {}),
     followers,
     following,
     warnings: validateWarnings(row["warnings"]),
@@ -130,7 +143,10 @@ function mapSnapshot(row: QueryResultRow): LocalSnapshot {
   };
 }
 
-function validateRelationships(value: unknown): readonly RelationshipRecord[] {
+function validateRelationships(
+  value: unknown,
+  platform: SocialPlatform,
+): readonly RelationshipRecord[] {
   if (!Array.isArray(value) || value.length > IMPORT_POLICY.maxRelationshipsPerKind) {
     throw new PersistenceDomainError("INVALID_SNAPSHOT");
   }
@@ -140,7 +156,9 @@ function validateRelationships(value: unknown): readonly RelationshipRecord[] {
       throw new PersistenceDomainError("INVALID_SNAPSHOT");
     }
     const record = candidate as Record<string, unknown>;
-    const normalized = normalizeInstagramHandle(record["handle"]);
+    const normalized = platform === "facebook"
+      ? normalizeFacebookName(record["handle"])
+      : normalizeInstagramHandle(record["handle"]);
     if (
       !normalized.ok ||
       record["normalizedHandle"] !== normalized.normalizedHandle ||
@@ -200,7 +218,7 @@ function validateWarnings(value: unknown): readonly ImportWarning[] {
 
 function validateSnapshot(input: SaveSnapshotInput): SaveSnapshotInput {
   if (
-    input.platform !== "instagram" ||
+    (input.platform !== "instagram" && input.platform !== "facebook") ||
     typeof input.accountId !== "string" ||
     input.accountId.length === 0 ||
     !Number.isSafeInteger(input.snapshotAt) ||
@@ -219,8 +237,11 @@ function validateSnapshot(input: SaveSnapshotInput): SaveSnapshotInput {
   }
   return {
     ...input,
-    followers: validateRelationships(input.followers),
-    following: validateRelationships(input.following),
+    ...(input.platform === "facebook"
+      ? { friends: validateRelationships(input.friends ?? [], input.platform) }
+      : {}),
+    followers: validateRelationships(input.followers, input.platform),
+    following: validateRelationships(input.following, input.platform),
     warnings: validateWarnings(input.warnings),
   };
 }
@@ -243,19 +264,20 @@ async function withTransaction<T>(operation: (client: PoolClient) => Promise<T>)
 export class CloudAnalyzerRepository {
   constructor(private readonly ownerId: string) {}
 
-  async listAccounts(): Promise<readonly LocalAccount[]> {
+  async listAccounts(platform?: SocialPlatform): Promise<readonly LocalAccount[]> {
     await ensureSchema();
     const result = await authDatabase.query(
       `SELECT * FROM folmetry_analyzer_account
-       WHERE owner_id = $1 ORDER BY created_at ASC, id ASC`,
-      [this.ownerId],
+       WHERE owner_id = $1 AND ($2::text IS NULL OR platform = $2)
+       ORDER BY created_at ASC, id ASC`,
+      [this.ownerId, platform ?? null],
     );
     return result.rows.map(mapAccount);
   }
 
   async createAccount(input: CreateAccountInput): Promise<LocalAccount> {
     await ensureSchema();
-    if (input.platform !== "instagram") {
+    if (input.platform !== "instagram" && input.platform !== "facebook") {
       throw new PersistenceDomainError("INVALID_ACCOUNT_USERNAME");
     }
     const id = crypto.randomUUID();
@@ -300,11 +322,12 @@ export class CloudAnalyzerRepository {
     if (result.rowCount !== 1) throw new PersistenceDomainError("ACCOUNT_NOT_FOUND");
   }
 
-  async deleteAll(): Promise<void> {
+  async deleteAll(platform?: SocialPlatform): Promise<void> {
     await ensureSchema();
     await authDatabase.query(
-      `DELETE FROM folmetry_analyzer_account WHERE owner_id = $1`,
-      [this.ownerId],
+      `DELETE FROM folmetry_analyzer_account
+       WHERE owner_id = $1 AND ($2::text IS NULL OR platform = $2)`,
+      [this.ownerId, platform ?? null],
     );
   }
 
@@ -356,16 +379,16 @@ export class CloudAnalyzerRepository {
           `INSERT INTO folmetry_analyzer_snapshot
            (id, owner_id, account_id, platform, snapshot_at, imported_at,
             source_file_name, source_file_size, fingerprint, parser_version,
-            followers, following, warnings, follower_count, following_count)
+            friends, followers, following, warnings, friend_count, follower_count, following_count)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-                   $11::jsonb, $12::jsonb, $13::jsonb, $14, $15)
+                   $11::jsonb, $12::jsonb, $13::jsonb, $14::jsonb, $15, $16, $17)
            RETURNING *`,
           [
             id, this.ownerId, input.accountId, input.platform, input.snapshotAt,
             importedAt, input.sourceFileName ?? null, input.sourceFileSize ?? null,
-            input.fingerprint, input.parserVersion, JSON.stringify(input.followers),
-            JSON.stringify(input.following), JSON.stringify(input.warnings),
-            input.followers.length, input.following.length,
+            input.fingerprint, input.parserVersion, JSON.stringify(input.friends ?? []),
+            JSON.stringify(input.followers), JSON.stringify(input.following), JSON.stringify(input.warnings),
+            input.friends?.length ?? 0, input.followers.length, input.following.length,
           ],
         );
         return { status: "saved", snapshot: mapSnapshot(result.rows[0]) };

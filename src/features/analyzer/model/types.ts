@@ -11,7 +11,8 @@ export interface RelationshipRecord {
 }
 
 export interface NormalizedSnapshotPayload {
-  readonly platform: "instagram";
+  readonly platform: SocialPlatform;
+  readonly friends?: readonly RelationshipRecord[];
   readonly followers: readonly RelationshipRecord[];
   readonly following: readonly RelationshipRecord[];
   readonly parserVersion: string;
@@ -28,12 +29,14 @@ export interface Snapshot {
   readonly sourceFileSize?: number;
   readonly fingerprint: string;
   readonly parserVersion: string;
+  readonly friends?: readonly RelationshipRecord[];
   readonly followers: readonly RelationshipRecord[];
   readonly following: readonly RelationshipRecord[];
   readonly warnings: readonly ImportWarning[];
 }
 
 export interface LocalSnapshot extends Snapshot {
+  readonly friendCount?: number;
   readonly followerCount: number;
   readonly followingCount: number;
 }

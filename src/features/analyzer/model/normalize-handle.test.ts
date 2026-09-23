@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeInstagramHandle } from "@/features/analyzer/model/normalize-handle";
+import {
+  normalizeFacebookName,
+  normalizeInstagramHandle,
+  repairFacebookExportText,
+} from "@/features/analyzer/model/normalize-handle";
 import { IMPORT_POLICY } from "@/features/analyzer/model/policy";
 
 describe("normalizeInstagramHandle", () => {
@@ -44,4 +48,26 @@ describe("normalizeInstagramHandle", () => {
       });
     },
   );
+});
+
+describe("normalizeFacebookName", () => {
+  it("repairs reversible UTF-8-as-Latin-1 export text without corrupting valid Unicode", () => {
+    const mojibake = String.fromCodePoint(...new TextEncoder().encode("Nguyễn Ánh"));
+    expect(repairFacebookExportText(mojibake)).toBe("Nguyễn Ánh");
+    expect(repairFacebookExportText("José")).toBe("José");
+    expect(repairFacebookExportText("Bình Trần")).toBe("Bình Trần");
+  });
+  it("normalizes Unicode names and repeated whitespace deterministically", () => {
+    expect(normalizeFacebookName("  Alice   Nguyễn ")).toEqual({
+      ok: true,
+      handle: "Alice Nguyễn",
+      normalizedHandle: "alice nguyễn",
+    });
+  });
+
+  it("rejects control, bidi override and overlong values", () => {
+    expect(normalizeFacebookName("Alice\u0000Bob")).toMatchObject({ ok: false });
+    expect(normalizeFacebookName("Alice\u202eBob")).toMatchObject({ ok: false });
+    expect(normalizeFacebookName("x".repeat(151))).toMatchObject({ ok: false, reason: "TOO_LONG" });
+  });
 });

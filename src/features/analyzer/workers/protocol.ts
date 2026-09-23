@@ -1,5 +1,6 @@
 import type { SerializedImportError } from "@/features/analyzer/model/errors";
 import type { NormalizedSnapshotPayload } from "@/features/analyzer/model/types";
+import type { SocialPlatform } from "@/features/analyzer/model/types";
 
 export const IMPORT_PROGRESS_STAGES = [
   "validating",
@@ -15,12 +16,14 @@ export type ImportProgressStage = (typeof IMPORT_PROGRESS_STAGES)[number];
 
 export interface ParseArchiveRequest {
   readonly type: "PARSE_ARCHIVE";
+  readonly platform: SocialPlatform;
   readonly jobId: string;
   readonly file: File;
 }
 
 export interface ParseFilesRequest {
   readonly type: "PARSE_FILES";
+  readonly platform: SocialPlatform;
   readonly jobId: string;
   readonly files: readonly File[];
 }

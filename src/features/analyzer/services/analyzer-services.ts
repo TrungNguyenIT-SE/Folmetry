@@ -1,4 +1,4 @@
-import type { LocalAccount, LocalSnapshot } from "@/features/analyzer/model/types";
+import type { LocalAccount, LocalSnapshot, SocialPlatform } from "@/features/analyzer/model/types";
 import {
   PersistenceDomainError,
   type CreateAccountInput,
@@ -76,12 +76,12 @@ function actionRequest<T>(method: "POST" | "PATCH" | "DELETE", body: unknown): P
  * Files are still parsed locally by the worker. Only the normalized, confirmed
  * account/snapshot model crosses this client boundary and is stored by user ID.
  */
-export function createCloudAnalyzerServices(): AnalyzerServices {
-  const worker = new ImportWorkerClient();
+export function createCloudAnalyzerServices(platform: SocialPlatform = "instagram"): AnalyzerServices {
+  const worker = new ImportWorkerClient(platform);
 
   return {
     listAccounts: async () => (await requestJson<{ accounts: readonly LocalAccount[] }>(
-      "/api/analyzer?resource=accounts",
+      `/api/analyzer?resource=accounts&platform=${platform}`,
     )).accounts,
     createAccount: async (input) => (await actionRequest<{ account: LocalAccount }>(
       "POST", { action: "createAccount", input },
@@ -117,7 +117,7 @@ export function createCloudAnalyzerServices(): AnalyzerServices {
     deleteSnapshot: (accountId, snapshotId) => actionRequest<void>(
       "DELETE", { action: "deleteSnapshot", accountId, snapshotId },
     ),
-    deleteAll: () => actionRequest<void>("DELETE", { action: "deleteAll" }),
+    deleteAll: () => actionRequest<void>("DELETE", { action: "deleteAll", platform }),
     parseArchive: (file, jobId, onProgress) => worker.parseArchive(jobId, file, onProgress),
     parseFiles: (files, jobId, onProgress) => worker.parseFiles(jobId, files, onProgress),
     cancelImport: () => worker.cancel(),

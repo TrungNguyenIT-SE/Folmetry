@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 
 import { Button, Card, Field, SelectField, StatusRegion } from "@/components/ui";
-import type { LocalAccount } from "@/features/analyzer/model/types";
+import type { LocalAccount, SocialPlatform } from "@/features/analyzer/model/types";
 import { useI18n } from "@/i18n";
 
 export interface AccountPanelProps {
@@ -13,6 +13,7 @@ export interface AccountPanelProps {
   readonly onSelect: (accountId: string) => void;
   readonly onCreate: (label: string, username: string) => Promise<void>;
   readonly onUpdate: (label: string, username: string) => Promise<void>;
+  readonly platform: SocialPlatform;
 }
 
 export function AccountPanel({
@@ -22,6 +23,7 @@ export function AccountPanel({
   onSelect,
   onCreate,
   onUpdate,
+  platform,
 }: AccountPanelProps) {
   const { dictionary } = useI18n();
   const copy = dictionary.analyzer;
@@ -52,31 +54,31 @@ export function AccountPanel({
   };
 
   return (
-    <Card className="account-card" heading={copy.account.title}>
-      <p>{copy.ux.accountIntro}</p>
+    <Card className="account-card" heading={platform === "facebook" ? copy.facebook.accountTitle : copy.account.title}>
+      <p>{platform === "facebook" ? copy.facebook.accountIntro : copy.ux.accountIntro}</p>
       <p className="muted-copy">{copy.ux.accountPrivacy}</p>
       {accounts.length === 0 ? (
-        <p>{copy.ux.noAccounts}</p>
+        <p>{platform === "facebook" ? copy.facebook.noAccounts : copy.ux.noAccounts}</p>
       ) : (
         <div className="account-toolbar">
           <SelectField
-            label={copy.account.select}
+            label={platform === "facebook" ? copy.facebook.selectAccount : copy.account.select}
             onChange={(event) => onSelect(event.currentTarget.value)}
             value={selectedId ?? ""}
           >
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>
-                {account.label}{account.username === undefined ? "" : ` (@${account.username})`}
+                {account.label}{account.username === undefined ? "" : platform === "instagram" ? ` (@${account.username})` : ` (${account.username})`}
               </option>
             ))}
           </SelectField>
           {selected === undefined ? null : (
             <Button onClick={() => { setLabel(selected.label); setUsername(selected.username ?? ""); setCreating(false); setEditing(true); }} type="button" variant="secondary">
-              {copy.account.edit}
+              {platform === "facebook" ? copy.facebook.editAccount : copy.account.edit}
             </Button>
           )}
           <Button onClick={() => { setEditing(false); setCreating(true); setLabel(""); setUsername(""); }} type="button" variant="secondary">
-            {copy.ux.createAnother}
+            {platform === "facebook" ? copy.facebook.createAnother : copy.ux.createAnother}
           </Button>
         </div>
       )}
@@ -86,7 +88,7 @@ export function AccountPanel({
           <Field
             autoComplete="off"
             description={copy.ux.labelHint}
-            label={copy.account.label}
+            label={platform === "facebook" ? copy.facebook.accountLabel : copy.account.label}
             maxLength={80}
             onChange={(event) => setLabel(event.currentTarget.value)}
             required
@@ -94,14 +96,14 @@ export function AccountPanel({
           />
           <Field
             autoComplete="off"
-            description={copy.ux.usernameHint}
-            label={copy.account.username}
+            description={platform === "facebook" ? copy.facebook.identifierHint : copy.ux.usernameHint}
+            label={platform === "facebook" ? copy.facebook.accountIdentifier : copy.account.username}
             onChange={(event) => setUsername(event.currentTarget.value)}
             value={username}
           />
           <div className="button-row">
             <Button disabled={pending} type="submit">
-              {editing ? copy.ux.saveChanges : copy.account.create}
+              {editing ? copy.ux.saveChanges : platform === "facebook" ? copy.facebook.createAccount : copy.account.create}
             </Button>
             {accounts.length === 0 ? null : (
               <Button onClick={() => { setCreating(false); setEditing(false); }} type="button" variant="secondary">

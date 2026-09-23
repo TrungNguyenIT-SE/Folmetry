@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   repositoryConstructor: vi.fn(),
   listAccounts: vi.fn(),
   createAccount: vi.fn(),
+  deleteAll: vi.fn(),
   assertSyncBodySize: vi.fn(),
 }));
 
@@ -18,6 +19,7 @@ vi.mock("@/features/analyzer/server/cloud-repository", () => ({
   CloudAnalyzerRepository: class {
     listAccounts = mocks.listAccounts;
     createAccount = mocks.createAccount;
+    deleteAll = mocks.deleteAll;
 
     constructor(ownerId: string) {
       mocks.repositoryConstructor(ownerId);
@@ -25,7 +27,7 @@ vi.mock("@/features/analyzer/server/cloud-repository", () => ({
   },
 }));
 
-import { GET, POST } from "./route";
+import { DELETE, GET, POST } from "./route";
 
 describe("analyzer synchronization route", () => {
   beforeEach(() => {
@@ -43,17 +45,36 @@ describe("analyzer synchronization route", () => {
 
   it("rejects an unauthenticated account listing", async () => {
     mocks.getRequestSession.mockResolvedValue(null);
-    const response = await GET(new Request("https://folmetry.test/api/analyzer?resource=accounts"));
+    const response = await GET(new Request("https://folmetry.test/api/analyzer?resource=accounts&platform=instagram"));
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toMatchObject({ code: "UNAUTHORIZED" });
     expect(mocks.repositoryConstructor).not.toHaveBeenCalled();
   });
 
   it("derives repository ownership from the verified session", async () => {
-    const response = await GET(new Request("https://folmetry.test/api/analyzer?resource=accounts"));
+    const response = await GET(new Request("https://folmetry.test/api/analyzer?resource=accounts&platform=facebook"));
     expect(response.status).toBe(200);
     expect(mocks.repositoryConstructor).toHaveBeenCalledWith("user-1");
     expect(mocks.listAccounts).toHaveBeenCalledOnce();
+    expect(mocks.listAccounts).toHaveBeenCalledWith("facebook");
+  });
+
+  it("requires an explicit supported platform for account listings", async () => {
+    const missing = await GET(new Request("https://folmetry.test/api/analyzer?resource=accounts"));
+    const unknown = await GET(new Request("https://folmetry.test/api/analyzer?resource=accounts&platform=other"));
+    expect(missing.status).toBe(503);
+    expect(unknown.status).toBe(503);
+    expect(mocks.listAccounts).not.toHaveBeenCalled();
+  });
+
+  it("deletes only the explicitly selected platform", async () => {
+    const response = await DELETE(new Request("https://folmetry.test/api/analyzer", {
+      method: "DELETE",
+      headers: { "content-type": "application/json", origin: "https://folmetry.test" },
+      body: JSON.stringify({ action: "deleteAll", platform: "facebook" }),
+    }));
+    expect(response.status).toBe(204);
+    expect(mocks.deleteAll).toHaveBeenCalledWith("facebook");
   });
 
   it("does not accept a cross-origin analyzer mutation", async () => {

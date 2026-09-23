@@ -29,7 +29,7 @@ function canonicalHandles(handles: readonly string[]): readonly string[] {
   );
 }
 
-function encodeList(name: "followers" | "following", handles: readonly string[]): Uint8Array[] {
+function encodeList(name: "friends" | "followers" | "following", handles: readonly string[]): Uint8Array[] {
   const canonical = canonicalHandles(handles);
   return [
     encodeField(name),
@@ -39,11 +39,14 @@ function encodeList(name: "followers" | "following", handles: readonly string[])
 }
 
 export function encodeCanonicalFingerprintPayload(
-  payload: Pick<NormalizedSnapshotPayload, "platform" | "followers" | "following">,
+  payload: Pick<NormalizedSnapshotPayload, "platform" | "friends" | "followers" | "following">,
 ): Uint8Array {
   return concatenate([
     encodeField(DOMAIN_TAG),
     encodeField(payload.platform),
+    ...(payload.friends === undefined
+      ? []
+      : encodeList("friends", payload.friends.map((record) => record.normalizedHandle))),
     ...encodeList(
       "followers",
       payload.followers.map((record) => record.normalizedHandle),
@@ -56,7 +59,7 @@ export function encodeCanonicalFingerprintPayload(
 }
 
 export async function computeSnapshotFingerprint(
-  payload: Pick<NormalizedSnapshotPayload, "platform" | "followers" | "following">,
+  payload: Pick<NormalizedSnapshotPayload, "platform" | "friends" | "followers" | "following">,
 ): Promise<string> {
   const canonical = encodeCanonicalFingerprintPayload(payload);
   const canonicalBuffer = new ArrayBuffer(canonical.byteLength);

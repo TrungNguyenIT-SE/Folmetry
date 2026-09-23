@@ -55,11 +55,11 @@ export function FacebookHub() {
         </header>
         <div className="blueprint-instrument" aria-hidden="true"><span>FB / ADAPTER</span><i /><i /><i /><strong>VALIDATION</strong></div>
       </div>
-      <article className="platform-card platform-card--pending">
+      <article className="platform-card platform-card--primary">
         <span className="badge">{copy.status}</span>
         <span className="platform-card__trace" aria-hidden="true" />
         <p>{copy.body}</p>
-        <Link className="button button--secondary" href="/how-it-works" transitionTypes={["nav-forward"]}>{copy.action}</Link>
+        <Link className="button button--primary" href="/facebook/analyzer" transitionTypes={["nav-forward"]}>{copy.action}</Link>
       </article>
     </main>
     </PageTransition>

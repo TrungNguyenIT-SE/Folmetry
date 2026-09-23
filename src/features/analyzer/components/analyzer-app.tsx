@@ -12,7 +12,7 @@ import {
 } from "@/components/ui";
 import { PageTransition } from "@/components/layout/page-transition";
 import { ImportDomainError } from "@/features/analyzer/model/errors";
-import type { LocalAccount, LocalSnapshot } from "@/features/analyzer/model/types";
+import type { LocalAccount, LocalSnapshot, SocialPlatform } from "@/features/analyzer/model/types";
 import {
   PersistenceDomainError,
   type SaveSnapshotInput,
@@ -43,11 +43,15 @@ import {
 
 export interface AnalyzerAppProps {
   readonly services?: AnalyzerServices;
+  readonly platform?: SocialPlatform;
 }
 
 type DeleteMode = "account" | "all";
 
-function WorkflowRail({ workflow }: Readonly<{ workflow: AnalyzerWorkflowState }>) {
+function WorkflowRail({
+  workflow,
+  platform,
+}: Readonly<{ workflow: AnalyzerWorkflowState; platform: SocialPlatform }>) {
   const { dictionary } = useI18n();
   const copy = dictionary.analyzer.ux;
   const active = workflow.status === "NO_ACCOUNT"
@@ -57,7 +61,12 @@ function WorkflowRail({ workflow }: Readonly<{ workflow: AnalyzerWorkflowState }
       : workflow.status === "RESULTS"
         ? 3
         : 1;
-  const labels = [copy.workflowAccount, copy.workflowImport, copy.workflowReview, copy.workflowResults];
+  const labels = [
+    platform === "facebook" ? dictionary.analyzer.facebook.workflowAccount : copy.workflowAccount,
+    copy.workflowImport,
+    copy.workflowReview,
+    copy.workflowResults,
+  ];
   return (
     <nav aria-label={copy.workflowLabel} className="workflow-rail" data-active-step={active + 1} tabIndex={0}>
       <ol>
@@ -83,6 +92,9 @@ function inMemorySnapshot(input: SaveSnapshotInput): LocalSnapshot {
     ...input,
     id: `memory-${globalThis.crypto.randomUUID()}`,
     importedAt: Date.now(),
+    ...(input.platform === "facebook"
+      ? { friends: [...(input.friends ?? [])], friendCount: input.friends?.length ?? 0 }
+      : {}),
     followers: [...input.followers],
     following: [...input.following],
     warnings: [...input.warnings],
@@ -91,7 +103,7 @@ function inMemorySnapshot(input: SaveSnapshotInput): LocalSnapshot {
   };
 }
 
-export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
+export function AnalyzerApp({ services: providedServices, platform = "instagram" }: AnalyzerAppProps) {
   const { dictionary, formatNumber } = useI18n();
   const copy = dictionary.analyzer;
   const [workflow, dispatch] = useReducer(analyzerWorkflowReducer, INITIAL_ANALYZER_STATE);
@@ -136,7 +148,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
       if (providedServices !== undefined) {
         api = providedServices;
       } else {
-        api = createCloudAnalyzerServices();
+        api = createCloudAnalyzerServices(platform);
       }
       servicesRef.current = api;
     } catch {
@@ -150,8 +162,9 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
       });
       return;
     }
-    void api.listAccounts().then(async (loaded) => {
+    void api.listAccounts().then(async (allAccounts) => {
       if (!active) return;
+      const loaded = allAccounts.filter((account) => account.platform === platform);
       setAccounts(loaded);
       if (loaded[0] === undefined) {
         dispatch({ type: "ACCOUNTS_EMPTY" });
@@ -168,10 +181,10 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
       api.close();
       servicesRef.current = undefined;
     };
-  }, [providedServices]);
+  }, [platform, providedServices]);
 
   const refreshAccounts = async (api: AnalyzerServices): Promise<readonly LocalAccount[]> => {
-    const loaded = await api.listAccounts();
+    const loaded = (await api.listAccounts()).filter((account) => account.platform === platform);
     setAccounts(loaded);
     return loaded;
   };
@@ -194,7 +207,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
     if (api === undefined) return;
     setAccountError(undefined);
     try {
-      const created = await api.createAccount({ platform: "instagram", label, ...(username.trim() === "" ? {} : { username }) });
+      const created = await api.createAccount({ platform, label, ...(username.trim() === "" ? {} : { username }) });
       await refreshAccounts(api);
       await presentAccount(api, created.id);
     } catch (error) {
@@ -230,6 +243,12 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
     try {
       const result = await operation(api, jobId);
       if (activeJobRef.current !== jobId) return;
+      if (result.payload.platform !== platform) {
+        throw new ImportDomainError(
+          platform === "facebook" ? "UNSUPPORTED_FACEBOOK_SCHEMA" : "UNSUPPORTED_INSTAGRAM_SCHEMA",
+          { reason: "platform-mismatch" },
+        );
+      }
       activeJobRef.current = undefined;
       const suggested = Number.isSafeInteger(source.lastModified) && source.lastModified > 0
         ? source.lastModified
@@ -316,6 +335,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
       snapshotAt: draft.snapshotAt,
       fingerprint: draft.result.fingerprint,
       parserVersion: payload.parserVersion,
+      ...(platform === "facebook" ? { friends: payload.friends ?? [] } : {}),
       followers: payload.followers,
       following: payload.following,
       warnings: payload.warnings,
@@ -413,13 +433,13 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
     <main className="page-shell page-shell--analyzer" data-workflow-state={workflow.status.toLowerCase().replaceAll("_", "-")} id="main-content">
       <div className="analyzer-app">
       <header className="analyzer-heading">
-        <span className="eyebrow">{dictionary.pages.analyzer.eyebrow}</span>
-        <h1>{dictionary.pages.analyzer.title}</h1>
-        <p>{dictionary.pages.analyzer.description}</p>
-        <p className="privacy-note">{dictionary.pages.analyzer.notice}</p>
+        <span className="eyebrow">{(platform === "facebook" ? dictionary.pages.facebookAnalyzer : dictionary.pages.analyzer).eyebrow}</span>
+        <h1>{(platform === "facebook" ? dictionary.pages.facebookAnalyzer : dictionary.pages.analyzer).title}</h1>
+        <p>{(platform === "facebook" ? dictionary.pages.facebookAnalyzer : dictionary.pages.analyzer).description}</p>
+        <p className="privacy-note">{(platform === "facebook" ? dictionary.pages.facebookAnalyzer : dictionary.pages.analyzer).notice}</p>
       </header>
 
-      <WorkflowRail workflow={workflow} />
+      <WorkflowRail platform={platform} workflow={workflow} />
 
       <AccountPanel
         key={selectedAccountId ?? "no-account"}
@@ -428,13 +448,14 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
         onCreate={createAccount}
         onSelect={selectAccount}
         onUpdate={updateAccount}
+        platform={platform}
         selectedId={selectedAccountId}
       />
 
       {selectedAccountId === undefined ? null : (
         <>
           {workflow.status === "READY_TO_IMPORT" || workflow.status === "RESULTS" ? (
-            <ImportPanel error={fileError} onArchive={importArchive} onManualFiles={importManualFiles} />
+            <ImportPanel error={fileError} onArchive={importArchive} onManualFiles={importManualFiles} platform={platform} />
           ) : null}
 
           {workflow.status === "VALIDATING" || workflow.status === "PARSING" ? (
@@ -455,8 +476,9 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
                 <div><dt>{copy.ux.reviewAccount}</dt><dd>{accounts.find((account) => account.id === selectedAccountId)?.label}</dd></div>
                 <div><dt>{copy.ux.source}</dt><dd>{workflow.draft.source.name}</dd></div>
                 <div><dt>{copy.ux.fileSize}</dt><dd>{formatNumber(workflow.draft.source.size)} {copy.ux.bytes}</dd></div>
-                <div><dt>{copy.ux.detectedFollowers}</dt><dd>{formatNumber(workflow.draft.result.payload.followers.length)}</dd></div>
-                <div><dt>{copy.ux.detectedFollowing}</dt><dd>{formatNumber(workflow.draft.result.payload.following.length)}</dd></div>
+                {platform === "facebook" ? <div><dt>{copy.facebook.detectedConnections}</dt><dd>{formatNumber(workflow.draft.result.payload.friends?.length ?? 0)}</dd></div> : null}
+                <div><dt>{platform === "facebook" ? copy.facebook.detectedFollowers : copy.ux.detectedFollowers}</dt><dd>{formatNumber(workflow.draft.result.payload.followers.length)}</dd></div>
+                <div><dt>{platform === "facebook" ? copy.facebook.detectedFollowing : copy.ux.detectedFollowing}</dt><dd>{formatNumber(workflow.draft.result.payload.following.length)}</dd></div>
               </dl>
               <div className="field">
                 <label htmlFor="snapshot-date">{copy.review.snapshotDate}</label>
@@ -478,7 +500,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
                 )}
               </section>
               <p className="privacy-note">{copy.ux.retention}</p>
-              <p className="muted-copy">{copy.ux.accuracy}</p>
+              <p className="muted-copy">{platform === "facebook" ? copy.facebook.accuracy : copy.ux.accuracy}</p>
               {workflow.status === "SAVING" ? <StatusRegion>{copy.ux.saving}</StatusRegion> : (
                 <div className="button-row">
                   <Button onClick={() => void saveDraft(workflow.draft)} type="button">{copy.review.save}</Button>
@@ -499,6 +521,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
               }}
               saved={workflow.saved}
               snapshots={snapshots}
+              platform={platform}
             />
           ) : null}
 
@@ -521,7 +544,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
             <Card heading={copy.ux.dataControls}>
               <div className="button-row">
                 <Button onClick={() => setDeleteMode("account")} type="button" variant="danger">{copy.ux.deleteAccount}</Button>
-                <Button onClick={() => setDeleteMode("all")} type="button" variant="danger">{copy.ux.deleteAll}</Button>
+                <Button onClick={() => setDeleteMode("all")} type="button" variant="danger">{platform === "facebook" ? copy.facebook.deleteAll : copy.ux.deleteAll}</Button>
               </div>
             </Card>
           </div>
@@ -535,7 +558,7 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
         open={duplicate !== undefined}
         title={copy.ux.duplicateTitle}
       >
-        <p>{copy.ux.duplicateBody}</p>
+        <p>{platform === "facebook" ? copy.facebook.duplicateBody : copy.ux.duplicateBody}</p>
         <div className="button-row">
           <Button onClick={() => {
             const api = servicesRef.current;
@@ -550,10 +573,14 @@ export function AnalyzerApp({ services: providedServices }: AnalyzerAppProps) {
 
       <Dialog
         alert
-        description={deleteMode === "all" ? copy.delete.allBody : copy.delete.accountBody}
+        description={deleteMode === "all"
+          ? platform === "facebook" ? copy.facebook.allDeleteBody : copy.delete.allBody
+          : platform === "facebook" ? copy.facebook.accountDeleteBody : copy.delete.accountBody}
         onClose={() => setDeleteMode(undefined)}
         open={deleteMode !== undefined}
-        title={deleteMode === "all" ? copy.delete.allTitle : copy.delete.accountTitle}
+        title={deleteMode === "all"
+          ? platform === "facebook" ? copy.facebook.allDeleteTitle : copy.delete.allTitle
+          : platform === "facebook" ? copy.facebook.accountDeleteTitle : copy.delete.accountTitle}
       >
         <div className="button-row">
           <Button onClick={() => void confirmDelete()} type="button" variant="danger">{copy.delete.confirm}</Button>

@@ -1,18 +1,27 @@
 # Website Technical Product Specification
 
 > **Project:** Privacy-first social relationship analyzer + public Instagram Story/Highlights viewer  
-> **Primary V1 platform:** Instagram  
-> **Future adapter:** Facebook  
+> **Supported analyzers:** Instagram and Facebook
 > **Document purpose:** Source-of-truth implementation specification for Codex / coding agents  
-> **Spec version:** 1.5
-> **Verified baseline date:** 2026-09-22
+> **Spec version:** 1.6
+> **Verified baseline date:** 2026-09-23
 > **Status:** Ready for implementation
+
+---
+
+## Revision 1.6 summary
+
+Version 1.6 activates a dedicated Facebook relationship analyzer at `/facebook/analyzer`. It parses supported official Facebook JSON exports locally through `FacebookExportAdapter`, recognizes `connections/friends/your_friends.json` plus the two `connections/followers` files, and synchronizes only the normalized snapshot after explicit confirmation.
+
+Facebook and Instagram profiles are isolated by an explicit platform value in the UI, worker protocol, API filters, database rows, and platform-scoped bulk deletion. Facebook stores Friends, Followers, and Following as three distinct sets and repairs only reversibly encoded Meta UTF-8 text; it does not fabricate Instagram handles, profile links, mutual-follow meaning, or not-following-back claims.
+
+This revision supersedes older statements that Facebook import is unavailable or that V1 accepts Instagram JSON only. It does not weaken the raw-file boundary, authenticated ownership enforcement, synthetic-fixture requirement, or prohibition on social credentials, scraping, and private APIs.
 
 ---
 
 ## Revision 1.5 summary
 
-Version 1.5 introduces the `Kinetic Signal Atlas` presentation system. It evolves the existing Folmetry visual foundation into an editorial technical-instrument interface with a source-owned signal aperture, boundary rails, platform-specific dialects, state-linked motion, and progressive route/tab transitions. Instagram remains the active product area; Facebook remains an honest blueprint until its adapter is validated.
+Version 1.5 introduced the `Kinetic Signal Atlas` presentation system. Version 1.6 supersedes its former Facebook-blueprint status with the validated Facebook analyzer boundary.
 
 This revision does not change parser behavior, authenticated ownership, raw-file handling, database contracts, Google/credential authentication, or the Story provider boundary. The experience must remain complete without View Transition support and under reduced motion, save-data, forced colors, keyboard-only use, and narrow/zoomed layouts. No remote font, animation framework, WebGL layer, tracking request, fabricated metric, or third-party visual asset is required.
 
@@ -67,13 +76,13 @@ Treat this file as the product and engineering source of truth.
 ### Non-negotiable rules
 
 1. Build relationship-file parsing as **local-first** and confirmed snapshot persistence as authenticated, owner-scoped server synchronization. The Story/Highlights provider remains a separate network subsystem.
-2. The user's raw Instagram ZIP/JSON file must never be uploaded or persisted. Only normalized relationship records and snapshot metadata may be sent after explicit save confirmation.
+2. The user's raw Instagram/Facebook ZIP/JSON file must never be uploaded or persisted. Only normalized relationship records and snapshot metadata may be sent after explicit save confirmation.
 3. Do **not** ask for an Instagram/Facebook password, session cookie, 2FA code, access token, or browser cookie.
 4. Do **not** implement scraping of Instagram/Facebook pages in our application infrastructure.
 5. Do **not** call unofficial/private Instagram or Facebook APIs directly. Public Story/Highlights data may be obtained only through a separately reviewed third-party provider adapter whose credentials remain server-side. There must be no direct-scraping fallback.
 6. Do **not** implement automated follow/unfollow/friend/unfriend actions.
-7. V1 supports **Instagram JSON data exports only**.
-8. Architect platform parsing through adapters so Facebook can be added later, but **do not fake Facebook support** until its current export structure has been validated against fixtures.
+7. Relationship analysis supports **Instagram and Facebook JSON exports** through separate adapters; HTML remains unsupported.
+8. Never route Facebook input through Instagram extractors or present unsupported Facebook fields as facts. Unknown export schemas must fail closed with safe diagnostics.
 9. Parsing/decompression/diff work that can block the UI must run outside the main UI thread.
 10. Raw ZIP contents must not be persisted.
 11. No production code may contain real user export samples or real usernames.

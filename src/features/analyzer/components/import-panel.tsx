@@ -4,15 +4,17 @@ import { useRef, useState, type DragEvent } from "react";
 
 import { Button, ButtonLink, Card, StatusRegion } from "@/components/ui";
 import { useI18n } from "@/i18n";
+import type { SocialPlatform } from "@/features/analyzer/model/types";
 
 export interface ImportPanelProps {
   readonly disabled?: boolean;
   readonly error?: string;
   readonly onArchive: (file: File) => void;
   readonly onManualFiles: (files: readonly File[]) => void;
+  readonly platform: SocialPlatform;
 }
 
-export function ImportPanel({ disabled = false, error, onArchive, onManualFiles }: ImportPanelProps) {
+export function ImportPanel({ disabled = false, error, onArchive, onManualFiles, platform }: ImportPanelProps) {
   const { dictionary } = useI18n();
   const copy = dictionary.analyzer;
   const zipInput = useRef<HTMLInputElement>(null);
@@ -33,8 +35,8 @@ export function ImportPanel({ disabled = false, error, onArchive, onManualFiles 
   };
 
   return (
-    <Card className="import-card" heading={copy.ux.importTitle}>
-      <p>{copy.ux.importIntro}</p>
+    <Card className="import-card" heading={platform === "facebook" ? copy.facebook.importTitle : copy.ux.importTitle}>
+      <p>{platform === "facebook" ? copy.facebook.importIntro : copy.ux.importIntro}</p>
       <div
         aria-describedby={errorId}
         className={`drop-zone${dragging ? " drop-zone--active" : ""}`}
@@ -44,7 +46,7 @@ export function ImportPanel({ disabled = false, error, onArchive, onManualFiles 
         onDragOver={(event) => event.preventDefault()}
         onDrop={drop}
       >
-        <p>{copy.ux.dropZone}</p>
+        <p>{platform === "facebook" ? copy.facebook.dropZone : copy.ux.dropZone}</p>
         <div className="button-row">
           <Button disabled={disabled} onClick={() => zipInput.current?.click()} type="button">
             {copy.ux.browseZip}
@@ -80,25 +82,25 @@ export function ImportPanel({ disabled = false, error, onArchive, onManualFiles 
           type="file"
         />
       </div>
-      <p className="muted-copy">{copy.ux.supportedFiles}</p>
+      <p className="muted-copy">{platform === "facebook" ? copy.facebook.supportedFiles : copy.ux.supportedFiles}</p>
       <p className="privacy-note">{copy.import.privacy}</p>
       {error === undefined ? null : <StatusRegion assertive><span id={errorId}>{error}</span></StatusRegion>}
 
       <details className="export-guide">
         <summary>{copy.ux.exportGuide}</summary>
         <ol>
-          <li>{copy.ux.guideMenu}</li>
-          <li>{copy.ux.guideCenter}</li>
-          <li>{copy.ux.guideExport}</li>
-          <li>{copy.ux.guideAccount}</li>
-          <li>{copy.ux.guideDestination}</li>
-          <li>{copy.ux.guideData}</li>
-          <li>{copy.ux.guideRange}</li>
-          <li>{copy.ux.guideFormat}</li>
-          <li>{copy.ux.guideWait}</li>
-          <li>{copy.ux.guideZip}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideMenu : copy.ux.guideMenu}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideCenter : copy.ux.guideCenter}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideExport : copy.ux.guideExport}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideAccount : copy.ux.guideAccount}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideDestination : copy.ux.guideDestination}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideData : copy.ux.guideData}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideRange : copy.ux.guideRange}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideFormat : copy.ux.guideFormat}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideWait : copy.ux.guideWait}</li>
+          <li>{platform === "facebook" ? copy.facebook.guideZip : copy.ux.guideZip}</li>
         </ol>
-        <p className="muted-copy">{copy.ux.guideChange}</p>
+        <p className="muted-copy">{platform === "facebook" ? copy.facebook.guideChange : copy.ux.guideChange}</p>
         <ButtonLink href="/how-it-works" variant="secondary">{dictionary.nav.howItWorks}</ButtonLink>
       </details>
     </Card>

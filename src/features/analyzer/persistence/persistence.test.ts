@@ -202,6 +202,17 @@ describe("account repository", () => {
     ).rejects.toMatchObject({ code: "INVALID_ACCOUNT_USERNAME" });
   });
 
+  it("preserves a validated Facebook display name instead of converting it to an Instagram handle", async () => {
+    const repository = new AccountRepository(createTestDatabase());
+    const account = await repository.create({
+      platform: "facebook",
+      label: "Facebook cá nhân",
+      username: "  Nguyễn   Ánh  ",
+    });
+    expect(account.username).toBe("Nguyễn Ánh");
+    expect(account.platform).toBe("facebook");
+  });
+
   it("requires cascade confirmation and deletes account plus snapshots atomically", async () => {
     const database = createTestDatabase();
     const { accounts, snapshots } = await accountAndSnapshots(database);

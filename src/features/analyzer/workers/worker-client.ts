@@ -1,4 +1,5 @@
 import { ImportDomainError } from "@/features/analyzer/model/errors";
+import type { SocialPlatform } from "@/features/analyzer/model/types";
 import type {
   ImportWorkerResult,
   ProgressListener,
@@ -23,14 +24,17 @@ interface ActiveJob {
 export class ImportWorkerClient {
   private active: ActiveJob | undefined;
 
-  constructor(private readonly createWorker: WorkerFactory = defaultWorkerFactory) {}
+  constructor(
+    private readonly platform: SocialPlatform = "instagram",
+    private readonly createWorker: WorkerFactory = defaultWorkerFactory,
+  ) {}
 
   parseArchive(
     jobId: string,
     file: File,
     onProgress?: ProgressListener,
   ): Promise<ImportWorkerResult> {
-    return this.start({ type: "PARSE_ARCHIVE", jobId, file }, onProgress);
+    return this.start({ type: "PARSE_ARCHIVE", platform: this.platform, jobId, file }, onProgress);
   }
 
   parseFiles(
@@ -38,7 +42,7 @@ export class ImportWorkerClient {
     files: readonly File[],
     onProgress?: ProgressListener,
   ): Promise<ImportWorkerResult> {
-    return this.start({ type: "PARSE_FILES", jobId, files }, onProgress);
+    return this.start({ type: "PARSE_FILES", platform: this.platform, jobId, files }, onProgress);
   }
 
   cancel(): void {

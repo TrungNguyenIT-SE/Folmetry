@@ -5,6 +5,7 @@ import {
   MAX_SYNC_BODY_BYTES,
   assertSyncBodySize,
 } from "@/features/analyzer/server/cloud-repository";
+import type { SocialPlatform } from "@/features/analyzer/model/types";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,11 @@ async function readBody(request: Request): Promise<Record<string, unknown>> {
   return body as Record<string, unknown>;
 }
 
+function platformValue(value: unknown): SocialPlatform {
+  if (value === "instagram" || value === "facebook") return value;
+  throw new PersistenceDomainError("SYNC_UNAVAILABLE");
+}
+
 export async function GET(request: Request): Promise<Response> {
   const repo = await repository(request);
   if (repo instanceof Response) return repo;
@@ -62,7 +68,7 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const resource = url.searchParams.get("resource");
     if (resource === "accounts") {
-      return Response.json({ accounts: await repo.listAccounts() });
+      return Response.json({ accounts: await repo.listAccounts(platformValue(url.searchParams.get("platform"))) });
     }
     if (resource === "snapshots") {
       const accountId = url.searchParams.get("accountId");
@@ -117,7 +123,7 @@ export async function DELETE(request: Request): Promise<Response> {
   try {
     const body = await readBody(request);
     if (body["action"] === "deleteAll") {
-      await repo.deleteAll();
+      await repo.deleteAll(platformValue(body["platform"]));
     } else if (body["action"] === "deleteAccount" && typeof body["id"] === "string") {
       await repo.deleteAccount(body["id"]);
     } else if (

@@ -20,6 +20,7 @@ export interface AdapterMatch {
   readonly reasons: readonly (
     | "FOLLOWERS_JSON_PRESENT"
     | "FOLLOWING_JSON_PRESENT"
+    | "FRIENDS_JSON_PRESENT"
     | "HTML_EXPORT_PRESENT"
     | "UNSAFE_PATH_PRESENT"
   )[];

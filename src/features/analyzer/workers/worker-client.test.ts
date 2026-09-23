@@ -29,7 +29,7 @@ class FakeWorker {
 describe("ImportWorkerClient", () => {
   it("terminates and cleans the active worker on cancel, then creates a fresh worker", async () => {
     const workers: FakeWorker[] = [];
-    const client = new ImportWorkerClient(() => {
+    const client = new ImportWorkerClient("instagram", () => {
       const worker = new FakeWorker();
       workers.push(worker);
       return worker as unknown as Worker;
@@ -42,14 +42,24 @@ describe("ImportWorkerClient", () => {
 
     const second = client.parseFiles("two", []);
     expect(workers).toHaveLength(2);
+    expect(workers[1]?.posted[0]).toMatchObject({ platform: "instagram", type: "PARSE_FILES" });
     client.dispose();
     await expect(second).rejects.toBeInstanceOf(ImportDomainError);
+  });
+
+  it("includes the selected platform in every worker request", async () => {
+    const worker = new FakeWorker();
+    const client = new ImportWorkerClient("facebook", () => worker as unknown as Worker);
+    const pending = client.parseArchive("facebook-job", new File([], "facebook.zip"));
+    expect(worker.posted[0]).toMatchObject({ platform: "facebook", type: "PARSE_ARCHIVE" });
+    client.cancel();
+    await expect(pending).rejects.toMatchObject({ code: "IMPORT_CANCELLED" });
   });
 
   it("ignores stale job responses and settles a promise only once", async () => {
     const worker = new FakeWorker();
     const progress: string[] = [];
-    const client = new ImportWorkerClient(() => worker as unknown as Worker);
+    const client = new ImportWorkerClient("instagram", () => worker as unknown as Worker);
     const pending = client.parseFiles("current", [], (event) => progress.push(event.jobId));
     worker.emit({ type: "PROGRESS", jobId: "old", stage: "validating", completed: 0, total: 1 });
     worker.emit({ type: "PROGRESS", jobId: "current", stage: "validating", completed: 0, total: 1 });

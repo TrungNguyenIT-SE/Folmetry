@@ -1,4 +1,7 @@
-import { normalizeInstagramHandle } from "@/features/analyzer/model/normalize-handle";
+import {
+  normalizeFacebookName,
+  normalizeInstagramHandle,
+} from "@/features/analyzer/model/normalize-handle";
 import type { SocialPlatform } from "@/features/analyzer/model/types";
 import { PersistenceDomainError } from "@/features/analyzer/persistence/errors";
 
@@ -24,16 +27,13 @@ export function normalizeOptionalAccountUsername(
   username: unknown,
 ): string | undefined {
   if (username === undefined || username === null || username === "") return undefined;
-  if (platform !== "instagram") {
-    throw new PersistenceDomainError("INVALID_ACCOUNT_USERNAME", {
-      reason: "unsupported-platform-username",
-    });
-  }
-  const normalized = normalizeInstagramHandle(username);
+  const normalized = platform === "instagram"
+    ? normalizeInstagramHandle(username)
+    : normalizeFacebookName(username);
   if (!normalized.ok) {
     throw new PersistenceDomainError("INVALID_ACCOUNT_USERNAME", {
       reason: normalized.reason,
     });
   }
-  return normalized.normalizedHandle;
+  return platform === "facebook" ? normalized.handle : normalized.normalizedHandle;
 }

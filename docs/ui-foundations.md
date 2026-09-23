@@ -115,7 +115,7 @@ M8UX changes are isolated to semantic tokens/global presentation, layout/visual 
 
 ## M8UX2 addendum — Kinetic Signal Atlas
 
-M8UX2 evolves the selected `Private Signal Observatory` into **Kinetic Signal Atlas**. The recognizable system is now a warm technical-paper canvas in light mode and layered graphite in dark mode, with a source-owned signal aperture, coordinate axes, boundary rails, data wells, and editorial metric typography. Instagram uses an active signal dialect; Facebook uses an explicitly incomplete blueprint dialect. Neither platform borrows Meta trade dress.
+M8UX2 evolves the selected `Private Signal Observatory` into **Kinetic Signal Atlas**. The recognizable system is now a warm technical-paper canvas in light mode and layered graphite in dark mode, with a source-owned signal aperture, coordinate axes, boundary rails, data wells, and editorial metric typography. Instagram and Facebook use distinct active signal dialects while sharing accessible interaction primitives. Neither platform borrows Meta trade dress.
 
 The implementation stays code-native. Decorative imagery is inline SVG/CSS owned by this repository, all decorative SVG remains hidden from assistive technology, and no remote font, icon pack, stock image, generated raster image, animation runtime, WebGL layer, tracking request, or fabricated product data was added. The native system and monospace stacks remain the typography choice because they provide reliable Vietnamese coverage and avoid font-driven layout shift.
 
@@ -129,7 +129,7 @@ The maximum motion ranges are 90–160 ms for micro feedback, 180–260 ms for c
 
 | Motion | Trigger | Stop/cancellation condition | Static/reduced fallback |
 | --- | --- | --- | --- |
-| Signal aperture sweep | Visible landing or Instagram instrument | Reduced motion, save-data, hidden document, coarse pointer, or unmount | Complete aperture and coordinates remain visible |
+| Signal aperture sweep | Visible landing or platform instrument | Reduced motion, save-data, hidden document, coarse pointer, or unmount | Complete aperture and coordinates remain visible |
 | Pipeline trace | Visible semantic export pipeline | Same capability gates as the aperture | Ordered stages, arrows, labels, and boundary text remain visible |
 | Header condensation | Root document scroll on desktop | Scroll returns to top, reduced motion, unsupported scroll timeline, or unmount | Full-size sticky navigation instrument |
 | Route handoff | A Link explicitly declares `nav-forward`, `nav-back`, or `nav-context` | Transition completes, navigation is interrupted, browser lacks support, or reduced motion | Native navigation with unchanged URL/focus semantics |

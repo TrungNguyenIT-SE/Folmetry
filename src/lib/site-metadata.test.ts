@@ -28,7 +28,7 @@ describe("public metadata", () => {
       rules: {
         userAgent: "*",
         allow: "/",
-        disallow: expect.arrayContaining(["/api/", "/app", "/story-downloader", "/account", "/admin/"]),
+        disallow: expect.arrayContaining(["/api/", "/app", "/facebook/analyzer", "/story-downloader", "/account", "/admin/"]),
       },
     });
   });

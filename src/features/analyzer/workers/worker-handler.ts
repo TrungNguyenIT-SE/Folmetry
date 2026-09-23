@@ -13,7 +13,7 @@ export async function handleWorkerRequest(
   post: (response: WorkerResponse) => void,
   dependencies: ImportPipelineDependencies = {},
 ): Promise<void> {
-  const diagnosticState = dependencies.diagnosticState ?? createDiagnosticState();
+  const diagnosticState = dependencies.diagnosticState ?? createDiagnosticState(request.platform);
   try {
     const result = await runImportPipeline(request, signal, post, {
       ...dependencies,

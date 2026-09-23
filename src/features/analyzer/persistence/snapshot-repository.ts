@@ -53,6 +53,9 @@ function buildStoredSnapshot(
     ...(input.sourceFileSize === undefined ? {} : { sourceFileSize: input.sourceFileSize }),
     fingerprint: input.fingerprint,
     parserVersion: input.parserVersion,
+    ...(input.platform === "facebook"
+      ? { friends: [...(input.friends ?? [])], friendCount: input.friends?.length ?? 0 }
+      : {}),
     followers: [...input.followers],
     following: [...input.following],
     warnings: [...input.warnings],

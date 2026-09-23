@@ -6,6 +6,7 @@ export const IMPORT_POLICY = Object.freeze({
   maxCompressionRatio: 200,
   maxRelationshipsPerKind: 2_000_000,
   maxHandleLength: 30,
+  maxFacebookNameLength: 150,
   minRelationshipTimestampSeconds: 946_684_800,
   maxRelationshipTimestampSeconds: 4_102_444_800,
 } as const);

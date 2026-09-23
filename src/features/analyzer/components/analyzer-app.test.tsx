@@ -11,11 +11,11 @@ import { AppPreferencesProvider } from "@/i18n";
 
 import { AnalyzerApp } from "./analyzer-app";
 
-function workerResult(): ImportWorkerResult {
+function workerResult(platform: "instagram" | "facebook" = "instagram"): ImportWorkerResult {
   return {
     fingerprint: "a".repeat(64),
     payload: {
-      platform: "instagram",
+      platform,
       followers: [
         { handle: "Alice", normalizedHandle: "alice" },
         { handle: "Bob", normalizedHandle: "bob" },
@@ -51,7 +51,7 @@ function storedSnapshot(input: SaveSnapshotInput, id = "snapshot-1"): LocalSnaps
   };
 }
 
-function createFakeServices(options: { readonly pendingImport?: boolean; readonly saveFailure?: boolean } = {}): AnalyzerServices {
+function createFakeServices(options: { readonly pendingImport?: boolean; readonly saveFailure?: boolean; readonly platform?: "instagram" | "facebook" } = {}): AnalyzerServices {
   let accounts: LocalAccount[] = [];
   let snapshots: LocalSnapshot[] = [];
   let rejectPending: ((reason: Error) => void) | undefined;
@@ -60,7 +60,7 @@ function createFakeServices(options: { readonly pendingImport?: boolean; readonl
     if (options.pendingImport === true) {
       return new Promise((_resolve, reject) => { rejectPending = reject; });
     }
-    return Promise.resolve(workerResult());
+    return Promise.resolve(workerResult(options.platform));
   };
   return {
     listAccounts: () => Promise.resolve([...accounts]),
@@ -115,6 +115,10 @@ function renderAnalyzer(services: AnalyzerServices) {
   return render(<AppPreferencesProvider><AnalyzerApp services={services} /></AppPreferencesProvider>);
 }
 
+function renderFacebookAnalyzer(services: AnalyzerServices) {
+  return render(<AppPreferencesProvider><AnalyzerApp platform="facebook" services={services} /></AppPreferencesProvider>);
+}
+
 async function createAccount(): Promise<void> {
   await screen.findByText("No Instagram profiles yet.");
   fireEvent.change(screen.getByLabelText("Profile label"), { target: { value: "Personal" } });
@@ -123,6 +127,26 @@ async function createAccount(): Promise<void> {
 }
 
 describe("AnalyzerApp", () => {
+  it("runs the Facebook workspace with isolated labels and connection semantics", async () => {
+    const { container } = renderFacebookAnalyzer(createFakeServices({ platform: "facebook" }));
+    await screen.findByText("No Facebook profiles yet.");
+    fireEvent.change(screen.getByLabelText("Profile label"), { target: { value: "My Facebook" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create Facebook profile" }));
+    await screen.findByRole("heading", { name: "Import a Facebook connections export" });
+    expect(screen.getByText(/connections\/friends\/your_friends\.json/)).toBeTruthy();
+
+    const input = container.querySelector<HTMLInputElement>('input[accept^=".zip"]');
+    fireEvent.change(input as HTMLInputElement, {
+      target: { files: [new File(["zip"], "facebook.zip", { type: "application/zip", lastModified: 10 })] },
+    });
+    await screen.findByRole("heading", { name: "Review import" });
+    expect(screen.getByText("Detected friends")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Save snapshot" }));
+    await screen.findByRole("heading", { name: "Relationship results" });
+    expect(screen.getByRole("tab", { name: "Friends" })).toBeTruthy();
+    expect(screen.queryByRole("tab", { name: "Mutuals" })).toBeNull();
+  });
+
   it("creates an account, imports locally, reviews, saves, and shows results", async () => {
     const { container } = renderAnalyzer(createFakeServices());
     await createAccount();

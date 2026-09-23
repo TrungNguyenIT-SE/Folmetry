@@ -9,7 +9,7 @@ const instagramFixtures = fileURLToPath(new URL("../fixtures/instagram", import.
 const routes = [
   { path: "/", heading: /Understand relationship changes/ },
   { path: "/instagram", heading: /Instagram tools/ },
-  { path: "/facebook", heading: /Facebook is a separate product area/ },
+  { path: "/facebook", heading: /Facebook connections, tracked from your official export/ },
   { path: "/app", heading: /One relationship history across your devices/ },
   { path: "/story-downloader", heading: /View public Stories/ },
   { path: "/how-it-works", heading: /Official export in/ },
@@ -37,6 +37,10 @@ test("protected tools require a real website session", async ({ browser }) => {
     const page = await context.newPage();
     await page.goto("/app");
     await expect(page).toHaveURL(/\/login\?next=%2Fapp$/);
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+
+    await page.goto("/facebook/analyzer");
+    await expect(page).toHaveURL(/\/login\?next=%2Ffacebook%2Fanalyzer$/);
     await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
 
     const response = await context.request.post("/api/story/lookup", {
