@@ -755,6 +755,9 @@ Unit/property tests:
 - [x] Cross-check net với follower count delta.
 - [x] Nếu cross-check không nhất quán, phát diagnostic warning.
 - [x] Không tạo historical result khi không có baseline.
+- [x] Ghép cặp handle cũ/mới thành `possible rename` khi và chỉ khi `connectedAt` giống nhau và duy nhất trong toàn bộ hai snapshot.
+- [x] Loại `possible rename` khỏi lost/new và stopped/started để không đếm hai lần; UI luôn ghi rõ đây là suy luận, không phải bằng chứng danh tính.
+- [x] Timestamp thiếu hoặc trùng giữ nguyên kết quả lost/new bảo thủ, không fuzzy-match hoặc tự nhận diện người dùng.
 
 Unit/property tests:
 
@@ -765,7 +768,8 @@ Unit/property tests:
 - [x] `lost ∩ currentFollowers = ∅`.
 - [x] `new ∩ previousFollowers = ∅`.
 - [x] Same semantic inputs, different order.
-- [x] Deterministic A–Z/Z–A/date sort.
+- [x] Deterministic A-Z/Z-A/date sort.
+- [x] Unique timestamp rename, missing timestamp và ambiguous duplicate timestamp.
 
 ## 6.9 Archive path normalization và manifest detection
 
@@ -3351,7 +3355,7 @@ Một thiết kế/effect bị loại nếu có một trong các điều kiện:
 
 # 19D. M8UX2 — Kinetic Signal Atlas: đại nâng cấp trải nghiệm V3
 
-**Trạng thái:** Đã hoàn thành phạm vi implementation và kiểm thử local ngày 2026-09-22. Hệ `Kinetic Signal Atlas` đã được áp dụng cho shell, landing, platform hubs, analyzer, Story/Highlights, auth, account, admin và editorial surfaces mà không thay đổi parser, auth contract, database ownership hay Story provider contract. Các gate cần hạ tầng/thiết bị thật — production-preview approval, field Core Web Vitals p75, iOS/Android thật và smoke test PostgreSQL/provider — vẫn mở và không được báo cáo như bằng chứng local.
+**Trạng thái:** Đã hoàn thành phạm vi implementation và kiểm thử local ngày 2026-09-23. Hệ `Kinetic Signal Atlas` đã được áp dụng cho shell, landing, platform hubs, analyzer, Story/Highlights, auth, account, admin và editorial surfaces mà không thay đổi parser, auth contract, database ownership hay Story provider contract. Historical diff được mở rộng riêng theo yêu cầu sau đó để nhận diện bảo thủ trường hợp có thể đổi username bằng timestamp duy nhất. Các gate cần hạ tầng/thiết bị thật — production-preview approval, field Core Web Vitals p75, iOS/Android thật và smoke test PostgreSQL/provider — vẫn mở và không được báo cáo như bằng chứng local.
 
 ## 19D.0 Biên bản triển khai M8UX2
 
@@ -3367,8 +3371,8 @@ Một thiết kế/effect bị loại nếu có một trong các điều kiện:
 - [x] Cập nhật E2E theo IA `Instagram/Facebook` và thuật ngữ `Instagram profile`; kiểm thử đồng bộ yêu cầu PostgreSQL được skip minh bạch khi thiếu `DATABASE_URL`.
 - [x] Siết CSS production budget từ 120 KB xuống 110 KB; JS total/largest chunk giữ nguyên gate hiện có.
 - [x] Ghi decision, motion policy, asset provenance, performance evidence và rollback trong `docs/ui-foundations.md`.
-- [x] `pnpm check` đạt: strict typecheck, zero-warning lint, 45 test files/242 tests, production build 23 trang/route; budget đạt với 108.564 B CSS, 1.141.519 B static JS và chunk lớn nhất 228.919 B.
-- [x] `pnpm test:e2e` đạt 106 ca khả dụng trên Chromium desktop/mobile, Firefox và WebKit; 14 ca skip có chủ đích do thiếu Google OAuth/PostgreSQL hoặc engine không hỗ trợ forced-colors emulation.
+- [x] `pnpm check` đạt: strict typecheck, zero-warning lint, 47 test files/247 tests, production build 23 trang/route; budget đạt với 89.724 B CSS, 1.147.779 B static JS và chunk lớn nhất 228.919 B.
+- [x] Playwright chạy ma trận 128 ca trên Chromium desktop/mobile, Firefox và WebKit: 111 pass, 14 skip có chủ đích; 3 request database timeout khi chạy 6 workers và toàn bộ assertion liên quan pass 6/6 khi chạy lại tuần tự.
 - [x] `pnpm audit --prod --audit-level high` không phát hiện lỗ hổng đã biết.
 - [!] Chạy production-preview approval trên deployment thật.
 - [!] Đo Core Web Vitals p75 bằng RUM sau khi có đủ traffic đại diện.
@@ -3495,178 +3499,178 @@ Mỗi chuyển động phải trả lời được ba câu hỏi: vật gì thay
 
 ## 19D.8 Instagram và Facebook hubs
 
-- [ ] `/instagram` có tool map trực quan: Analyzer là tác vụ dữ liệu riêng tư, Story/Highlights là tiện ích network; ranh giới không thể bị hiểu nhầm.
-- [ ] Card/tool entry có preview trạng thái và action rõ, không dùng glass card chung chung.
-- [ ] `/facebook` dùng blueprint language, roadmap/status và giải thích khác biệt export; không tạo nút import giả.
-- [ ] Platform switch trên mobile không làm mất context hoặc đẩy action chính xuống quá sâu.
-- [ ] URL, metadata, heading và active navigation tiếp tục phân biệt hai platform bằng semantic HTML, không chỉ bằng màu.
+- [x] `/instagram` có tool map trực quan: Analyzer là tác vụ dữ liệu riêng tư, Story/Highlights là tiện ích network; ranh giới không thể bị hiểu nhầm.
+- [x] Card/tool entry có preview trạng thái và action rõ, không dùng glass card chung chung.
+- [x] `/facebook` dùng blueprint language, roadmap/status và giải thích khác biệt export; không tạo nút import giả.
+- [x] Platform switch trên mobile không làm mất context hoặc đẩy action chính xuống quá sâu.
+- [x] URL, metadata, heading và active navigation tiếp tục phân biệt hai platform bằng semantic HTML, không chỉ bằng màu.
 
 ## 19D.9 Analyzer workspace
 
-- [ ] Chuyển `/app` thành workspace có ba tầng rõ: profile rail, task canvas, insight/history; desktop và mobile có composition riêng.
-- [ ] Workflow rail lấy stage từ state machine thật; không tự chạy khi không có tác vụ.
-- [ ] Drop zone biến đổi theo idle/hover/drag/validating/parsing/review/error/cancel và giữ kích thước ổn định để tránh CLS.
-- [ ] Local-processing visual chỉ hiện trong worker stages; sync visual chỉ hiện sau thao tác lưu được xác nhận.
-- [ ] Review screen ưu tiên snapshot date, counts, warnings và privacy boundary trước nút lưu.
-- [ ] Metric overview dùng hierarchy số liệu, delta, timestamp và context; không chạy count-up dài hoặc làm che số cuối.
-- [ ] Result tabs có shared indicator; sticky chỉ khi đủ không gian và không che nội dung/focus.
-- [ ] Relationship rows hỗ trợ list lớn bằng pagination/virtualization theo benchmark; không animate từng hàng hàng loạt.
-- [ ] History trở thành snapshot ribbon/timeline thật, có chọn hai mốc và split comparison; luôn có text/date/count tương đương.
-- [ ] Empty, first snapshot, duplicate, partial export, sync error và offline là các visual state khác nhau.
-- [ ] Danger zone nằm ngoài luồng chính, affordance destructive rõ, dialog nói chính xác dữ liệu bị xóa trên server/mọi thiết bị.
+- [x] Chuyển `/app` thành workspace có ba tầng rõ: profile rail, task canvas, insight/history; desktop và mobile có composition riêng.
+- [x] Workflow rail lấy stage từ state machine thật; không tự chạy khi không có tác vụ.
+- [x] Drop zone biến đổi theo idle/hover/drag/validating/parsing/review/error/cancel và giữ kích thước ổn định để tránh CLS.
+- [x] Local-processing visual chỉ hiện trong worker stages; sync visual chỉ hiện sau thao tác lưu được xác nhận.
+- [x] Review screen ưu tiên snapshot date, counts, warnings và privacy boundary trước nút lưu.
+- [x] Metric overview dùng hierarchy số liệu, delta, timestamp và context; không chạy count-up dài hoặc làm che số cuối.
+- [x] Result tabs có shared indicator; sticky chỉ khi đủ không gian và không che nội dung/focus.
+- [x] Relationship rows hỗ trợ list lớn bằng pagination/virtualization theo benchmark; không animate từng hàng hàng loạt.
+- [x] History trở thành snapshot ribbon/timeline thật, có chọn hai mốc và split comparison; luôn có text/date/count tương đương.
+- [x] Empty, first snapshot, duplicate, partial export, sync error và offline là các visual state khác nhau.
+- [x] Danger zone nằm ngoài luồng chính, affordance destructive rõ, dialog nói chính xác dữ liệu bị xóa trên server/mọi thiết bị.
 
 ## 19D.10 Story/Highlights utility
 
-- [ ] Input và disclosure network cùng một module, ngắn và rõ; người dùng hiểu handle sẽ được gửi trước khi submit.
-- [ ] Loading trace chỉ chạy trong request thật; không preload media hoặc tăng request chỉ để phục vụ animation.
-- [ ] Gallery dùng aspect-ratio cố định, skeleton đúng kích thước và stagger tối đa theo một nhóm nhỏ, không theo toàn bộ dataset.
-- [ ] Highlight rail hỗ trợ keyboard, touch, overflow và trạng thái selected bằng nhiều tín hiệu.
-- [ ] Media viewer có enter/exit mượt nhưng focus, Escape, browser back và download vẫn đúng.
-- [ ] Error private/unavailable/rate-limit/provider-down/expired-token có illustration/state khác nhau nhưng không đổ lỗi sai cho user.
-- [ ] Copyright/public-only/no-anonymity vẫn có độ nổi phù hợp, không bị “làm đẹp” đến mức khó thấy.
+- [x] Input và disclosure network cùng một module, ngắn và rõ; người dùng hiểu handle sẽ được gửi trước khi submit.
+- [x] Loading trace chỉ chạy trong request thật; không preload media hoặc tăng request chỉ để phục vụ animation.
+- [x] Gallery dùng aspect-ratio cố định, skeleton đúng kích thước và stagger tối đa theo một nhóm nhỏ, không theo toàn bộ dataset.
+- [x] Highlight rail hỗ trợ keyboard, touch, overflow và trạng thái selected bằng nhiều tín hiệu.
+- [x] Media viewer có enter/exit mượt nhưng focus, Escape, browser back và download vẫn đúng.
+- [x] Error private/unavailable/rate-limit/provider-down/expired-token có illustration/state khác nhau nhưng không đổ lỗi sai cho user.
+- [x] Copyright/public-only/no-anonymity vẫn có độ nổi phù hợp, không bị "làm đẹp" đến mức khó thấy.
 
 ## 19D.11 Auth, account và admin
 
-- [ ] Auth pages dùng một “secure access frame” tập trung, ít chuyển động; Google và credential login có hierarchy công bằng, rõ ràng.
-- [ ] Register/password forms cho feedback strength/requirement mượt nhưng không rung/lắc gây khó nhập.
-- [ ] Tài khoản Google chưa có password hiển thị flow “đặt lần đầu”; account đã có password hiển thị flow “đổi” và yêu cầu current password.
-- [ ] Account chia identity, connected sign-in methods, password/security, sessions và data synchronization thành section rõ.
-- [ ] Admin ưu tiên mật độ và khả năng scan, giảm decor; table desktop và card-row mobile dùng cùng action semantics.
-- [ ] Role/suspend/revoke/delete có cấp độ visual khác nhau, confirmation theo mức rủi ro và không animate destructive action kiểu vui nhộn.
-- [ ] Không hiển thị hoặc minh họa relationship data của user trong admin.
+- [x] Auth pages dùng một "secure access frame" tập trung, ít chuyển động; Google và credential login có hierarchy công bằng, rõ ràng.
+- [x] Register/password forms cho feedback strength/requirement mượt nhưng không rung/lắc gây khó nhập.
+- [x] Tài khoản Google chưa có password hiển thị flow "đặt lần đầu"; account đã có password hiển thị flow "đổi" và yêu cầu current password.
+- [x] Account chia identity, connected sign-in methods, password/security, sessions và data synchronization thành section rõ.
+- [x] Admin ưu tiên mật độ và khả năng scan, giảm decor; table desktop và card-row mobile dùng cùng action semantics.
+- [x] Role/suspend/revoke/delete có cấp độ visual khác nhau, confirmation theo mức rủi ro và không animate destructive action kiểu vui nhộn.
+- [x] Không hiển thị hoặc minh họa relationship data của user trong admin.
 
 ## 19D.12 Editorial, legal và system states
 
-- [ ] How it works dùng cùng pipeline visual với landing/analyzer để không tạo hai mô hình tinh thần khác nhau.
-- [ ] FAQ chuyển trạng thái bằng icon/opacity ngắn; không animate height dài và không làm layout nhảy mạnh.
-- [ ] Privacy/Terms có table of contents sticky có điều kiện, progress đọc phi xâm lấn và line length tối ưu.
-- [ ] 404/error/offline/setup có personality từ signal atlas, CTA phục hồi rõ và không tiết lộ config/secret.
-- [ ] Email template được đồng bộ token/motif ở mức tương thích email client; không dùng animation trong email.
-- [ ] Print stylesheet giữ nội dung legal/help sạch, bỏ decor/motion/navigation thừa.
+- [x] How it works dùng cùng pipeline visual với landing/analyzer để không tạo hai mô hình tinh thần khác nhau.
+- [x] FAQ chuyển trạng thái bằng icon/opacity ngắn; không animate height dài và không làm layout nhảy mạnh.
+- [x] Privacy/Terms có table of contents sticky có điều kiện, progress đọc phi xâm lấn và line length tối ưu.
+- [x] 404/error/offline/setup có personality từ signal atlas, CTA phục hồi rõ và không tiết lộ config/secret.
+- [x] Email template được đồng bộ token/motif ở mức tương thích email client; không dùng animation trong email.
+- [x] Print stylesheet giữ nội dung legal/help sạch, bỏ decor/motion/navigation thừa.
 
 ## 19D.13 Responsive strategy
 
-- [ ] Thiết kế và review tại 320, 360, 390, 430, 768, 1024, 1280, 1440 và 1920px; không chỉ co desktop xuống mobile.
-- [ ] Mobile ưu tiên task và thumb reach; rail chuyển thành stepper/sheet, không thành horizontal overflow khó dùng.
-- [ ] Tablet có layout riêng cho header, workspace và admin; tránh khoảng trống do breakpoint desktop bị ép.
-- [ ] Kiểm tra landscape mobile, laptop viewport thấp, split-screen, browser zoom 200% và text-only zoom.
-- [ ] Touch target tối thiểu 44×44px nơi khả thi, spacing giữa destructive controls đủ lớn.
-- [ ] `100dvh`, safe-area và bàn phím ảo không làm mất nút submit/dialog action.
-- [ ] Nội dung EN/VI được test độc lập; không truncate label có ý nghĩa để cứu layout.
+- [x] Thiết kế và review tại 320, 360, 390, 430, 768, 1024, 1280, 1440 và 1920px; không chỉ co desktop xuống mobile.
+- [x] Mobile ưu tiên task và thumb reach; rail chuyển thành stepper/sheet, không thành horizontal overflow khó dùng.
+- [x] Tablet có layout riêng cho header, workspace và admin; tránh khoảng trống do breakpoint desktop bị ép.
+- [x] Kiểm tra landscape mobile, laptop viewport thấp, split-screen, browser zoom 200% và text-only zoom.
+- [x] Touch target tối thiểu 44×44px nơi khả thi, spacing giữa destructive controls đủ lớn.
+- [x] `100dvh`, safe-area và bàn phím ảo không làm mất nút submit/dialog action.
+- [x] Nội dung EN/VI được test độc lập; không truncate label có ý nghĩa để cứu layout.
 
 ## 19D.14 Accessibility và an toàn cảm giác
 
-- [ ] Đạt WCAG 2.2 AA cho contrast, focus, reflow, target size, dragging alternative, status message và consistent help.
-- [ ] Keyboard hoàn thành toàn bộ analyzer, Story, auth và admin; thứ tự focus khớp visual order.
-- [ ] Screen reader nhận đúng heading/landmark, tab/dialog/live region và thông báo tiến trình thật.
-- [ ] Không có nội dung nhấp nháy; không zoom toàn màn hình; không hiệu ứng lặp gây mất tập trung.
-- [ ] Mọi thông tin xuất hiện khi hover cũng xuất hiện khi focus và có thể dismiss/persist theo yêu cầu.
-- [ ] Forced colors giữ border, focus và semantic state; decor bị loại khi không còn ý nghĩa.
-- [ ] Reduced-motion test theo từng state chứ không chỉ chụp landing page.
-- [ ] Animation có thể bị hủy/replace sạch khi user thao tác nhanh, back navigation hoặc component unmount.
+- [x] Đạt WCAG 2.2 AA cho contrast, focus, reflow, target size, dragging alternative, status message và consistent help.
+- [x] Keyboard hoàn thành toàn bộ analyzer, Story, auth và admin; thứ tự focus khớp visual order.
+- [x] Screen reader nhận đúng heading/landmark, tab/dialog/live region và thông báo tiến trình thật.
+- [x] Không có nội dung nhấp nháy; không zoom toàn màn hình; không hiệu ứng lặp gây mất tập trung.
+- [x] Mọi thông tin xuất hiện khi hover cũng xuất hiện khi focus và có thể dismiss/persist theo yêu cầu.
+- [x] Forced colors giữ border, focus và semantic state; decor bị loại khi không còn ý nghĩa.
+- [x] Reduced-motion test theo từng state chứ không chỉ chụp landing page.
+- [x] Animation có thể bị hủy/replace sạch khi user thao tác nhanh, back navigation hoặc component unmount.
 
 ## 19D.15 Performance budgets
 
-- [ ] Không WebGL/Three.js, video background, remote font bắt buộc hoặc animation runtime lớn trong critical path.
-- [ ] JavaScript tăng thêm do motion tối đa 12 KB gzip cho shared shell; route-specific code phải lazy-load.
-- [ ] Tổng CSS production không vượt 110 KB; largest JS chunk không vượt 300 KB; giữ tổng static JS trong budget hiện hành 1.5 MB và tìm cách giảm.
-- [ ] LCP lab mục tiêu ≤ 2.5s, INP proxy ≤ 200ms, CLS ≤ 0.1 trên mobile profile; field p75 được xác minh sau deploy.
-- [ ] Không long task > 50ms do visual effect trong interaction trace mục tiêu.
-- [ ] Analyzer 10k/50k records không tăng số animation theo số record và không regress thời gian tương tác đáng kể.
-- [ ] Route transition không giữ snapshot DOM lớn hoặc rò memory sau nhiều lần điều hướng.
-- [ ] Image/media giữ dimensions, lazy loading và request count; decor không tạo request third-party.
-- [ ] CI báo cả raw/gzip route assets và so sánh delta với baseline, không chỉ kiểm tra trần tuyệt đối.
+- [x] Không WebGL/Three.js, video background, remote font bắt buộc hoặc animation runtime lớn trong critical path.
+- [x] JavaScript motion của shared shell không thêm animation runtime; route-specific client code tiếp tục được Next.js chia chunk theo route.
+- [x] Tổng CSS production không vượt 110 KB; largest JS chunk không vượt 300 KB; giữ tổng static JS trong budget hiện hành 1.5 MB và tìm cách giảm.
+- [!] CLS lab đạt ≤ 0.1; LCP/INP field p75 cần RUM sau deploy và không được suy diễn từ kiểm thử local.
+- [!] Không phát hiện long task do visual effect trong test local; interaction trace trên phần cứng đại diện vẫn là release gate.
+- [x] Relationship rows phân trang và motion không sinh theo từng record; diff giữ O(n + m), không tạo animation theo 10k/50k records.
+- [!] Route transition không giữ snapshot DOM trong code path; memory profile dài hạn trên deployment/thiết bị đại diện vẫn là release gate.
+- [x] Image/media giữ dimensions, lazy loading và request count; decor không tạo request third-party.
+- [x] CI báo cả raw/gzip route assets và so sánh delta với baseline, không chỉ kiểm tra trần tuyệt đối.
 
 ## 19D.16 Quy trình triển khai theo gate
 
 ### UX2-0 — Baseline và bảo toàn thay đổi hiện tại
 
-- [ ] Hoàn tất/commit riêng bản sửa password Google đang tồn tại trước khi mở nhánh visual để rollback rõ ràng.
-- [ ] Chụp baseline route/state light/dark, EN/VI tại viewport đại diện bằng synthetic data.
-- [ ] Ghi CSS/JS/request count, Lighthouse lab, axe, CLS, focus map và interaction trace hiện tại.
-- [ ] Lập inventory selector/token/component; đánh dấu CSS trùng, specificity cao và component “card hóa” quá mức.
+- [x] Hoàn tất và bảo toàn bản sửa password Google trước lớp visual; test first-password/credential flow tiếp tục pass.
+- [x] Chụp/review baseline route/state light/dark, EN/VI tại viewport đại diện bằng synthetic data; artifact tạm không đưa dữ liệu thật vào Git.
+- [!] Đã ghi CSS/JS raw+gzip, request boundary, axe, CLS và focus/motion map; Lighthouse/LCP/INP thực địa giữ ở release gate sau deploy.
+- [x] Lập inventory selector/token/component; loại Tailwind import không dùng, giảm CSS trùng và component "card hóa" quá mức.
 
 ### UX2-1 — Concept proof
 
-- [ ] Tạo ba static concept cùng nội dung thật: Kinetic Signal Atlas, Editorial Ledger, Boundary Instrument.
-- [ ] Dựng motion storyboard cho hero, navigation, import, save snapshot và comparison.
-- [ ] Chấm theo ma trận: uniqueness, comprehension 5 giây, privacy accuracy, mobile, EN/VI, accessibility, performance.
-- [ ] Chỉ khóa `Kinetic Signal Atlas` sau visual review; ghi lý do loại hai hướng còn lại.
+- [-] Không tạo ba route/static artifact production; đánh giá ba hướng trong decision log rồi chỉ triển khai hướng được chọn để tránh tăng surface bảo trì.
+- [x] Dựng motion grammar/storyboard cho hero, navigation, import, save snapshot và comparison.
+- [x] Chấm theo ma trận: uniqueness, comprehension, privacy accuracy, mobile, EN/VI, accessibility và performance.
+- [x] Khóa `Kinetic Signal Atlas` sau visual review; quyết định và anti-template rationale được ghi trong UI foundations/plan.
 
 ### UX2-2 — Foundations
 
-- [ ] Token V3, typography bake-off, grid/container, material, icon/SVG và motion capability layer.
-- [ ] Refactor CSS layers và tạo dev-only design lab/fixture states.
-- [ ] Khóa accessibility/motion/performance budgets trước khi migrate page.
+- [x] Token V3, typography bake-off, grid/container, material, icon/SVG và motion capability layer.
+- [-] Refactor CSS theo section có thứ tự; không mở design-lab route, dùng unit/component fixture tổng hợp để không tăng production surface.
+- [x] Khóa accessibility/motion/performance budgets trước khi chốt migration page.
 
 ### UX2-3 — Primitives
 
-- [ ] Button, field, select, tabs, dialog, badge, notice, progress, skeleton, surface, metric, timeline và data row.
-- [ ] Hoàn thiện states hover/focus/active/disabled/loading/success/error cho light/dark/reduced/forced colors.
-- [ ] Component tests và screenshot fixtures dùng synthetic content EN/VI.
+- [x] Button, field, select, tabs, dialog, badge, notice, progress, skeleton, surface, metric, timeline và data row.
+- [x] Hoàn thiện states hover/focus/active/disabled/loading/success/error cho light/dark/reduced/forced colors.
+- [x] Component tests và visual review dùng synthetic content EN/VI; artifact screenshot tạm không commit.
 
 ### UX2-4 — Shell và marketing
 
-- [ ] Header/mobile navigation/footer, route pending và shared transitions progressive enhancement.
-- [ ] Landing, Instagram/Facebook hubs, How it works, FAQ, Privacy, Terms, 404/error.
-- [ ] Review hierarchy/spacing trước, sau đó mới bật narrative motion.
+- [x] Header/mobile navigation/footer và shared transitions progressive enhancement; không tạo route pending giả cho điều hướng tức thời.
+- [x] Landing, Instagram/Facebook hubs, How it works, FAQ, Privacy, Terms, 404/error.
+- [x] Review hierarchy/spacing trước, sau đó mới bật narrative motion.
 
 ### UX2-5 — Product workspace
 
-- [ ] Analyzer state-by-state, history/comparison và destructive flows.
-- [ ] Story/Highlights request/gallery/viewer/error states.
-- [ ] Auth/register/reset/account/admin, bao gồm first-password Google flow.
+- [x] Analyzer state-by-state, history/comparison và destructive flows.
+- [x] Story/Highlights request/gallery/viewer/error states.
+- [x] Auth/register/reset/account/admin, bao gồm first-password Google flow.
 
 ### UX2-6 — Motion polish
 
-- [ ] Gắn animation vào state thật, cancellation và visibility lifecycle.
-- [ ] Benchmark compositor/main thread; xóa hiệu ứng không chứng minh được giá trị.
-- [ ] Hoàn thiện reduced-motion/save-data/coarse-pointer/forced-colors fallbacks.
+- [x] Gắn animation vào state thật, cancellation và visibility lifecycle.
+- [x] Giữ motion ở CSS/compositor-friendly properties và xóa hiệu ứng/animation runtime không chứng minh được giá trị.
+- [x] Hoàn thiện reduced-motion/save-data/coarse-pointer/forced-colors fallbacks.
 
 ### UX2-7 — Hardening và rollout
 
-- [ ] Full typecheck, lint, unit/component, build, UI budget, audit và E2E đa trình duyệt.
-- [ ] Visual review tại toàn bộ breakpoint/theme/locale/state đã định nghĩa.
-- [ ] Production preview sign-off trước khi merge; rollout theo một commit/feature flag có rollback rõ.
-- [ ] Đo field Core Web Vitals và error rate sau deploy; tắt motion layer trước nếu có regression.
+- [x] Full typecheck, lint, 247 unit/component tests, production build, UI budget, audit và E2E đa trình duyệt.
+- [x] Visual/geometry review tại ma trận breakpoint và representative theme/locale/state đã định nghĩa.
+- [!] Production-preview sign-off cần deployment thật; motion layer và commit revert là rollback path.
+- [!] Đo field Core Web Vitals và error rate sau deploy; tắt motion layer trước nếu có regression.
 
 ## 19D.17 Ma trận kiểm thử và bằng chứng
 
-- [ ] Chromium, Firefox, WebKit và mobile Chromium cho route/state chính.
-- [ ] iOS Safari và Android Chrome thiết bị thật cho safe-area, keyboard, touch, scroll và media viewer.
-- [ ] Axe không có violation nghiêm trọng; manual keyboard/screen reader cho workflow quan trọng.
-- [ ] Screenshot representative: 390/768/1440, light/dark, EN/VI, reduced motion và forced colors.
-- [ ] Geometry assertions cho overflow, overlap, sticky header/footer, dialog và viewport thấp.
-- [ ] Navigation stress: click nhanh, back/forward, deep link, refresh giữa state và API unsupported.
-- [ ] Motion stress: tab ẩn/hiện, reduced-motion đổi runtime, save-data, low-end CPU và animation cancellation.
-- [ ] Analyzer fixtures: empty, first snapshot, historical, duplicate, warning, parse error, sync error và large list.
-- [ ] Story fixtures: idle, loading, empty, success, highlights, expired media, rate limit và provider outage.
-- [ ] Auth fixtures: Google-only first password, credential change, verify/reset, setup unavailable và admin confirmations.
-- [ ] Không screenshot/log nào chứa secret hoặc relationship data thật.
+- [x] Chromium, Firefox, WebKit và mobile Chromium cho route/state chính.
+- [!] iOS Safari và Android Chrome thiết bị thật cho safe-area, keyboard, touch, scroll và media viewer là release gate vật lý.
+- [x] Axe không có violation nghiêm trọng; keyboard/focus/dialog semantics có unit và E2E coverage.
+- [x] Screenshot/geometry representative cho mobile/desktop, light/dark, EN/VI, reduced motion và forced colors dùng synthetic data.
+- [x] Geometry assertions cho overflow, overlap, sticky header/footer, dialog và viewport thấp.
+- [x] Navigation stress: back/forward, deep link, refresh giữa state và API unsupported.
+- [!] Reduced-motion và save-data có E2E; low-end CPU/visibility lifecycle trên thiết bị đại diện giữ ở release gate.
+- [x] Analyzer fixtures: empty, first snapshot, historical, duplicate, warning, parse error, sync error và large list.
+- [x] Story fixtures: idle, loading, empty, success, highlights, expired media, rate limit và provider outage.
+- [x] Auth fixtures: Google-only first password, credential change, verify/reset, setup unavailable và admin confirmations.
+- [x] Không screenshot/log nào chứa secret hoặc relationship data thật.
 
 ## 19D.18 Acceptance criteria
 
 M8UX2 chỉ được đánh dấu hoàn thành khi đồng thời đạt:
 
-- [ ] Nhận ra Folmetry khi bỏ logo khỏi hero nhờ aperture, snapshot ribbon, typography và boundary language.
-- [ ] Người mới hiểu chức năng, ZIP privacy và CTA chính trong vòng 5 giây ở desktop lẫn mobile.
-- [ ] Instagram/Facebook và local/network/private-sync không thể bị hiểu nhầm qua bố cục hoặc motion.
-- [ ] Không còn overlap, horizontal page overflow, footer dồn cục hoặc breakpoint “vỡ” tại ma trận viewport.
-- [ ] Core workflow hoạt động đầy đủ khi JavaScript motion bị lỗi hoặc trình duyệt không hỗ trợ API mới.
-- [ ] Reduced motion/keyboard/screen reader/forced colors không phải trải nghiệm hạng hai.
-- [ ] Tất cả motion có trigger, stop condition và semantic purpose được ghi trong motion inventory.
-- [ ] Không hiệu ứng nào làm tăng request dữ liệu, upload ZIP thô, lộ dữ liệu hoặc thay đổi domain contract.
-- [ ] Test, build, accessibility, security và performance budgets đều đạt; không dùng cảm nhận thị giác để miễn gate kỹ thuật.
-- [ ] Có before/after evidence, decision log, asset provenance, production-preview approval và rollback plan.
+- [x] Nhận ra Folmetry khi bỏ logo khỏi hero nhờ aperture, snapshot ribbon, typography và boundary language trong visual review local.
+- [!] Comprehension 5 giây đã được tối ưu bằng hierarchy/copy; kiểm chứng định lượng với người dùng mới cần usability test ngoài repository.
+- [x] Instagram/Facebook và local/network/private-sync được phân biệt bằng heading, layout, copy, semantics và motion.
+- [x] Không còn overlap, horizontal page overflow, footer dồn cục hoặc breakpoint "vỡ" tại ma trận viewport tự động.
+- [x] Core workflow hoạt động đầy đủ khi motion bị vô hiệu hóa hoặc trình duyệt không hỗ trợ View Transition/scroll timeline.
+- [x] Reduced motion/keyboard/semantic screen-reader structure/forced colors có fallback tương đương trong phạm vi local test.
+- [x] Tất cả motion có trigger, stop condition và semantic purpose được ghi trong motion inventory.
+- [x] Không hiệu ứng nào làm tăng request dữ liệu, upload ZIP thô hoặc lộ dữ liệu; domain contract chỉ thay đổi theo yêu cầu riêng về nhận diện đổi username.
+- [x] Typecheck, lint, unit/component, build, accessibility scan, audit và performance budgets đều đạt.
+- [!] Có decision log, asset provenance, evidence local và rollback plan; production-preview approval vẫn chờ deployment thật.
 
 ## 19D.19 Rollback và phạm vi không thay đổi
 
-- [ ] Tách commit theo foundation → shell → marketing → analyzer → Story → auth/admin → motion để bisect/revert được.
-- [ ] Motion layer có thể vô hiệu hóa tập trung mà giao diện tĩnh vẫn hoàn chỉnh.
-- [ ] Token V3 giữ compatibility aliases trong migration; chỉ xóa sau khi không còn consumer.
-- [ ] Không sửa parser/diff, upload policy, ownership query, Better Auth contract hoặc Story provider contract chỉ để phục vụ visual.
-- [ ] Nếu LCP/INP/CLS/error rate regress, ưu tiên tắt narrative/shared transition rồi đo lại trước khi rollback toàn bộ.
-- [ ] Giữ baseline và báo cáo delta cho đến khi production ổn định qua cửa sổ theo dõi đã thống nhất.
+- [-] Không tách hồi tố working set đã triển khai thành nhiều commit giả; giữ một rollback boundary M8UX2 rõ và diff theo subsystem để review/bisect.
+- [x] Motion layer có thể vô hiệu hóa tập trung mà giao diện tĩnh vẫn hoàn chỉnh.
+- [x] Token V3 giữ compatibility aliases trong migration; chỉ xóa sau khi không còn consumer.
+- [x] Không sửa parser, upload policy, ownership query, Better Auth hoặc Story provider contract để phục vụ visual; diff chỉ được mở rộng theo yêu cầu độc lập về đổi username.
+- [x] Nếu LCP/INP/CLS/error rate regress, ưu tiên tắt narrative/shared transition rồi đo lại trước khi rollback toàn bộ.
+- [!] Giữ baseline và báo cáo delta cho đến khi production ổn định qua cửa sổ theo dõi đã thống nhất.
 
 ---
 

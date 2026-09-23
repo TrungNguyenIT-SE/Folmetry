@@ -73,8 +73,10 @@ describe("historical diff", () => {
     expect(result).toBeDefined();
     expect(handles(result?.lostFollowers ?? [])).toEqual(["bravo"]);
     expect(handles(result?.newFollowers ?? [])).toEqual(["echo"]);
+    expect(result?.possibleFollowerRenames).toEqual([]);
     expect(handles(result?.stoppedFollowing ?? [])).toEqual(["delta"]);
     expect(handles(result?.startedFollowing ?? [])).toEqual(["foxtrot"]);
+    expect(result?.possibleFollowingRenames).toEqual([]);
     expect(result?.netFollowerChange).toBe(0);
     expect(result?.followerCountDelta).toBe(0);
     expect(result?.warnings).toEqual([]);
@@ -82,6 +84,67 @@ describe("historical diff", () => {
 
   it("does not create a result without a baseline", () => {
     expect(computeHistoricalDiff(undefined, { followers: [], following: [] })).toBeUndefined();
+  });
+
+  it("reconciles a unique matching connection date as a possible username change", () => {
+    const result = computeHistoricalDiff(
+      {
+        followers: [record("old_name", 1_700_000_000_000), record("stable", 20)],
+        following: [record("old_following", 30)],
+      },
+      {
+        followers: [record("new_name", 1_700_000_000_000), record("stable", 20)],
+        following: [record("new_following", 30)],
+      },
+    );
+
+    expect(result?.lostFollowers).toEqual([]);
+    expect(result?.newFollowers).toEqual([]);
+    expect(result?.possibleFollowerRenames).toEqual([
+      {
+        previous: record("old_name", 1_700_000_000_000),
+        current: record("new_name", 1_700_000_000_000),
+        connectedAt: 1_700_000_000_000,
+      },
+    ]);
+    expect(result?.stoppedFollowing).toEqual([]);
+    expect(result?.startedFollowing).toEqual([]);
+    expect(result?.possibleFollowingRenames).toHaveLength(1);
+    expect(result?.netFollowerChange).toBe(0);
+  });
+
+  it("keeps missing or ambiguous connection dates as ordinary lost and new records", () => {
+    const result = computeHistoricalDiff(
+      {
+        followers: [record("old_missing"), record("old_a", 50), record("old_b", 50)],
+        following: [],
+      },
+      {
+        followers: [record("new_missing"), record("new_a", 50), record("new_b", 50)],
+        following: [],
+      },
+    );
+
+    expect(handles(result?.lostFollowers ?? [])).toEqual(["old_a", "old_b", "old_missing"]);
+    expect(handles(result?.newFollowers ?? [])).toEqual(["new_a", "new_b", "new_missing"]);
+    expect(result?.possibleFollowerRenames).toEqual([]);
+  });
+
+  it("requires the connection date to be unique across each complete snapshot", () => {
+    const result = computeHistoricalDiff(
+      {
+        followers: [record("old_name", 75), record("stable_old", 75)],
+        following: [],
+      },
+      {
+        followers: [record("new_name", 75), record("stable_old", 75)],
+        following: [],
+      },
+    );
+
+    expect(handles(result?.lostFollowers ?? [])).toEqual(["old_name"]);
+    expect(handles(result?.newFollowers ?? [])).toEqual(["new_name"]);
+    expect(result?.possibleFollowerRenames).toEqual([]);
   });
 
   it.each([

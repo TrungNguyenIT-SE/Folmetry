@@ -42,6 +42,8 @@ Instagram wrapper keys và `string_list_data` dừng ở adapter. UI, persistenc
 - Tất cả phép giao/hiệu dùng `Map`/`Set`, thời gian kỳ vọng O(n + m), không dùng nested `find/includes` trên relationship lists.
 - Output luôn sort tường minh; supported sorts: handle A–Z/Z–A và connected date mới/cũ với missing timestamp ở cuối.
 - Không có baseline thì không tạo historical result.
+- Một cặp handle biến mất/xuất hiện chỉ được phân loại là `possible rename` khi có cùng `connectedAt` và timestamp đó xuất hiện đúng một lần trong toàn bộ tập cũ lẫn tập mới. Thiếu timestamp hoặc timestamp trùng giữ nguyên trong lost/new; đây là suy luận có điều kiện, không phải bằng chứng danh tính.
+- `possible rename` bị loại khỏi lost/new (và stopped/started following) để không đếm hai lần, nhưng UI luôn phải hiển thị caveat về độ bất định.
 - `netFollowerChange = newFollowers.length - lostFollowers.length` phải bằng current unique follower count trừ previous unique follower count.
 
 ## Fingerprint contract

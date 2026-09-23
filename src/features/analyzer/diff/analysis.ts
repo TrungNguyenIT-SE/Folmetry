@@ -2,6 +2,7 @@ import { sortRelationships } from "@/features/analyzer/diff/sort";
 import type {
   CurrentRelationshipAnalysis,
   HistoricalDiffResult,
+  PossibleHandleRename,
   RelationshipRecord,
   RelationshipSort,
 } from "@/features/analyzer/model/types";
@@ -67,6 +68,84 @@ function intersection(
   return result;
 }
 
+interface ReconciledChanges {
+  readonly removed: readonly RelationshipRecord[];
+  readonly added: readonly RelationshipRecord[];
+  readonly possibleRenames: readonly PossibleHandleRename[];
+}
+
+function recordsByUniqueConnectedAt(
+  records: ReadonlyMap<string, RelationshipRecord>,
+): ReadonlyMap<number, RelationshipRecord> {
+  const unique = new Map<number, RelationshipRecord>();
+  const ambiguous = new Set<number>();
+
+  for (const record of records.values()) {
+    if (record.connectedAt === undefined || ambiguous.has(record.connectedAt)) continue;
+    if (unique.has(record.connectedAt)) {
+      unique.delete(record.connectedAt);
+      ambiguous.add(record.connectedAt);
+    } else {
+      unique.set(record.connectedAt, record);
+    }
+  }
+
+  return unique;
+}
+
+function reconcilePossibleRenames(
+  previous: ReadonlyMap<string, RelationshipRecord>,
+  current: ReadonlyMap<string, RelationshipRecord>,
+  sort: RelationshipSort,
+): ReconciledChanges {
+  const removed = difference(previous, current);
+  const added = difference(current, previous);
+  const addedHandles = new Set(added.map((record) => record.normalizedHandle));
+  const uniquePreviousDates = recordsByUniqueConnectedAt(previous);
+  const uniqueCurrentDates = recordsByUniqueConnectedAt(current);
+  const renamedPreviousHandles = new Set<string>();
+  const renamedCurrentHandles = new Set<string>();
+  const possibleRenames: PossibleHandleRename[] = [];
+
+  for (const previousRecord of removed) {
+    if (previousRecord.connectedAt === undefined) continue;
+    if (uniquePreviousDates.get(previousRecord.connectedAt) !== previousRecord) continue;
+
+    const currentRecord = uniqueCurrentDates.get(previousRecord.connectedAt);
+    if (
+      currentRecord === undefined ||
+      !addedHandles.has(currentRecord.normalizedHandle)
+    ) {
+      continue;
+    }
+
+    renamedPreviousHandles.add(previousRecord.normalizedHandle);
+    renamedCurrentHandles.add(currentRecord.normalizedHandle);
+    possibleRenames.push({
+      previous: previousRecord,
+      current: currentRecord,
+      connectedAt: previousRecord.connectedAt,
+    });
+  }
+
+  const sortedCurrentRecords = sortRelationships(
+    possibleRenames.map((rename) => rename.current),
+    sort,
+  );
+  const renameByCurrentHandle = new Map(
+    possibleRenames.map((rename) => [rename.current.normalizedHandle, rename]),
+  );
+
+  return {
+    removed: removed.filter((record) => !renamedPreviousHandles.has(record.normalizedHandle)),
+    added: added.filter((record) => !renamedCurrentHandles.has(record.normalizedHandle)),
+    possibleRenames: sortedCurrentRecords.flatMap((record) => {
+      const rename = renameByCurrentHandle.get(record.normalizedHandle);
+      return rename === undefined ? [] : [rename];
+    }),
+  };
+}
+
 export function analyzeCurrentRelationships(
   followers: readonly RelationshipRecord[],
   following: readonly RelationshipRecord[],
@@ -106,22 +185,28 @@ export function computeHistoricalDiff(
   const previousFollowing = canonicalRecordMap(previous.following);
   const currentFollowing = canonicalRecordMap(current.following);
 
-  const lostFollowers = difference(previousFollowers, currentFollowers);
-  const newFollowers = difference(currentFollowers, previousFollowers);
+  const followerChanges = reconcilePossibleRenames(
+    previousFollowers,
+    currentFollowers,
+    sort,
+  );
+  const followingChanges = reconcilePossibleRenames(
+    previousFollowing,
+    currentFollowing,
+    sort,
+  );
+  const lostFollowers = followerChanges.removed;
+  const newFollowers = followerChanges.added;
   const netFollowerChange = newFollowers.length - lostFollowers.length;
   const followerCountDelta = currentFollowers.size - previousFollowers.size;
 
   return {
     lostFollowers: sortRelationships(lostFollowers, sort),
     newFollowers: sortRelationships(newFollowers, sort),
-    stoppedFollowing: sortRelationships(
-      difference(previousFollowing, currentFollowing),
-      sort,
-    ),
-    startedFollowing: sortRelationships(
-      difference(currentFollowing, previousFollowing),
-      sort,
-    ),
+    possibleFollowerRenames: followerChanges.possibleRenames,
+    stoppedFollowing: sortRelationships(followingChanges.removed, sort),
+    startedFollowing: sortRelationships(followingChanges.added, sort),
+    possibleFollowingRenames: followingChanges.possibleRenames,
     netFollowerChange,
     followerCountDelta,
     warnings:

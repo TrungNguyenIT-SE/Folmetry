@@ -18,6 +18,7 @@ import { createRelationshipCsv, downloadCsv, safeCsvFilename } from "@/features/
 import type {
   HistoricalDiffResult,
   LocalSnapshot,
+  PossibleHandleRename,
   RelationshipRecord,
   RelationshipSort,
 } from "@/features/analyzer/model/types";
@@ -124,6 +125,39 @@ function RelationshipList({ records, label }: RelationshipListProps) {
   );
 }
 
+interface PossibleRenameListProps {
+  readonly records: readonly PossibleHandleRename[];
+  readonly label: string;
+}
+
+function PossibleRenameList({ records, label }: PossibleRenameListProps) {
+  const { dictionary, formatDate, formatNumber } = useI18n();
+  const copy = dictionary.analyzer.ux;
+
+  return (
+    <section className="result-list" aria-label={label}>
+      <p className="privacy-note">{copy.renameCaveat}</p>
+      <p className="list-count">{formatNumber(records.length)} {copy.resultCount}</p>
+      {records.length === 0 ? (
+        <EmptyState description={copy.emptyList} title={label} />
+      ) : (
+        <ul className="relationship-list possible-rename-list">
+          {records.map((record) => (
+            <li key={`${record.previous.normalizedHandle}-${record.current.normalizedHandle}`}>
+              <div className="possible-rename-list__handles">
+                <span><small>{copy.previousHandle}</small><strong>@{record.previous.handle}</strong></span>
+                <span aria-hidden="true" className="possible-rename-list__arrow">→</span>
+                <span><small>{copy.currentHandle}</small><strong>@{record.current.handle}</strong></span>
+              </div>
+              <span className="muted-copy">{formatDate(record.connectedAt)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 interface SummaryCardProps {
   readonly label: string;
   readonly value: number;
@@ -224,9 +258,11 @@ function HistoryView({ snapshots, current, onSelect, onDelete }: HistoryViewProp
               <div className="summary-grid">
                 <SummaryCard label={dictionary.analyzer.results.lostFollowers} value={comparison.diff.lostFollowers.length} />
                 <SummaryCard label={dictionary.analyzer.results.newFollowers} value={comparison.diff.newFollowers.length} />
+                <SummaryCard label={dictionary.analyzer.results.possibleUsernameChanges} value={comparison.diff.possibleFollowerRenames.length} />
                 <SummaryCard delta label={dictionary.analyzer.results.netChange} value={comparison.diff.netFollowerChange} />
               </div>
               <p className="privacy-note">{copy.lostCaveat}</p>
+              {comparison.diff.possibleFollowerRenames.length === 0 ? null : <p className="privacy-note">{copy.renameCaveat}</p>}
             </div>
           )}
         </Card>
@@ -310,11 +346,17 @@ export function ResultsView({
           <>
             <SummaryCard label={copy.results.lostFollowers} value={historical.lostFollowers.length} />
             <SummaryCard label={copy.results.newFollowers} value={historical.newFollowers.length} />
+            <SummaryCard label={copy.results.possibleUsernameChanges} value={historical.possibleFollowerRenames.length} />
             <SummaryCard delta label={copy.results.netChange} value={historical.netFollowerChange} />
           </>
         )}
       </div>
-      {historical === undefined ? <p className="privacy-note">{copy.ux.firstSnapshot}</p> : <p className="privacy-note">{copy.ux.lostCaveat}</p>}
+      {historical === undefined ? <p className="privacy-note">{copy.ux.firstSnapshot}</p> : (
+        <>
+          <p className="privacy-note">{copy.ux.lostCaveat}</p>
+          {historical.possibleFollowerRenames.length === 0 ? null : <p className="privacy-note">{copy.ux.renameCaveat}</p>}
+        </>
+      )}
       {current.warnings.length === 0 ? null : (
         <div className="warning-list">
           <Badge tone="warning">{current.warnings.length} {copy.ux.warnings}</Badge>
@@ -330,6 +372,7 @@ export function ResultsView({
     ...(historical === undefined ? [] : [
       { id: "lost", label: copy.results.lostFollowers, content: <RelationshipList label={copy.results.lostFollowers} records={historical.lostFollowers} /> },
       { id: "new", label: copy.results.newFollowers, content: <RelationshipList label={copy.results.newFollowers} records={historical.newFollowers} /> },
+      { id: "possible-renames", label: copy.results.possibleUsernameChanges, content: <PossibleRenameList label={copy.results.possibleUsernameChanges} records={historical.possibleFollowerRenames} /> },
     ]),
     { id: "not-following-back", label: copy.results.notFollowingBack, content: <RelationshipList label={copy.results.notFollowingBack} records={currentAnalysis.notFollowingBack} /> },
     { id: "not-followed-by-me", label: copy.results.notFollowedByMe, content: <RelationshipList label={copy.results.notFollowedByMe} records={currentAnalysis.notFollowedByMe} /> },

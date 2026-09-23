@@ -66,11 +66,19 @@ export interface CurrentRelationshipAnalysis {
   readonly notFollowedByMe: readonly RelationshipRecord[];
 }
 
+export interface PossibleHandleRename {
+  readonly previous: RelationshipRecord;
+  readonly current: RelationshipRecord;
+  readonly connectedAt: number;
+}
+
 export interface HistoricalDiffResult {
   readonly lostFollowers: readonly RelationshipRecord[];
   readonly newFollowers: readonly RelationshipRecord[];
+  readonly possibleFollowerRenames: readonly PossibleHandleRename[];
   readonly stoppedFollowing: readonly RelationshipRecord[];
   readonly startedFollowing: readonly RelationshipRecord[];
+  readonly possibleFollowingRenames: readonly PossibleHandleRename[];
   readonly netFollowerChange: number;
   readonly followerCountDelta: number;
   readonly warnings: readonly ImportWarning[];

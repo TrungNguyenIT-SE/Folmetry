@@ -1,11 +1,15 @@
 // @vitest-environment jsdom
 
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { AppPreferencesProvider } from "@/i18n";
 
 import { AccountOverview } from "./account-overview";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
 
 describe("AccountOverview", () => {
   it("shows every connected sign-in method without exposing provider secrets", () => {

@@ -315,7 +315,10 @@ test("shell has no horizontal overflow at supported responsive widths", async ({
 
 test("platform navigation preserves deep links and browser history", async ({ page }) => {
   await page.goto("/instagram");
+  const menuTrigger = page.getByRole("button", { name: "Open navigation menu" });
+  if (await menuTrigger.isVisible()) await menuTrigger.click();
   await expect(page.getByRole("link", { name: "Instagram", exact: true })).toHaveAttribute("aria-current", "page");
+  if (await menuTrigger.isVisible()) await page.keyboard.press("Escape");
   await page.getByRole("link", { name: "Open analyzer", exact: true }).click();
   await expect(page).toHaveURL(/\/app$/);
   await page.goBack();
@@ -323,6 +326,7 @@ test("platform navigation preserves deep links and browser history", async ({ pa
   await page.goForward();
   await expect(page).toHaveURL(/\/app$/);
   await page.goto("/facebook");
+  if (await menuTrigger.isVisible()) await menuTrigger.click();
   await expect(page.getByRole("link", { name: "Facebook", exact: true })).toHaveAttribute("aria-current", "page");
 });
 

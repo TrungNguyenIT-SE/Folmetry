@@ -1401,6 +1401,32 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.possible-rename-list__handles,
+.possible-rename-list__handles span:not(.possible-rename-list__arrow) {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.possible-rename-list__handles span:not(.possible-rename-list__arrow) {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.possible-rename-list__handles small {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.possible-rename-list__arrow {
+  color: var(--signal-active);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
 .snapshot-list__current {
   border-left: 4px solid var(--accent) !important;
   background: var(--muted-surface);
