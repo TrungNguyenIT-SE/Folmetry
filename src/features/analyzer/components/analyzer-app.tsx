@@ -135,7 +135,7 @@ export function AnalyzerApp({ services: providedServices, platform = "instagram"
       dispatch({ type: "ACCOUNT_SELECTED", accountId });
       return;
     }
-    const prior = await api.findPrior(accountId, selected.snapshotAt);
+    const prior = history.find((snapshot) => snapshot.snapshotAt < selected.snapshotAt);
     setCurrent(selected);
     setBaseline(prior);
     dispatch({ type: "ACCOUNT_SELECTED", accountId, snapshotId: selected.id });
@@ -322,7 +322,7 @@ export function AnalyzerApp({ services: providedServices, platform = "instagram"
   const saveDraft = async (draft: ReviewDraft): Promise<void> => {
     const api = servicesRef.current;
     if (api === undefined || selectedAccountId === undefined) return;
-    const existing = await api.findDuplicate(selectedAccountId, draft.result.fingerprint);
+    const existing = snapshots.find((snapshot) => snapshot.fingerprint === draft.result.fingerprint);
     if (existing !== undefined) {
       setDuplicate(existing);
       return;
@@ -350,7 +350,7 @@ export function AnalyzerApp({ services: providedServices, platform = "instagram"
     }
     if (result.status === "not-saved") {
       const memory = inMemorySnapshot(input);
-      const prior = await api.findPrior(selectedAccountId, draft.snapshotAt).catch(() => undefined);
+      const prior = snapshots.find((snapshot) => snapshot.snapshotAt < draft.snapshotAt);
       setCurrent(memory);
       setBaseline(prior);
       dispatch({ type: "SAVE_SUCCEEDED", snapshotId: memory.id, saved: false });

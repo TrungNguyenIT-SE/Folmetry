@@ -9,6 +9,7 @@ import {
 } from "@/features/assistant/model";
 import { ASSISTANT_POLICY } from "@/features/assistant/policy";
 import { getRequestSession } from "@/features/auth/server/session";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http-security";
 
 import { readAssistantServerConfig } from "./config";
 import { assistantSystemPrompt, boundedHistory, resolveAssistantMode } from "./prompt";
@@ -125,7 +126,7 @@ function sse(event: AssistantStreamEvent): Uint8Array {
 async function authenticatedRepository(request: Request): Promise<AssistantRepository | Response> {
   const session = await getRequestSession(request);
   return session === null
-    ? Response.json({ code: "UNAUTHORIZED" }, { status: 401 })
+    ? Response.json({ code: "UNAUTHORIZED" }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS })
     : new AssistantRepository(session.user.id);
 }
 

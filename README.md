@@ -26,6 +26,7 @@ Folmetry uses Better Auth with PostgreSQL for website accounts, verified email, 
 
 ```bash
 pnpm auth:migrate
+pnpm db:migrate
 pnpm dev
 ```
 
@@ -41,6 +42,7 @@ Google sign-in is enabled only when both Google variables are present. Local cal
 pnpm typecheck
 pnpm lint
 pnpm test
+pnpm test:coverage
 pnpm build
 pnpm test:e2e
 pnpm audit --prod --audit-level high
@@ -52,7 +54,7 @@ The authenticated assistant answers both Folmetry questions and general question
 
 The feature fails closed. Set both `AI_ASSISTANT_ENABLED=true` and `AI_PROVIDER_APPROVED=true`, then configure Groq and/or Cloudflare Workers AI. Cloudflare requires `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_AI_API_TOKEN`, and an `@cf/...` model; the gateway ID defaults to `default`. With both providers configured, new conversations are distributed deterministically and fall back to the other provider if the preferred provider fails before output starts. Never use `NEXT_PUBLIC_` for an AI token.
 
-The assistant tables are created idempotently on first use. Requests require a Folmetry session, enforce owner-scoped queries and database-backed quotas, and expose only normalized error codes. Review [the assistant architecture and production checklist](docs/ai-assistant.md) before enabling it.
+Application tables are installed through versioned migrations instead of running DDL on user requests. Run `pnpm auth:migrate` first, then `pnpm db:migrate` for every environment and deployment that changes the schema. Requests require a Folmetry session, enforce owner-scoped queries and database-backed quotas, and expose only normalized error codes. Review [the assistant architecture and production checklist](docs/ai-assistant.md) before enabling it.
 
 ## Public Stories and Highlights (M6S)
 

@@ -86,7 +86,18 @@ describe("analyzer synchronization route", () => {
         input: { platform: "instagram", label: "Personal", ownerId: "attacker-choice" },
       }),
     }));
-    expect(response.status).toBe(503);
+    expect(response.status).toBe(403);
+    expect(mocks.createAccount).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when an analyzer mutation omits Origin", async () => {
+    const response = await POST(new Request("https://folmetry.test/api/analyzer", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "createAccount", input: { platform: "instagram", label: "Personal" } }),
+    }));
+    expect(response.status).toBe(403);
+    expect(response.headers.get("cache-control")).toContain("no-store");
     expect(mocks.createAccount).not.toHaveBeenCalled();
   });
 

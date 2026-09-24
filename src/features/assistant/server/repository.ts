@@ -15,8 +15,6 @@ import {
 import { ASSISTANT_POLICY } from "@/features/assistant/policy";
 import { authDatabase } from "@/features/auth/server/database";
 
-let schemaPromise: Promise<void> | undefined;
-
 async function transaction<T>(operation: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await authDatabase.connect();
   try {
@@ -30,58 +28,6 @@ async function transaction<T>(operation: (client: PoolClient) => Promise<T>): Pr
   } finally {
     client.release();
   }
-}
-
-async function ensureSchema(): Promise<void> {
-  schemaPromise ??= transaction(async (client) => {
-    await client.query("SELECT pg_advisory_xact_lock($1)", [1_954_872_441]);
-    await client.query(`CREATE TABLE IF NOT EXISTS folmetry_ai_conversation (
-      id TEXT PRIMARY KEY,
-      owner_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-      title TEXT NOT NULL,
-      mode TEXT NOT NULL CHECK (mode IN ('auto', 'folmetry', 'general', 'web')),
-      created_at BIGINT NOT NULL,
-      updated_at BIGINT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS folmetry_ai_conversation_owner_updated_idx
-      ON folmetry_ai_conversation(owner_id, updated_at DESC, id);
-    CREATE TABLE IF NOT EXISTS folmetry_ai_message (
-      id TEXT PRIMARY KEY,
-      conversation_id TEXT NOT NULL REFERENCES folmetry_ai_conversation(id) ON DELETE CASCADE,
-      owner_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-      role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
-      content TEXT NOT NULL,
-      provider TEXT CHECK (provider IS NULL OR provider IN ('groq', 'cloudflare', 'google')),
-      model TEXT,
-      citations JSONB NOT NULL DEFAULT '[]'::jsonb,
-      created_at BIGINT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS folmetry_ai_message_conversation_created_idx
-      ON folmetry_ai_message(owner_id, conversation_id, created_at ASC, id ASC);
-    CREATE INDEX IF NOT EXISTS folmetry_ai_message_owner_role_created_idx
-      ON folmetry_ai_message(owner_id, role, created_at DESC);
-    DO $migration$
-    BEGIN
-      IF EXISTS (
-        SELECT 1
-        FROM pg_constraint
-        WHERE conname = 'folmetry_ai_message_provider_check'
-          AND pg_get_constraintdef(oid) NOT LIKE '%cloudflare%'
-      ) THEN
-        ALTER TABLE folmetry_ai_message
-          DROP CONSTRAINT folmetry_ai_message_provider_check;
-        ALTER TABLE folmetry_ai_message
-          ADD CONSTRAINT folmetry_ai_message_provider_check
-          CHECK (provider IS NULL OR provider IN ('groq', 'cloudflare', 'google'));
-      END IF;
-    END
-    $migration$;
-    `);
-  }).catch((error: unknown) => {
-    schemaPromise = undefined;
-    throw error;
-  });
-  await schemaPromise;
 }
 
 function timestamp(value: unknown): number {
@@ -148,7 +94,6 @@ export class AssistantRepository {
   constructor(private readonly ownerId: string) {}
 
   async listConversations(): Promise<readonly AssistantConversationSummary[]> {
-    await ensureSchema();
     const result = await authDatabase.query(
       `SELECT conversation.*,
          (SELECT content FROM folmetry_ai_message message
@@ -165,7 +110,6 @@ export class AssistantRepository {
   }
 
   async getConversation(id: string): Promise<AssistantConversation | undefined> {
-    await ensureSchema();
     const conversation = await authDatabase.query(
       `SELECT conversation.*,
          (SELECT content FROM folmetry_ai_message message
@@ -195,7 +139,6 @@ export class AssistantRepository {
     mode: AssistantMode,
     content: string,
   ): Promise<BegunAssistantTurn> {
-    await ensureSchema();
     return transaction(async (client) => {
       await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [`ai:${this.ownerId}`]);
       const now = Date.now();
@@ -287,7 +230,6 @@ export class AssistantRepository {
     model: string,
     citationList: readonly AssistantCitation[],
   ): Promise<AssistantMessage> {
-    await ensureSchema();
     const now = Date.now();
     const result = await authDatabase.query(
       `INSERT INTO folmetry_ai_message
@@ -319,7 +261,6 @@ export class AssistantRepository {
   }
 
   async deleteConversation(id: string): Promise<void> {
-    await ensureSchema();
     const result = await authDatabase.query(
       "DELETE FROM folmetry_ai_conversation WHERE id = $1 AND owner_id = $2",
       [id, this.ownerId],

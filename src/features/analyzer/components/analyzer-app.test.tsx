@@ -92,10 +92,6 @@ function createFakeServices(options: { readonly pendingImport?: boolean; readonl
     deleteAccount: () => { accounts = []; snapshots = []; return Promise.resolve(); },
     listSnapshots: () => Promise.resolve([...snapshots].sort((a, b) => b.snapshotAt - a.snapshotAt)),
     getSnapshot: (id) => Promise.resolve(snapshots.find((snapshot) => snapshot.id === id)),
-    findPrior: (_accountId, timestamp) => Promise.resolve(
-      [...snapshots].filter((snapshot) => snapshot.snapshotAt < timestamp).sort((a, b) => b.snapshotAt - a.snapshotAt)[0],
-    ),
-    findDuplicate: (_accountId, fingerprint) => Promise.resolve(snapshots.find((snapshot) => snapshot.fingerprint === fingerprint)),
     saveSnapshot: (input) => {
       if (options.saveFailure === true) {
         return Promise.resolve({

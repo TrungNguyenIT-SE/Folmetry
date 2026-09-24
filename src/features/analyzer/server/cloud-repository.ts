@@ -32,7 +32,6 @@ import {
 
 export const MAX_SYNC_BODY_BYTES = 4 * 1024 * 1024;
 const warningCodes = new Set<string>(IMPORT_WARNING_CODES);
-let schemaPromise: Promise<void> | undefined;
 
 export function assertSyncBodySize(request: Request): void {
   const length = Number(request.headers.get("content-length"));
@@ -42,58 +41,6 @@ export function assertSyncBodySize(request: Request): void {
       actual: length,
     });
   }
-}
-
-async function ensureSchema(): Promise<void> {
-  schemaPromise ??= withTransaction(async (client) => {
-    // Serialize idempotent DDL across concurrent serverless cold starts.
-    await client.query("SELECT pg_advisory_xact_lock($1)", [742_026_092]);
-    await client.query(`CREATE TABLE IF NOT EXISTS folmetry_analyzer_account (
-      id TEXT PRIMARY KEY,
-      owner_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-      platform TEXT NOT NULL CHECK (platform IN ('instagram', 'facebook')),
-      label TEXT NOT NULL,
-      username TEXT,
-      created_at BIGINT NOT NULL,
-      updated_at BIGINT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS folmetry_analyzer_account_owner_created_idx
-      ON folmetry_analyzer_account(owner_id, created_at, id);
-    CREATE TABLE IF NOT EXISTS folmetry_analyzer_snapshot (
-      id TEXT PRIMARY KEY,
-      owner_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-      account_id TEXT NOT NULL REFERENCES folmetry_analyzer_account(id) ON DELETE CASCADE,
-      platform TEXT NOT NULL CHECK (platform IN ('instagram', 'facebook')),
-      snapshot_at BIGINT NOT NULL,
-      imported_at BIGINT NOT NULL,
-      source_file_name TEXT,
-      source_file_size BIGINT,
-      fingerprint CHAR(64) NOT NULL,
-      parser_version TEXT NOT NULL,
-      friends JSONB NOT NULL DEFAULT '[]'::jsonb,
-      followers JSONB NOT NULL,
-      following JSONB NOT NULL,
-      warnings JSONB NOT NULL,
-      follower_count INTEGER NOT NULL,
-      following_count INTEGER NOT NULL,
-      friend_count INTEGER NOT NULL DEFAULT 0,
-      CONSTRAINT folmetry_analyzer_snapshot_owner_time_unique
-        UNIQUE(owner_id, account_id, snapshot_at),
-      CONSTRAINT folmetry_analyzer_snapshot_owner_fingerprint_unique
-        UNIQUE(owner_id, account_id, fingerprint)
-    );
-    CREATE INDEX IF NOT EXISTS folmetry_analyzer_snapshot_owner_account_time_idx
-      ON folmetry_analyzer_snapshot(owner_id, account_id, snapshot_at DESC);
-    ALTER TABLE folmetry_analyzer_snapshot
-      ADD COLUMN IF NOT EXISTS friends JSONB NOT NULL DEFAULT '[]'::jsonb;
-    ALTER TABLE folmetry_analyzer_snapshot
-      ADD COLUMN IF NOT EXISTS friend_count INTEGER NOT NULL DEFAULT 0;
-    `);
-  }).catch((error: unknown) => {
-    schemaPromise = undefined;
-    throw error;
-  });
-  await schemaPromise;
 }
 
 function asTimestamp(value: unknown): number {
@@ -265,7 +212,6 @@ export class CloudAnalyzerRepository {
   constructor(private readonly ownerId: string) {}
 
   async listAccounts(platform?: SocialPlatform): Promise<readonly LocalAccount[]> {
-    await ensureSchema();
     const result = await authDatabase.query(
       `SELECT * FROM folmetry_analyzer_account
        WHERE owner_id = $1 AND ($2::text IS NULL OR platform = $2)
@@ -276,7 +222,6 @@ export class CloudAnalyzerRepository {
   }
 
   async createAccount(input: CreateAccountInput): Promise<LocalAccount> {
-    await ensureSchema();
     if (input.platform !== "instagram" && input.platform !== "facebook") {
       throw new PersistenceDomainError("INVALID_ACCOUNT_USERNAME");
     }
@@ -294,7 +239,6 @@ export class CloudAnalyzerRepository {
   }
 
   async updateAccount(id: string, input: UpdateAccountInput): Promise<LocalAccount> {
-    await ensureSchema();
     const current = await authDatabase.query(
       `SELECT * FROM folmetry_analyzer_account WHERE id = $1 AND owner_id = $2`,
       [id, this.ownerId],
@@ -314,7 +258,6 @@ export class CloudAnalyzerRepository {
   }
 
   async deleteAccount(id: string): Promise<void> {
-    await ensureSchema();
     const result = await authDatabase.query(
       `DELETE FROM folmetry_analyzer_account WHERE id = $1 AND owner_id = $2`,
       [id, this.ownerId],
@@ -323,7 +266,6 @@ export class CloudAnalyzerRepository {
   }
 
   async deleteAll(platform?: SocialPlatform): Promise<void> {
-    await ensureSchema();
     await authDatabase.query(
       `DELETE FROM folmetry_analyzer_account
        WHERE owner_id = $1 AND ($2::text IS NULL OR platform = $2)`,
@@ -332,7 +274,6 @@ export class CloudAnalyzerRepository {
   }
 
   async listSnapshots(accountId: string): Promise<readonly LocalSnapshot[]> {
-    await ensureSchema();
     const result = await authDatabase.query(
       `SELECT * FROM folmetry_analyzer_snapshot
        WHERE owner_id = $1 AND account_id = $2
@@ -343,7 +284,6 @@ export class CloudAnalyzerRepository {
   }
 
   async getSnapshot(id: string): Promise<LocalSnapshot | undefined> {
-    await ensureSchema();
     const result = await authDatabase.query(
       `SELECT * FROM folmetry_analyzer_snapshot WHERE id = $1 AND owner_id = $2`,
       [id, this.ownerId],
@@ -352,7 +292,6 @@ export class CloudAnalyzerRepository {
   }
 
   async saveSnapshot(rawInput: SaveSnapshotInput): Promise<AddSnapshotResult> {
-    await ensureSchema();
     const input = validateSnapshot(rawInput);
     return withTransaction(async (client) => {
       const accountResult = await client.query(
@@ -405,7 +344,6 @@ export class CloudAnalyzerRepository {
   }
 
   async deleteSnapshot(accountId: string, snapshotId: string): Promise<void> {
-    await ensureSchema();
     const result = await authDatabase.query(
       `DELETE FROM folmetry_analyzer_snapshot
        WHERE id = $1 AND account_id = $2 AND owner_id = $3`,

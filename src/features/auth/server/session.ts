@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { auth, type AuthSession } from "@/features/auth/server/auth";
 import { isAuthReady } from "@/features/auth/server/environment";
+import { PRIVATE_NO_STORE_HEADERS } from "@/lib/http-security";
 
 function e2eSession(requestHeaders: Headers): AuthSession | null {
   if (process.env.NODE_ENV === "production") {
@@ -69,7 +70,10 @@ export async function getRequestSession(request: Request): Promise<AuthSession |
 
 export async function requireApiUser(request: Request): Promise<Response | undefined> {
   return (await getRequestSession(request)) === null
-    ? Response.json({ code: "UNAUTHORIZED", message: "Authentication required." }, { status: 401 })
+    ? Response.json(
+        { code: "UNAUTHORIZED", message: "Authentication required." },
+        { status: 401, headers: PRIVATE_NO_STORE_HEADERS },
+      )
     : undefined;
 }
 

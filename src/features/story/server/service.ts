@@ -71,8 +71,7 @@ export async function lookupHighlightItems(
 ): Promise<readonly PublicStoryItem[]> {
   const reference = openHighlightReference(highlightId, keyring(config));
   if (reference.providerId !== config.provider) throw new StoryError("STORY_HIGHLIGHTS_UNAVAILABLE");
-  await provider.getHighlights(reference.handle, signal);
-  const result = await provider.getHighlightItems(reference.highlightId, signal);
+  const result = await provider.getHighlightItems(reference.handle, reference.highlightId, signal);
   if (result.items.length > STORY_POLICY.maxHighlightItems) throw new StoryError("STORY_RESPONSE_TOO_LARGE");
   return result.items.map((item) => publicItem(item, config));
 }

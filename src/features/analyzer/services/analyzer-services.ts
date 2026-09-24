@@ -19,8 +19,6 @@ export interface AnalyzerServices {
   deleteAccount(id: string): Promise<void>;
   listSnapshots(accountId: string): Promise<readonly LocalSnapshot[]>;
   getSnapshot(id: string): Promise<LocalSnapshot | undefined>;
-  findPrior(accountId: string, snapshotAt: number): Promise<LocalSnapshot | undefined>;
-  findDuplicate(accountId: string, fingerprint: string): Promise<LocalSnapshot | undefined>;
   saveSnapshot(input: SaveSnapshotInput): Promise<SnapshotSaveWithFallbackResult>;
   deleteSnapshot(accountId: string, snapshotId: string): Promise<void>;
   deleteAll(): Promise<void>;
@@ -98,18 +96,6 @@ export function createCloudAnalyzerServices(platform: SocialPlatform = "instagra
         `/api/analyzer?resource=snapshot&id=${encodeURIComponent(id)}`,
       );
       return result.snapshot ?? undefined;
-    },
-    findPrior: async (accountId, snapshotAt) => {
-      const snapshots = await requestJson<{ snapshots: readonly LocalSnapshot[] }>(
-        `/api/analyzer?resource=snapshots&accountId=${encodeURIComponent(accountId)}`,
-      );
-      return snapshots.snapshots.find((snapshot) => snapshot.snapshotAt < snapshotAt);
-    },
-    findDuplicate: async (accountId, fingerprint) => {
-      const snapshots = await requestJson<{ snapshots: readonly LocalSnapshot[] }>(
-        `/api/analyzer?resource=snapshots&accountId=${encodeURIComponent(accountId)}`,
-      );
-      return snapshots.snapshots.find((snapshot) => snapshot.fingerprint === fingerprint);
     },
     saveSnapshot: async (input) => (await actionRequest<{ result: SnapshotSaveWithFallbackResult }>(
       "POST", { action: "saveSnapshot", input },

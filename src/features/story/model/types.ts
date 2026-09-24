@@ -80,5 +80,5 @@ export interface PublicStoryProvider {
   readonly providerId: string;
   getActiveStories(handle: string, signal: AbortSignal): Promise<ProviderStoryResult>;
   getHighlights(handle: string, signal: AbortSignal): Promise<ProviderHighlightResult>;
-  getHighlightItems(highlightId: string, signal: AbortSignal): Promise<ProviderHighlightItemsResult>;
+  getHighlightItems(handle: string, highlightId: string, signal: AbortSignal): Promise<ProviderHighlightItemsResult>;
 }

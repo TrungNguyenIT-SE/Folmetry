@@ -15,7 +15,7 @@ Folmetry parses raw Instagram or Facebook ZIP/JSON exports in a dedicated browse
 
 `folmetry_analyzer_account` stores owner- and platform-scoped profile labels plus optional Instagram usernames or Facebook profile names. `folmetry_analyzer_snapshot` stores normalized relationship arrays as JSONB plus counts, dates, parser version, warnings, platform, and a SHA-256 fingerprint. Unique constraints prevent duplicate fingerprints and ambiguous timestamps within one profile.
 
-The schema is installed idempotently on the first authenticated analyzer request. Production database credentials therefore need permission to create these two tables and indexes. Raw archives are never stored in PostgreSQL.
+The schema is installed by versioned SQL migrations, never by a user request. For a fresh environment, run `pnpm auth:migrate` first so Better Auth creates the `user` table, then run `pnpm db:migrate`. Deployments that contain a new migration must execute the same sequence before serving the new application version. Runtime database credentials only need data access after migration. Raw archives are never stored in PostgreSQL.
 
 ## Transition from IndexedDB
 

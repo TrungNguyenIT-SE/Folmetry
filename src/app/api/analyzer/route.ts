@@ -6,10 +6,19 @@ import {
   assertSyncBodySize,
 } from "@/features/analyzer/server/cloud-repository";
 import type { SocialPlatform } from "@/features/analyzer/model/types";
+import { hasValidSameOrigin, PRIVATE_NO_STORE_HEADERS } from "@/lib/http-security";
 
 export const runtime = "nodejs";
 
+class InvalidOriginError extends Error {}
+
 function errorResponse(error: unknown): Response {
+  if (error instanceof InvalidOriginError) {
+    return Response.json(
+      { code: "INVALID_ORIGIN" },
+      { status: 403, headers: PRIVATE_NO_STORE_HEADERS },
+    );
+  }
   const domain = error instanceof PersistenceDomainError
     ? error
     : new PersistenceDomainError("SYNC_UNAVAILABLE");
@@ -20,21 +29,23 @@ function errorResponse(error: unknown): Response {
       : domain.code === "SYNC_UNAVAILABLE"
         ? 503
         : 400;
-  return Response.json({ code: domain.code, context: domain.context }, { status });
+  return Response.json(
+    { code: domain.code, context: domain.context },
+    { status, headers: PRIVATE_NO_STORE_HEADERS },
+  );
 }
 
 async function repository(request: Request): Promise<CloudAnalyzerRepository | Response> {
   const session = await getRequestSession(request);
   return session === null
-    ? Response.json({ code: "UNAUTHORIZED" }, { status: 401 })
+    ? Response.json({ code: "UNAUTHORIZED" }, { status: 401, headers: PRIVATE_NO_STORE_HEADERS })
     : new CloudAnalyzerRepository(session.user.id);
 }
 
 async function readBody(request: Request): Promise<Record<string, unknown>> {
   assertSyncBodySize(request);
-  const origin = request.headers.get("origin");
-  if (origin !== null && origin !== new URL(request.url).origin) {
-    throw new PersistenceDomainError("SYNC_UNAVAILABLE");
+  if (!hasValidSameOrigin(request)) {
+    throw new InvalidOriginError();
   }
   const rawBody = await request.text();
   const byteLength = new TextEncoder().encode(rawBody).byteLength;
@@ -68,17 +79,26 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const resource = url.searchParams.get("resource");
     if (resource === "accounts") {
-      return Response.json({ accounts: await repo.listAccounts(platformValue(url.searchParams.get("platform"))) });
+      return Response.json(
+        { accounts: await repo.listAccounts(platformValue(url.searchParams.get("platform"))) },
+        { headers: PRIVATE_NO_STORE_HEADERS },
+      );
     }
     if (resource === "snapshots") {
       const accountId = url.searchParams.get("accountId");
       if (!accountId) throw new PersistenceDomainError("ACCOUNT_NOT_FOUND");
-      return Response.json({ snapshots: await repo.listSnapshots(accountId) });
+      return Response.json(
+        { snapshots: await repo.listSnapshots(accountId) },
+        { headers: PRIVATE_NO_STORE_HEADERS },
+      );
     }
     if (resource === "snapshot") {
       const id = url.searchParams.get("id");
       if (!id) throw new PersistenceDomainError("SNAPSHOT_NOT_FOUND");
-      return Response.json({ snapshot: await repo.getSnapshot(id) ?? null });
+      return Response.json(
+        { snapshot: await repo.getSnapshot(id) ?? null },
+        { headers: PRIVATE_NO_STORE_HEADERS },
+      );
     }
     return errorResponse(new PersistenceDomainError("SYNC_UNAVAILABLE"));
   } catch (error) {
@@ -92,10 +112,16 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const body = await readBody(request);
     if (body["action"] === "createAccount") {
-      return Response.json({ account: await repo.createAccount(body["input"] as never) }, { status: 201 });
+      return Response.json(
+        { account: await repo.createAccount(body["input"] as never) },
+        { status: 201, headers: PRIVATE_NO_STORE_HEADERS },
+      );
     }
     if (body["action"] === "saveSnapshot") {
-      return Response.json({ result: await repo.saveSnapshot(body["input"] as never) });
+      return Response.json(
+        { result: await repo.saveSnapshot(body["input"] as never) },
+        { headers: PRIVATE_NO_STORE_HEADERS },
+      );
     }
     return errorResponse(new PersistenceDomainError("SYNC_UNAVAILABLE"));
   } catch (error) {
@@ -111,7 +137,10 @@ export async function PATCH(request: Request): Promise<Response> {
     if (body["action"] !== "updateAccount" || typeof body["id"] !== "string") {
       throw new PersistenceDomainError("SYNC_UNAVAILABLE");
     }
-    return Response.json({ account: await repo.updateAccount(body["id"], body["input"] as never) });
+    return Response.json(
+      { account: await repo.updateAccount(body["id"], body["input"] as never) },
+      { headers: PRIVATE_NO_STORE_HEADERS },
+    );
   } catch (error) {
     return errorResponse(error);
   }
@@ -135,7 +164,7 @@ export async function DELETE(request: Request): Promise<Response> {
     } else {
       throw new PersistenceDomainError("SYNC_UNAVAILABLE");
     }
-    return new Response(null, { status: 204 });
+    return new Response(null, { status: 204, headers: PRIVATE_NO_STORE_HEADERS });
   } catch (error) {
     return errorResponse(error);
   }

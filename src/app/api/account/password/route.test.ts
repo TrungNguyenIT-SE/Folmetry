@@ -62,8 +62,20 @@ describe("first password route", () => {
 
     expect((await POST(request({ newPassword: "Strongpass1!" }, "https://attacker.test"))).status).toBe(403);
 
+    const missingOrigin = new Request("https://folmetry.test/api/account/password", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ newPassword: "Strongpass1!" }),
+    });
+    expect((await POST(missingOrigin)).status).toBe(403);
+
     mocks.getRequestSession.mockResolvedValue({ user: { id: "google-user" } });
     expect((await POST(request({ newPassword: "weak" }))).status).toBe(400);
     expect(mocks.setPassword).not.toHaveBeenCalled();
+  });
+
+  it("marks password responses as private and non-cacheable", async () => {
+    const response = await POST(request({ newPassword: "Strongpass1!" }));
+    expect(response.headers.get("cache-control")).toContain("no-store");
   });
 });

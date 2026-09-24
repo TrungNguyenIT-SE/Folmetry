@@ -4,11 +4,6 @@ import { STORY_POLICY, StoryError, type ProviderHighlightCollection, type Provid
 
 export type StoryTransport = (input: string, init: RequestInit) => Promise<Response>;
 
-interface CachedHighlight {
-  readonly expiresAt: number;
-  readonly items: readonly ProviderMediaItem[];
-}
-
 function record(value: unknown): Record<string, unknown> | undefined {
   return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
 }
@@ -92,13 +87,11 @@ function sanitizedRequestId(response: Response): string | undefined {
 
 export class InstagapiProvider implements PublicStoryProvider {
   readonly providerId = "instagapi";
-  readonly #highlightCache = new Map<string, CachedHighlight>();
 
   constructor(
     private readonly apiKey: string,
     private readonly baseUrl = "https://api.instagapi.com",
     private readonly transport: StoryTransport = fetch,
-    private readonly now: () => number = Date.now,
   ) {}
 
   async #request(path: string, signal: AbortSignal): Promise<{ data: unknown; requestId?: string }> {
@@ -141,7 +134,6 @@ export class InstagapiProvider implements PublicStoryProvider {
       const rawItems = item?.["items"];
       if (!id || !title || !Array.isArray(rawItems)) throw new StoryError("STORY_PROVIDER_SCHEMA_CHANGED");
       if (rawItems.length > STORY_POLICY.maxHighlightItems) throw new StoryError("STORY_RESPONSE_TOO_LARGE");
-      this.#highlightCache.set(id, { expiresAt: this.now() + STORY_POLICY.mediaTokenTtlSeconds * 1000, items: rawItems.map(normalizeMedia) });
       const count = finiteNumber(item?.["media_count"]);
       const cover = coverUrl(item?.["cover_media"]);
       return { id, title, ...(count !== undefined ? { itemCount: count } : {}), ...(cover ? { coverUrl: cover } : {}) };
@@ -149,13 +141,15 @@ export class InstagapiProvider implements PublicStoryProvider {
     return { collections, ...(response.requestId ? { requestId: response.requestId } : {}) };
   }
 
-  async getHighlightItems(highlightId: string, signal: AbortSignal): Promise<ProviderHighlightItemsResult> {
-    if (signal.aborted) throw new StoryError("STORY_PROVIDER_TIMEOUT");
-    const cached = this.#highlightCache.get(highlightId);
-    if (!cached || cached.expiresAt <= this.now()) {
-      this.#highlightCache.delete(highlightId);
-      throw new StoryError("STORY_HIGHLIGHTS_UNAVAILABLE");
-    }
-    return { items: cached.items };
+  async getHighlightItems(handle: string, highlightId: string, signal: AbortSignal): Promise<ProviderHighlightItemsResult> {
+    const response = await this.#request(`/api/v1/user/highlights/by/username?username=${encodeURIComponent(handle)}`, signal);
+    const root = record(response.data);
+    const rawCollections = Array.isArray(response.data) ? response.data : Array.isArray(root?.["data"]) ? root["data"] : Array.isArray(root?.["items"]) ? root["items"] : undefined;
+    if (!rawCollections) throw new StoryError("STORY_PROVIDER_SCHEMA_CHANGED");
+    const collection = rawCollections.find((value) => text(record(value)?.["id"]) === highlightId);
+    const rawItems = record(collection)?.["items"];
+    if (!Array.isArray(rawItems)) throw new StoryError("STORY_HIGHLIGHTS_UNAVAILABLE");
+    if (rawItems.length > STORY_POLICY.maxHighlightItems) throw new StoryError("STORY_RESPONSE_TOO_LARGE");
+    return { items: rawItems.map(normalizeMedia), ...(response.requestId ? { requestId: response.requestId } : {}) };
   }
 }

@@ -3738,6 +3738,35 @@ Hoàn thiện Facebook như một workspace độc lập nhưng dùng chung các
 - [ ] Trước production: phê duyệt điều khoản/quyền riêng tư, gateway logging và hạn mức hiện hành của Groq/Cloudflare.
 - [ ] Trước production: cấu hình key mới trong secret store và smoke-test thật từng provider cùng fallback.
 
+# 19G. M10H — Production hardening và hiệu năng nền tảng
+
+## Mục tiêu
+
+Đưa lớp ứng dụng hiện tại từ trạng thái chạy đúng sang trạng thái an toàn và ổn định hơn trên hạ tầng serverless, đồng thời bổ sung các quality gate có thể đo và chống hồi quy.
+
+## Checklist đã triển khai
+
+- [x] Đọc tài liệu Next.js đi kèm đúng phiên bản về production, Route Handler, CSP và response headers trước khi sửa cấu hình.
+- [x] Áp dụng CSP, chống clickjacking, MIME sniffing, referrer leakage và vô hiệu hóa các browser capability không dùng.
+- [x] Mọi `/api/*` có chính sách `private, no-store`, `Pragma: no-cache` và không cho search engine lập chỉ mục.
+- [x] Mutation analyzer và thiết lập mật khẩu lần đầu fail-closed nếu thiếu hoặc sai `Origin`, có xử lý reverse proxy qua forwarded host/protocol.
+- [x] Response chứa session/dữ liệu riêng tư được đánh dấu không cache ngay cả khi gọi trực tiếp Route Handler.
+- [x] PostgreSQL pool được tái sử dụng theo process và gắn với lifecycle của Vercel Functions; timeout idle được thu ngắn cho serverless.
+- [x] Tách DDL khỏi request runtime thành migration SQL có phiên bản, transaction, advisory lock và bảng lịch sử migration.
+- [x] Ghi rõ thứ tự bootstrap `auth:migrate` rồi `db:migrate` cho môi trường mới.
+- [x] Loại bỏ 1–2 lần tải lại toàn bộ snapshot khi chọn, kiểm tra trùng hoặc tạo kết quả fallback; tái sử dụng lịch sử đã có trong state.
+- [x] Loại bỏ cache Highlight phụ thuộc RAM của một instance; tải bộ sưu tập cần thiết trong chính request hiện tại.
+- [x] Thêm coverage V8 và ngưỡng chống hồi quy vào CI: statements 60%, branches 50%, functions 60%, lines 60%.
+- [x] Thêm test hồi quy cho Origin bị thiếu/sai, no-store response và provider Highlight stateless.
+- [x] Typecheck, lint, 298 test, coverage và production build đạt trên máy phát triển.
+- [ ] Chạy migration thật trên PostgreSQL staging/production trước khi deploy mã mới.
+- [ ] Xác minh headers trên production URL sau deploy và smoke test Google OAuth, analyzer sync, Story provider, AI fallback.
+- [ ] Bật rate limit phân tán tại Vercel Firewall/Cloudflare WAF; limiter trong RAM chỉ là lớp backpressure cục bộ.
+- [ ] Bổ sung error monitoring và Web Vitals có consent, tuyệt đối không gửi handle hay relationship data.
+- [ ] Khi lịch sử thực tế tăng lớn, tách snapshot metadata khỏi relationship payload và phân trang lịch sử dựa trên số liệu production.
+
+---
+
 # 20. Definition of Done toàn dự án
 
 V1 chỉ hoàn thành khi đồng thời thỏa mãn:
